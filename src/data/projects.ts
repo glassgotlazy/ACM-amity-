@@ -56,7 +56,7 @@ export const projects: Project[] = [
       ],
       notYet: [
         "No live deployment serving prospective students.",
-        "No retrieval over official university documents — the knowledge base is written and maintained by hand.",
+        "No retrieval over official university documents — the knowledge base is written and maintained manually.",
         "No evaluation set, so answer quality is reviewed by reading rather than measured.",
         "Not an official university admissions channel, and not a replacement for one.",
       ],
@@ -176,7 +176,7 @@ export const projects: Project[] = [
     ],
     contribute: [
       "This project has no team yet. The first person in gets to set its direction.",
-      "Archive a term’s worth of public notices by hand — the manual pass teaches you the schema.",
+      "Archive a term’s worth of public notices manually — that first pass teaches you the schema.",
       "Design the search result. That single component decides whether the product works.",
     ],
     timeline: [
@@ -207,7 +207,7 @@ export const projects: Project[] = [
       exists: ["Exploratory work on clustering approaches using synthetic data.", "A first draft of the privacy rules."],
       notYet: [
         "No real feedback data is being used, and none will be without consent and a review.",
-        "No validated methodology yet — cluster quality is still being checked by hand.",
+        "No validated methodology yet — cluster quality is still being checked manually.",
       ],
     },
     technologies: ["Python", "NLP", "Clustering", "Anonymisation", "Visualisation"],

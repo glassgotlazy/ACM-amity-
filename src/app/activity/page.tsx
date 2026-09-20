@@ -26,12 +26,12 @@ export default function ActivityPage() {
           { label: "Entries shown", value: String(activity.length) },
           { label: "Source", value: "Project history" },
           { label: "Live feed", value: "Not yet wired" },
-          { label: "Updated", value: "By hand" },
+          { label: "Updated", value: "Manual" },
         ]}
       >
         <p className="max-w-xl font-mono text-micro uppercase leading-relaxed text-ink-ghost">
           These are real project milestones, taken from the two ACM repositories. The feed is not yet wired to
-          repository events, so it is updated by hand. Entries describe work on projects rather than output by
+          repository events, so it is updated manually. Entries describe work on projects rather than output by
           individuals.
         </p>
       </PageHeader>

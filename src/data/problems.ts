@@ -219,7 +219,7 @@ export const problems: Problem[] = [
     ],
     nextSteps: [
       "Write the privacy rules before any code, and treat them as acceptance tests.",
-      "Validate clusters by hand-labelling a sample — if a human disagrees with the grouping, the grouping is wrong.",
+      "Validate clusters by manually labelling a sample — if a human disagrees with the grouping, the grouping is wrong.",
       "Build with synthetic or consented data only.",
     ],
   },
@@ -272,7 +272,7 @@ export const problems: Problem[] = [
       "Can categorisation be inferred reliably, or does it need a human in the loop?",
     ],
     nextSteps: [
-      "Archive a term’s worth of public notices by hand and try to search them. The manual version teaches you the schema.",
+      "Archive a term’s worth of public notices manually and try to search them. That first pass teaches you the schema.",
       "Ship search before subscriptions. Search is the thing people will actually use.",
     ],
   },
