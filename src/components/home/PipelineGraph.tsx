@@ -80,7 +80,7 @@ export function PipelineGraph() {
   const dim = (id: string) => hover !== null && !connected.has(id);
 
   return (
-    <div className="relative w-full" aria-hidden={false}>
+    <div className="w-full">
       <div className="mb-5 flex items-center justify-between border-b border-line pb-3">
         <span className="meta">Problem → Project → People</span>
         <span className="flex items-center gap-2 font-mono text-micro uppercase text-ink-ghost">
@@ -89,7 +89,10 @@ export function PipelineGraph() {
         </span>
       </div>
 
-      <svg viewBox={`0 0 100 ${VIEW_H}`} className="w-full overflow-visible" role="img" aria-label="A map connecting campus problems to ACM projects, teams and recorded contributions">
+      <MobileChain />
+
+      <div className="relative hidden md:block">
+        <svg viewBox={`0 0 100 ${VIEW_H}`} className="w-full overflow-visible" role="img" aria-label="A map connecting campus problems to ACM projects, teams and recorded contributions">
         <defs>
           <marker id="arrow" markerWidth="4" markerHeight="4" refX="3" refY="2" orient="auto">
             <path d="M0,0 L4,2 L0,4 Z" fill="currentColor" />
@@ -177,7 +180,7 @@ export function PipelineGraph() {
           Positioning sits on a plain wrapper because framer-motion writes the
           `x` animation to `transform` and would otherwise clobber the
           centring translate. */}
-      <div className="pointer-events-none absolute inset-0 top-[3.25rem]">
+      <div className="pointer-events-none absolute inset-0">
         {NODES.map((node, i) => (
           <div
             key={node.id}
@@ -219,7 +222,58 @@ export function PipelineGraph() {
             </motion.div>
           </div>
         ))}
+        </div>
       </div>
+    </div>
+  );
+}
+
+/**
+ * Phone rendering of the same pipeline: one column, grouped by stage. It keeps
+ * every destination reachable without trying to draw a three-column graph in
+ * 350 pixels.
+ */
+function MobileChain() {
+  const reduce = useReducedMotion();
+  const stages = [
+    { label: "Problems", nodes: NODES.filter((n) => n.column === 0) },
+    { label: "Projects", nodes: NODES.filter((n) => n.column === 1) },
+    { label: "People", nodes: NODES.filter((n) => n.column === 2) },
+  ];
+
+  return (
+    <div className="md:hidden">
+      {stages.map((stage, si) => (
+        <div key={stage.label} className="relative border-l border-line pb-7 pl-6 last:pb-0">
+          <span
+            aria-hidden
+            className={cn(
+              "absolute -left-[4.5px] top-1.5 block h-2 w-2 rounded-full",
+              si === 1 ? "bg-acm" : "border border-acm bg-void",
+            )}
+          />
+          <span className="meta text-ink-ghost">{stage.label}</span>
+          <ul className="mt-3 space-y-2.5">
+            {stage.nodes.map((node, i) => (
+              <motion.li
+                key={node.id}
+                initial={reduce ? undefined : { opacity: 0, x: -6 }}
+                animate={reduce ? undefined : { opacity: 1, x: 0 }}
+                transition={{ duration: 0.4, delay: 0.3 + si * 0.1 + i * 0.05 }}
+              >
+                <Link href={node.href} className="group flex items-baseline justify-between gap-4">
+                  <span className="text-[0.9375rem] font-medium tracking-[-0.01em] transition-colors duration-200 group-hover:text-acm-bright">
+                    {node.label}
+                  </span>
+                  <span className="font-mono text-[0.5625rem] uppercase tracking-[0.14em] text-ink-ghost">
+                    {node.sub}
+                  </span>
+                </Link>
+              </motion.li>
+            ))}
+          </ul>
+        </div>
+      ))}
     </div>
   );
 }

@@ -10,12 +10,17 @@ export function ArrowLink({
   children,
   className,
   tone = "default",
+  direction = "forward",
 }: {
   href: string;
   children: React.ReactNode;
   className?: string;
   tone?: "default" | "accent";
+  /** `back` puts the arrow first and points it the other way. */
+  direction?: "forward" | "back";
 }) {
+  const back = direction === "back";
+
   return (
     <Link
       href={href}
@@ -25,18 +30,27 @@ export function ArrowLink({
         className,
       )}
     >
+      {back ? (
+        <span aria-hidden className="block transition-transform duration-300 ease-out group-hover:-translate-x-1">
+          ←
+        </span>
+      ) : null}
+
       <span className="relative">
         {children}
         <span className="absolute -bottom-1 left-0 h-px w-0 bg-current transition-[width] duration-300 ease-out group-hover:w-full" />
       </span>
-      <span aria-hidden className="relative block h-3 w-3 overflow-hidden">
-        <span className="absolute inset-0 grid place-items-center transition-transform duration-300 ease-out group-hover:-translate-y-3 group-hover:translate-x-3">
-          →
+
+      {!back ? (
+        <span aria-hidden className="relative block h-3 w-3 overflow-hidden">
+          <span className="absolute inset-0 grid place-items-center transition-transform duration-300 ease-out group-hover:-translate-y-3 group-hover:translate-x-3">
+            →
+          </span>
+          <span className="absolute inset-0 grid place-items-center translate-y-3 -translate-x-3 transition-transform duration-300 ease-out group-hover:translate-y-0 group-hover:translate-x-0">
+            ↗
+          </span>
         </span>
-        <span className="absolute inset-0 grid place-items-center translate-y-3 -translate-x-3 transition-transform duration-300 ease-out group-hover:translate-y-0 group-hover:translate-x-0">
-          ↗
-        </span>
-      </span>
+      ) : null}
     </Link>
   );
 }

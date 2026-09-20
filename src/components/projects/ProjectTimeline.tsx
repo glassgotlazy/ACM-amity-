@@ -3,6 +3,7 @@
 import { motion, useReducedMotion } from "framer-motion";
 import type { Milestone } from "@/data/projects";
 import { cn } from "@/lib/utils";
+import { viewportOnce } from "@/lib/motion";
 
 const STATE_LABEL: Record<Milestone["state"], string> = {
   done: "Complete",
@@ -31,7 +32,7 @@ export function ProjectTimeline({ milestones }: { milestones: Milestone[] }) {
           style={{ width: `${fill * 100}%` }}
           initial={reduce ? undefined : { scaleX: 0 }}
           whileInView={{ scaleX: 1 }}
-          viewport={{ once: true }}
+          viewport={viewportOnce}
           transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
           aria-hidden
         />
@@ -43,7 +44,7 @@ export function ProjectTimeline({ milestones }: { milestones: Milestone[] }) {
               className="pr-8"
               initial={reduce ? undefined : { opacity: 0, y: 10 }}
               whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
+              viewport={viewportOnce}
               transition={{ duration: 0.45, delay: 0.15 + i * 0.09 }}
             >
               <span
@@ -55,7 +56,7 @@ export function ProjectTimeline({ milestones }: { milestones: Milestone[] }) {
                 )}
                 aria-hidden
               />
-              <h4 className="mt-5 text-base font-semibold tracking-[-0.02em]">{m.phase}</h4>
+              <h3 className="mt-5 text-base font-semibold tracking-[-0.02em]">{m.phase}</h3>
               <p
                 className={cn(
                   "mt-1.5 font-mono text-micro uppercase",
@@ -78,7 +79,7 @@ export function ProjectTimeline({ milestones }: { milestones: Milestone[] }) {
             className="relative"
             initial={reduce ? undefined : { opacity: 0, x: -8 }}
             whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
+            viewport={viewportOnce}
             transition={{ duration: 0.4, delay: i * 0.06 }}
           >
             <span
@@ -90,7 +91,7 @@ export function ProjectTimeline({ milestones }: { milestones: Milestone[] }) {
               )}
               aria-hidden
             />
-            <h4 className="text-base font-semibold tracking-[-0.02em]">{m.phase}</h4>
+            <h3 className="text-base font-semibold tracking-[-0.02em]">{m.phase}</h3>
             <p
               className={cn(
                 "mt-1 font-mono text-micro uppercase",

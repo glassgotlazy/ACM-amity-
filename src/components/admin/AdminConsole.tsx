@@ -3,7 +3,7 @@
 import { motion, useReducedMotion } from "framer-motion";
 import { useState } from "react";
 import Link from "next/link";
-import { adminStats, applications, submissions, STATE_TONE } from "@/data/admin";
+import { buildStats, applications, submissions, STATE_TONE } from "@/data/admin";
 import { projects, allOpenRoles } from "@/data/projects";
 import { problems } from "@/data/problems";
 import { teams } from "@/data/teams";
@@ -57,7 +57,12 @@ export function AdminConsole() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.35, ease }}
         className="mt-12"
+        aria-labelledby="admin-section"
       >
+        <h2 id="admin-section" className="sr-only">
+          {tab}
+        </h2>
+
         {tab === "Overview" ? <Overview /> : null}
         {tab === "Applications" ? <Applications /> : null}
         {tab === "Submissions" ? <Submissions /> : null}
@@ -73,10 +78,17 @@ export function AdminConsole() {
 
 function Overview() {
   const reduce = useReducedMotion();
+  const stats = buildStats({
+    projects: projects.length,
+    needLeads: projects.filter((p) => p.team.every((t) => t.name === "Open")).length,
+    openRoles: allOpenRoles().length,
+    contributors: teams.reduce((n, t) => n + t.size, 0),
+  });
+
   return (
     <div className="space-y-14">
       <div className="grid gap-px bg-line sm:grid-cols-2 lg:grid-cols-5">
-        {adminStats.map((stat, i) => (
+        {stats.map((stat, i) => (
           <motion.div
             key={stat.label}
             className="bg-void p-7"

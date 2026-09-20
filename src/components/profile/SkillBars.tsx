@@ -2,6 +2,7 @@
 
 import { motion, useReducedMotion } from "framer-motion";
 import { cn } from "@/lib/utils";
+import { viewportOnce } from "@/lib/motion";
 
 const LEVEL_WORD = ["", "Learning", "Working", "Comfortable", "Strong", "Deep"];
 
@@ -21,7 +22,7 @@ export function SkillBars({ skills }: { skills: { name: string; level: number }[
             className="grid items-center gap-4 bg-void py-5 sm:grid-cols-[1fr_auto_8rem] sm:gap-8"
             initial={reduce ? undefined : { opacity: 0, x: -8 }}
             whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
+            viewport={viewportOnce}
             transition={{ duration: 0.4, delay: i * 0.06 }}
           >
             <span className="text-[0.9375rem] font-medium tracking-[-0.01em]">{skill.name}</span>
@@ -33,7 +34,7 @@ export function SkillBars({ skills }: { skills: { name: string; level: number }[
                   className={cn("h-1.5 w-8", seg < skill.level ? "bg-acm" : "bg-line-strong")}
                   initial={reduce ? undefined : { scaleX: 0 }}
                   whileInView={{ scaleX: 1 }}
-                  viewport={{ once: true }}
+                  viewport={viewportOnce}
                   transition={{ duration: 0.35, delay: 0.1 + i * 0.06 + seg * 0.04 }}
                   style={{ originX: 0 }}
                 />

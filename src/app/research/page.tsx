@@ -87,7 +87,7 @@ export default function ResearchPage() {
             <Reveal delay={0.1}>
               <div className="meta border-b border-line pb-3">Where it stands</div>
               <div className="mt-2">
-                <ResearchTimeline stages={featured.stages} />
+                <ResearchTimeline stages={featured.stages} variant="compact" />
               </div>
               <p className="mt-7 font-mono text-micro uppercase leading-relaxed text-ink-ghost">
                 An ongoing research initiative. Not a proven result, not a breakthrough, and not something to cite.

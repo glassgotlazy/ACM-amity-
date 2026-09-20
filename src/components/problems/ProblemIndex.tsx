@@ -28,7 +28,11 @@ export function ProblemIndex() {
   }, [category, levelName]);
 
   return (
-    <section className="shell py-14">
+    <section className="shell py-14" aria-labelledby="problem-list">
+      <h2 id="problem-list" className="sr-only">
+        Problem statements
+      </h2>
+
       <div className="sticky top-[4.5rem] z-40 -mx-gutter space-y-3 border-b border-line bg-void/90 px-gutter py-4 backdrop-blur-xl">
         <FilterBar
           label="Filter problems by category"

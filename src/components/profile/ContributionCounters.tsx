@@ -3,6 +3,7 @@
 import { animate, motion, useInView, useReducedMotion } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
 import type { Contribution } from "@/data/profile";
+import { viewportOnce } from "@/lib/motion";
 
 /** Counts up once when scrolled into view. Static under reduced motion. */
 function Counter({ to }: { to: number }) {
@@ -39,7 +40,7 @@ export function ContributionCounters({ contributions }: { contributions: Contrib
           className="bg-void p-7"
           initial={reduce ? undefined : { opacity: 0, y: 12 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
+          viewport={viewportOnce}
           transition={{ duration: 0.45, delay: i * 0.07 }}
         >
           <div className="meta">{c.label}</div>

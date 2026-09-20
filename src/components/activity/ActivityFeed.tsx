@@ -44,7 +44,11 @@ export function ActivityFeed() {
   }, [shown]);
 
   return (
-    <section className="shell py-14">
+    <section className="shell py-14" aria-labelledby="activity-list">
+      <h2 id="activity-list" className="sr-only">
+        Activity log
+      </h2>
+
       <div className="sticky top-[4.5rem] z-40 -mx-gutter border-b border-line bg-void/90 px-gutter py-4 backdrop-blur-xl">
         <FilterBar
           label="Filter activity by type"

@@ -2,9 +2,8 @@
 
 import { motion, useReducedMotion } from "framer-motion";
 import Link from "next/link";
-import { ease } from "@/lib/motion";
-
-const LINES = ["YOUR NEXT PROJECT", "DOESN'T HAVE TO BE", "A COLLEGE ASSIGNMENT."];
+import { MaskedHeadline } from "@/components/ui/MaskedHeadline";
+import { viewportOnce } from "@/lib/motion";
 
 export function RecruitCTA() {
   const reduce = useReducedMotion();
@@ -12,26 +11,20 @@ export function RecruitCTA() {
   return (
     <section className="shell py-section" aria-labelledby="recruit">
       <div className="grid gap-12 lg:grid-cols-[1.6fr_1fr] lg:items-end">
-        <h2 id="recruit" className="text-display-md">
-          {LINES.map((line, i) => (
-            <span key={line} className="block overflow-hidden pb-[0.06em]">
-              <motion.span
-                className={`block ${i === 2 ? "text-ink-faint" : ""}`}
-                initial={reduce ? undefined : { y: "110%" }}
-                whileInView={{ y: "0%" }}
-                viewport={{ once: true, amount: 0.5 }}
-                transition={{ duration: 0.8, delay: i * 0.07, ease }}
-              >
-                {line}
-              </motion.span>
-            </span>
-          ))}
-        </h2>
+        <MaskedHeadline
+          id="recruit"
+          className="text-display-md"
+          lines={[
+            { text: "YOUR NEXT PROJECT" },
+            { text: "DOESN'T HAVE TO BE" },
+            { text: "A COLLEGE ASSIGNMENT.", className: "text-ink-faint" },
+          ]}
+        />
 
         <motion.div
           initial={reduce ? undefined : { opacity: 0, y: 14 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
+          viewport={viewportOnce}
           transition={{ duration: 0.6, delay: 0.2 }}
         >
           <p className="max-w-sm text-[1.0625rem] leading-relaxed text-ink-muted">

@@ -6,6 +6,7 @@ import { CONTRIBUTION_MODEL, TRACKED } from "@/data/profile";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { Reveal } from "@/components/ui/Reveal";
 import { ArrowLink } from "@/components/ui/ArrowLink";
+import { viewportOnce } from "@/lib/motion";
 
 export function ContributionPitch() {
   const reduce = useReducedMotion();
@@ -35,7 +36,7 @@ export function ContributionPitch() {
               className="relative bg-void p-9 lg:p-12"
               initial={reduce ? undefined : { opacity: 0, y: 16 }}
               whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, amount: 0.3 }}
+              viewport={viewportOnce}
               transition={{ duration: 0.55, delay: i * 0.1 }}
             >
               {entry.tone === "accent" ? (
@@ -63,7 +64,7 @@ export function ContributionPitch() {
                 className="flex items-baseline gap-3 border-b border-line-faint py-2.5 text-sm text-ink-muted"
                 initial={reduce ? undefined : { opacity: 0, x: -6 }}
                 whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true }}
+                viewport={viewportOnce}
                 transition={{ duration: 0.4, delay: i * 0.04 }}
               >
                 <span className="meta tnum text-ink-ghost">{String(i + 1).padStart(2, "0")}</span>

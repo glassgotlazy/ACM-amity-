@@ -6,6 +6,7 @@ import { ideas } from "@/data/ideas";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { ArrowLink } from "@/components/ui/ArrowLink";
 import { DifficultyMeter } from "@/components/ui/Badges";
+import { viewportOnce } from "@/lib/motion";
 
 /**
  * A dense index rather than a card grid — the point of this section is that
@@ -39,7 +40,7 @@ export function IdeasTeaser() {
             className="group border-b border-line"
             initial={reduce ? undefined : { opacity: 0, y: 10 }}
             whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, amount: 0.3 }}
+            viewport={viewportOnce}
             transition={{ duration: 0.45, delay: Math.min(i * 0.05, 0.25) }}
           >
             <Link

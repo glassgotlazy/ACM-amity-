@@ -35,7 +35,9 @@ export default async function ProblemPage({ params }: { params: Promise<{ slug: 
         <div className="pointer-events-none absolute inset-0 grid-field grid-mask opacity-50" aria-hidden />
         <div className="shell relative pb-16 pt-32 sm:pt-40">
           <Reveal>
-            <ArrowLink href="/problems">Problem Lab</ArrowLink>
+            <ArrowLink href="/problems" direction="back">
+              Problem Lab
+            </ArrowLink>
           </Reveal>
 
           <Reveal delay={0.05} className="mt-10 flex flex-wrap items-center gap-4">

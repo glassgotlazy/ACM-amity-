@@ -22,13 +22,33 @@ export type Submission = {
   when: string;
 };
 
-export const adminStats = [
-  { label: "Applications", value: 34, delta: "+9 this week", href: "#applications" },
-  { label: "Active projects", value: 5, delta: "2 need leads", href: "/projects" },
-  { label: "Open roles", value: 19, delta: "across 5 projects", href: "/teams" },
-  { label: "Active contributors", value: 27, delta: "+4 this month", href: "/profile" },
-  { label: "Problem submissions", value: 11, delta: "6 queued for review", href: "#submissions" },
-];
+/**
+ * Counters are derived from the same rows the tables below render, so the
+ * console never contradicts itself. Only `contributors` is an invented figure —
+ * there is no roster to count — and it is labelled as such in the tile.
+ */
+export function buildStats(input: {
+  projects: number;
+  needLeads: number;
+  openRoles: number;
+  contributors: number;
+}) {
+  return [
+    {
+      label: "Applications",
+      value: applications.length,
+      delta: `${applications.filter((a) => a.state === "new").length} unopened`,
+    },
+    { label: "Active projects", value: input.projects, delta: `${input.needLeads} need leads` },
+    { label: "Open roles", value: input.openRoles, delta: `across ${input.projects} projects` },
+    { label: "Contributors", value: input.contributors, delta: "demo figure" },
+    {
+      label: "Problem submissions",
+      value: submissions.length,
+      delta: `${submissions.filter((s) => s.state === "queued").length} queued for review`,
+    },
+  ];
+}
 
 export const applications: Application[] = [
   { id: "AP-1041", name: "Applicant A", course: "B.Tech CSE · Y2", target: "AI Admissions Assistant", role: "Backend", state: "new", when: "2h ago" },

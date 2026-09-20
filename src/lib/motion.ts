@@ -49,4 +49,9 @@ export const lineReveal: Variants = {
   show: { y: "0%", transition: { duration: 0.85, ease } },
 };
 
-export const viewportOnce = { once: true, amount: 0.25 } as const;
+/**
+ * Shared scroll-reveal viewport. `amount` is deliberately low and the root box
+ * is extended past the bottom edge, so content commits slightly before it is
+ * on screen rather than visibly popping in at the fold.
+ */
+export const viewportOnce = { once: true, amount: 0.15, margin: "0px 0px -8% 0px" } as const;

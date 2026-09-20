@@ -47,7 +47,9 @@ export default async function ResearchDetailPage({ params }: { params: Promise<{
         <div className="pointer-events-none absolute inset-0 grid-field grid-mask opacity-50" aria-hidden />
         <div className="shell relative pb-16 pt-32 sm:pt-40">
           <Reveal>
-            <ArrowLink href="/research">Research hub</ArrowLink>
+            <ArrowLink href="/research" direction="back">
+              Research hub
+            </ArrowLink>
           </Reveal>
 
           <Reveal delay={0.05} className="mt-10 flex flex-wrap items-center gap-5">

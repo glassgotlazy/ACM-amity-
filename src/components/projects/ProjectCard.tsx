@@ -4,6 +4,7 @@ import Link from "next/link";
 import { motion, useReducedMotion } from "framer-motion";
 import type { Project } from "@/data/projects";
 import { StatusPill, Tag } from "@/components/ui/Badges";
+import { viewportOnce } from "@/lib/motion";
 import { cn } from "@/lib/utils";
 import { pad } from "@/lib/utils";
 
@@ -82,7 +83,7 @@ export function FeatureProject({ project, index }: { project: Project; index: nu
       className="group relative flex h-full flex-col border border-line bg-surface/40 transition-colors duration-300 hover:border-line-strong"
       initial={reduce ? undefined : { opacity: 0, y: 18 }}
       whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, amount: 0.2 }}
+      viewport={viewportOnce}
       transition={{ duration: 0.6, delay: index * 0.08 }}
     >
       <div className="flex items-center justify-between border-b border-line px-7 py-4">

@@ -190,6 +190,7 @@ export function Checkbox({
         id={id}
         role="checkbox"
         aria-checked={checked}
+        aria-label={label}
         onClick={() => onChange(!checked)}
         className={cn(
           "mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center border transition-colors duration-200",

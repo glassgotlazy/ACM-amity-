@@ -8,7 +8,8 @@ import { problems } from "@/data/problems";
 import { ProblemCard } from "@/components/problems/ProblemCard";
 import { Reveal } from "@/components/ui/Reveal";
 import { ArrowLink } from "@/components/ui/ArrowLink";
-import { ease } from "@/lib/motion";
+import { MaskedHeadline } from "@/components/ui/MaskedHeadline";
+import { viewportOnce } from "@/lib/motion";
 
 /**
  * The Problem Lab is the argument the whole site rests on, so it gets the
@@ -31,25 +32,15 @@ export function ProblemLabIntro() {
           <span className="meta">Problem Lab</span>
         </div>
 
-        <div className="mt-10 grid gap-14 lg:grid-cols-[1.35fr_1fr] lg:gap-20">
-          <div>
-            <h2 id="problem-lab" className="text-display-md">
-              {["DON'T START WITH AN IDEA.", "START WITH A PROBLEM."].map((line, i) => (
-                <span key={line} className="block overflow-hidden pb-[0.06em]">
-                  <motion.span
-                    className={`block ${i === 1 ? "text-acm" : ""}`}
-                    initial={reduce ? undefined : { y: "110%" }}
-                    whileInView={{ y: "0%" }}
-                    viewport={{ once: true, amount: 0.6 }}
-                    transition={{ duration: 0.85, delay: i * 0.08, ease }}
-                  >
-                    {line}
-                  </motion.span>
-                </span>
-              ))}
-            </h2>
+        <MaskedHeadline
+          className="mt-10 text-display-md"
+          id="problem-lab"
+          lines={[{ text: "DON'T START WITH AN IDEA." }, { text: "START WITH A PROBLEM.", className: "text-acm" }]}
+        />
 
-            <Reveal delay={0.1} className="mt-9 max-w-prose space-y-5 text-[1.0625rem] leading-relaxed text-ink-muted text-pretty">
+        <div className="mt-14 grid gap-14 lg:grid-cols-[1.35fr_1fr] lg:gap-20">
+          <div>
+            <Reveal delay={0.1} className="max-w-prose space-y-5 text-[1.0625rem] leading-relaxed text-ink-muted text-pretty">
               <p>
                 Universities are rapidly adopting AI, automation, digital platforms and data-driven systems. That
                 creates new challenges that still need better solutions.
@@ -72,7 +63,7 @@ export function ProblemLabIntro() {
                   key={category}
                   initial={reduce ? undefined : { opacity: 0, y: 8 }}
                   whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
+                  viewport={viewportOnce}
                   transition={{ duration: 0.4, delay: i * 0.035 }}
                 >
                   <Link

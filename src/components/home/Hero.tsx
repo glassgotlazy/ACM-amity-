@@ -4,6 +4,7 @@ import { motion, useReducedMotion } from "framer-motion";
 import Link from "next/link";
 import { ease } from "@/lib/motion";
 import { PipelineGraph } from "./PipelineGraph";
+import { MaskedHeadline } from "@/components/ui/MaskedHeadline";
 
 const HEADLINE = ["BUILD SOMETHING", "WORTH SHOWING."];
 
@@ -17,26 +18,6 @@ const FOCUS = [
   "Web",
   "Emerging Technology",
 ];
-
-/** Each headline line wipes up from behind a clipping mask. */
-function Line({ text, delay, accent }: { text: string; delay: number; accent?: boolean }) {
-  const reduce = useReducedMotion();
-  if (reduce) {
-    return <span className={`block ${accent ? "text-acm" : ""}`}>{text}</span>;
-  }
-  return (
-    <span className="block overflow-hidden pb-[0.06em]">
-      <motion.span
-        className={`block ${accent ? "text-acm" : ""}`}
-        initial={{ y: "110%" }}
-        animate={{ y: "0%" }}
-        transition={{ duration: 0.95, delay, ease }}
-      >
-        {text}
-      </motion.span>
-    </span>
-  );
-}
 
 export function Hero() {
   const reduce = useReducedMotion();
@@ -59,10 +40,7 @@ export function Hero() {
 
         {/* The headline runs the full width of the shell. Nothing sits beside
             it — the statement is the composition. */}
-        <h1 className="mt-10 text-display-xl">
-          <Line text={HEADLINE[0]} delay={0.12} />
-          <Line text={HEADLINE[1]} delay={0.22} />
-        </h1>
+        <MaskedHeadline as="h1" className="mt-10 text-display-xl" trigger="mount" delay={0.12} lines={HEADLINE} />
 
         <div className="mt-16 grid gap-14 border-t border-line pt-12 lg:grid-cols-[1.25fr_1fr] lg:gap-20">
           <div>

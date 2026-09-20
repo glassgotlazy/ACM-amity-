@@ -32,7 +32,7 @@ export default async function ProjectPage({ params }: { params: Promise<{ slug: 
         <div className="pointer-events-none absolute inset-0 grid-field grid-mask opacity-50" aria-hidden />
         <div className="shell relative pb-16 pt-32 sm:pt-40">
           <Reveal>
-            <ArrowLink href="/projects" className="[&_span:first-child]:order-2">
+            <ArrowLink href="/projects" direction="back">
               All projects
             </ArrowLink>
           </Reveal>

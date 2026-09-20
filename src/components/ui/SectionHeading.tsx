@@ -21,26 +21,25 @@ export function SectionHeading({ index, eyebrow, title, lede, action, align = "l
         <span className="meta">{eyebrow}</span>
       </Reveal>
 
-      <div
-        className={cn(
-          "mt-7 flex flex-col gap-8",
-          align === "wide" ? "lg:flex-row lg:items-end lg:justify-between" : "lg:flex-row lg:items-end lg:gap-16",
-        )}
-      >
-        <Reveal delay={0.05} className={align === "wide" ? "lg:max-w-3xl" : "lg:w-[58%]"}>
+      {/*
+        Title left, supporting column right. The lede and the action share that
+        right column rather than competing for the same row — three items in one
+        justify-between row squeezed the headline into an awkward wrap.
+      */}
+      <div className="mt-7 flex flex-col gap-10 lg:flex-row lg:items-end lg:justify-between lg:gap-16">
+        <Reveal delay={0.05} className={align === "wide" ? "lg:max-w-4xl" : "lg:max-w-2xl"}>
           <h2 className="text-display-md text-balance">{title}</h2>
         </Reveal>
 
-        {lede ? (
-          <Reveal delay={0.1} className={align === "wide" ? "lg:max-w-sm" : "lg:w-[42%]"}>
-            <div className="max-w-prose text-[0.975rem] leading-relaxed text-ink-muted text-pretty">{lede}</div>
-          </Reveal>
-        ) : null}
-
-        {action ? (
-          <Reveal delay={0.12} className="shrink-0">
-            {action}
-          </Reveal>
+        {lede || action ? (
+          <div className="flex shrink-0 flex-col gap-6 lg:max-w-xs lg:items-start">
+            {lede ? (
+              <Reveal delay={0.1}>
+                <div className="max-w-prose text-[0.975rem] leading-relaxed text-ink-muted text-pretty">{lede}</div>
+              </Reveal>
+            ) : null}
+            {action ? <Reveal delay={0.14}>{action}</Reveal> : null}
+          </div>
         ) : null}
       </div>
     </div>
@@ -73,7 +72,7 @@ export function PageHeader({
         </Reveal>
 
         <Reveal delay={0.05} className="mt-8 max-w-5xl">
-          <h1 className="text-display-lg text-balance">{title}</h1>
+          <h1 className="text-display-page text-balance">{title}</h1>
         </Reveal>
 
         {lede ? (

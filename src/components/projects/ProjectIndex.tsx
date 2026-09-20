@@ -26,7 +26,11 @@ export function ProjectIndex() {
   );
 
   return (
-    <section className="shell py-16">
+    <section className="shell py-16" aria-labelledby="project-list">
+      <h2 id="project-list" className="sr-only">
+        All projects
+      </h2>
+
       <div className="sticky top-[4.5rem] z-40 -mx-gutter border-b border-line bg-void/90 px-gutter py-4 backdrop-blur-xl">
         <FilterBar
           label="Filter projects by domain"

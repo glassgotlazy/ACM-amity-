@@ -33,7 +33,11 @@ export function IdeaIndex() {
   );
 
   return (
-    <section className="shell py-14">
+    <section className="shell py-14" aria-labelledby="idea-list">
+      <h2 id="idea-list" className="sr-only">
+        Project ideas
+      </h2>
+
       <div className="sticky top-[4.5rem] z-40 -mx-gutter space-y-3 border-b border-line bg-void/90 px-gutter py-4 backdrop-blur-xl">
         <FilterBar
           label="Filter ideas by level"

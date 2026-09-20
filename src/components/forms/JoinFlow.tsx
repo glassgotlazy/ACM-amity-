@@ -1,10 +1,11 @@
 "use client";
 
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { TextField, TextArea, ChipGroup } from "./Field";
 import { Button } from "@/components/ui/Button";
+import { MaskedHeadline } from "@/components/ui/MaskedHeadline";
 import { DOMAINS } from "@/data/taxonomy";
 import { ease } from "@/lib/motion";
 import { cn } from "@/lib/utils";
@@ -72,8 +73,20 @@ export function JoinFlow() {
   const [values, setValues] = useState<Values>(EMPTY);
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState(false);
+  const stepRef = useRef<HTMLDivElement>(null);
 
   const current = STEPS[step];
+
+  /**
+   * Move focus to the step's first field when the step changes — but never on
+   * the initial render, where autofocusing would drop a keyboard or screen
+   * reader user into the middle of the page, past the skip link and the
+   * heading that explains what they are filling in.
+   */
+  useEffect(() => {
+    if (step === 0) return;
+    stepRef.current?.querySelector<HTMLElement>("input, textarea, button")?.focus();
+  }, [step]);
 
   function set<K extends keyof Values>(key: K, value: Values[K]) {
     setValues((v) => ({ ...v, [key]: value }));
@@ -137,28 +150,12 @@ export function JoinFlow() {
         role="status"
       >
         <div className="meta-accent">Application complete</div>
-        <h2 className="mt-8 text-display-lg">
-          <span className="block overflow-hidden pb-[0.06em]">
-            <motion.span
-              className="block"
-              initial={reduce ? undefined : { y: "110%" }}
-              animate={{ y: "0%" }}
-              transition={{ duration: 0.9, delay: 0.15, ease }}
-            >
-              WELCOME TO
-            </motion.span>
-          </span>
-          <span className="block overflow-hidden pb-[0.06em]">
-            <motion.span
-              className="block text-acm"
-              initial={reduce ? undefined : { y: "110%" }}
-              animate={{ y: "0%" }}
-              transition={{ duration: 0.9, delay: 0.24, ease }}
-            >
-              THE BUILD.
-            </motion.span>
-          </span>
-        </h2>
+        <MaskedHeadline
+          className="mt-8 text-display-lg"
+          trigger="mount"
+          delay={0.15}
+          lines={[{ text: "WELCOME TO" }, { text: "THE BUILD.", className: "text-acm" }]}
+        />
 
         <motion.div
           className="mt-14 grid gap-px bg-line lg:grid-cols-3"
@@ -223,6 +220,7 @@ export function JoinFlow() {
             animate="center"
             exit="exit"
             transition={{ duration: 0.35, ease }}
+            ref={stepRef}
           >
             <h2 className="text-display-sm text-balance">{current.title}</h2>
             <p className="mt-4 max-w-prose text-[0.9375rem] leading-relaxed text-ink-muted">{current.hint}</p>
@@ -232,7 +230,6 @@ export function JoinFlow() {
                 <TextField
                   label="Name"
                   required
-                  autoFocus
                   value={values.name}
                   onChange={(e) => set("name", e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && next()}
@@ -245,7 +242,6 @@ export function JoinFlow() {
                   <TextField
                     label="Course"
                     required
-                    autoFocus
                     value={values.course}
                     onChange={(e) => set("course", e.target.value)}
                     placeholder="B.Tech Computer Science"
@@ -282,7 +278,6 @@ export function JoinFlow() {
                 <TextArea
                   label="Skills"
                   hint="Optional"
-                  autoFocus
                   value={values.skills}
                   onChange={(e) => set("skills", e.target.value)}
                   placeholder="Python, a bit of React, I can read a paper without panicking…"
@@ -293,7 +288,6 @@ export function JoinFlow() {
                 <TextArea
                   label="What do you want to build?"
                   required
-                  autoFocus
                   value={values.build}
                   onChange={(e) => set("build", e.target.value)}
                   placeholder="Something with AI. Or: I genuinely don't know yet, I want to find out."
@@ -305,7 +299,6 @@ export function JoinFlow() {
                   <TextField
                     label="GitHub"
                     hint="Optional"
-                    autoFocus
                     value={values.github}
                     onChange={(e) => set("github", e.target.value)}
                     placeholder="github.com/username"
@@ -325,7 +318,6 @@ export function JoinFlow() {
                 <TextArea
                   label="Why ACM?"
                   required
-                  autoFocus
                   value={values.why}
                   onChange={(e) => set("why", e.target.value)}
                   placeholder="What made you open this page?"
