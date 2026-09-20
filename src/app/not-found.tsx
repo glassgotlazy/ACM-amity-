@@ -7,7 +7,7 @@ export default function NotFound() {
       <div className="shell relative flex min-h-[70vh] flex-col justify-center py-32">
         <span className="meta text-acm-bright">404 / Not found</span>
         <h1 className="mt-8 max-w-3xl text-display-md text-balance">
-          This page doesn&rsquo;t exist. Several problems on campus still do.
+          This page doesn’t exist. Several problems on campus still do.
         </h1>
         <p className="mt-8 max-w-prose text-[1.0625rem] leading-relaxed text-ink-muted">
           Either something moved, or the link was wrong. Either way, the Problem Lab is a better place to be.

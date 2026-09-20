@@ -9,7 +9,7 @@ export const THEME_KEY = "acm-theme";
  * Theme switch.
  *
  * The rendered glyph is chosen by CSS off `:root[data-theme]` rather than by
- * React state, so the button's markup is identical on the server and the
+ * React state, so the button’s markup is identical on the server and the
  * client. That avoids both a hydration mismatch and the flash of a wrong icon
  * on first paint, which a state-driven version cannot.
  */

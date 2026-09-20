@@ -83,7 +83,7 @@ export function JoinFlow() {
   const current = STEPS[step];
 
   /**
-   * Move focus to the step's first field when the step changes — but never on
+   * Move focus to the step’s first field when the step changes — but never on
    * the initial render, where autofocusing would drop a keyboard or screen
    * reader user into the middle of the page, past the skip link and the
    * heading that explains what they are filling in.
@@ -111,7 +111,7 @@ export function JoinFlow() {
         if (values.interests.length === 0) return fail("Pick at least one — you can change your mind later.");
         return true;
       case "build":
-        if (values.build.trim().length < 10) return fail("A sentence is enough. “I don't know yet” counts.");
+        if (values.build.trim().length < 10) return fail("A sentence is enough. “I don’t know yet” counts.");
         return true;
       case "why":
         if (values.why.trim().length < 10) return fail("One sentence.");
@@ -337,7 +337,7 @@ export function JoinFlow() {
                   required
                   value={values.build}
                   onChange={(e) => set("build", e.target.value)}
-                  placeholder="Something with AI. Or: I genuinely don't know yet, I want to find out."
+                  placeholder="Something with AI. Or: I genuinely don’t know yet, I want to find out."
                 />
               ) : null}
 

@@ -13,7 +13,7 @@ type Props = {
 };
 
 /**
- * The site's single scroll-reveal. Anything that animates in on scroll goes
+ * The site’s single scroll-reveal. Anything that animates in on scroll goes
  * through here, so the distance and duration stay identical everywhere and
  * reduced-motion is honoured in one place.
  */

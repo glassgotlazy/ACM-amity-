@@ -86,7 +86,7 @@ export const researchProjects: ResearchProject[] = [
       { theme: "Calibration and abstention", note: "Knowing when a system should decline to answer." },
     ],
     exploration: [
-      "Build a small, hand-labelled question set as ground truth and treat it as the project's real asset.",
+      "Build a small, hand-labelled question set as ground truth and treat it as the project’s real asset.",
       "Compare human grading against model grading on the same answers and quantify the disagreement.",
       "Test whether abstention can be tuned without collapsing usefulness.",
     ],

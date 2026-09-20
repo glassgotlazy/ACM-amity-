@@ -10,7 +10,7 @@ import { Reveal } from "@/components/ui/Reveal";
 export const metadata: Metadata = {
   title: "Problem Lab",
   description:
-    "Don't start with an idea. Start with a problem. Student-written problem statements from around campus, each with possible directions, technologies and open roles.",
+    "Don’t start with an idea. Start with a problem. Student-written problem statements from around campus, each with possible directions, technologies and open roles.",
 };
 
 export default function ProblemsPage() {
@@ -23,7 +23,7 @@ export default function ProblemsPage() {
         eyebrow="Problem Lab"
         title={
           <>
-            DON&rsquo;T START WITH AN IDEA.
+            DON’T START WITH AN IDEA.
             <br />
             <span className="text-acm-bright">START WITH A PROBLEM.</span>
           </>

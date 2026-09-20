@@ -35,7 +35,7 @@ export function ProblemLabIntro() {
         <MaskedHeadline
           className="mt-10 text-display-md"
           id="problem-lab"
-          lines={[{ text: "DON'T START WITH AN IDEA." }, { text: "START WITH A PROBLEM.", className: "text-acm-bright" }]}
+          lines={[{ text: "DON’T START WITH AN IDEA." }, { text: "START WITH A PROBLEM.", className: "text-acm-bright" }]}
         />
 
         <div className="mt-14 grid gap-14 lg:grid-cols-[1.35fr_1fr] lg:gap-20">

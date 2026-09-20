@@ -36,8 +36,8 @@ export const ideas: Idea[] = [
     ],
   },
   {
-    slug: "ai-feedback-analyzer",
-    name: "AI Student Feedback Analyzer",
+    slug: "ai-feedback-analyser",
+    name: "AI Student Feedback Analyser",
     tagline: "Turn a thousand free-text comments into five things worth acting on.",
     level: "integrate",
     band: "Intermediate",

@@ -48,7 +48,7 @@ export const teams: Team[] = [
       { name: "ACM BuildHub", slug: "buildhub-platform" },
     ],
     openPositions: [
-      { role: "Backend", level: "Intermediate", note: "Replace BuildHub's demo data with a real store" },
+      { role: "Backend", level: "Intermediate", note: "Replace BuildHub’s demo data with a real store" },
       { role: "DevOps", level: "Any", note: "Deployment and CI for team projects" },
     ],
     meets: "Weekly working session",

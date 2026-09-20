@@ -85,7 +85,7 @@ export const activity: ActivityItem[] = [
   {
     id: "a8",
     kind: "build",
-    text: "Serverless functions added so the assistant's AI fallback works in a deployed environment, not only locally.",
+    text: "Serverless functions added so the assistant’s AI fallback works in a deployed environment, not only locally.",
     actor: "AI Team",
     target: { label: "AI Admissions Assistant", href: "/projects/admissions-ai" },
     when: "Recently",

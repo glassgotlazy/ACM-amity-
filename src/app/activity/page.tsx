@@ -5,7 +5,7 @@ import { activity } from "@/data/activity";
 
 export const metadata: Metadata = {
   title: "Activity",
-  description: "What ACM @ Amity has been working on — commits, reviews, literature passes, new roles and new people.",
+  description: "What ACM @ Amity has actually shipped — features built, reviews completed, papers read and roles opened.",
 };
 
 export default function ActivityPage() {
@@ -21,7 +21,7 @@ export default function ActivityPage() {
             HAPPENED THIS WEEK.
           </>
         }
-        lede="A community is easiest to judge by what it did recently. This is the log — work shipped, papers read, reviews completed, people arriving."
+        lede="A community is easiest to judge by what it did recently. This is the log — work shipped, papers read, reviews completed, roles opened."
         meta={[
           { label: "Entries shown", value: String(activity.length) },
           { label: "Source", value: "Project history" },

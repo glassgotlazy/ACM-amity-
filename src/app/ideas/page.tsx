@@ -18,9 +18,9 @@ export default function IdeasPage() {
         eyebrow="Project ideas"
         title={
           <>
-            DON&rsquo;T HAVE AN IDEA?
+            DON’T HAVE AN IDEA?
             <br />
-            WE&rsquo;VE GOT PROBLEMS.
+            WE’VE GOT PROBLEMS.
           </>
         }
         lede="Not knowing what to build is the most common reason people never start. Every idea below is unclaimed and has no team — which means the first person in gets to decide what it becomes."

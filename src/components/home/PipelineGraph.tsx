@@ -6,7 +6,7 @@ import Link from "next/link";
 import { cn } from "@/lib/utils";
 
 /**
- * The hero visual: the site's actual thesis drawn as a graph.
+ * The hero visual: the site’s actual thesis drawn as a graph.
  *
  * Left column holds real problem statements, the middle holds the projects
  * they feed, the right holds the outcome. Edges draw themselves on mount and

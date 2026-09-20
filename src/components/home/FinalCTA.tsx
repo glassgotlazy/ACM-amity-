@@ -20,7 +20,7 @@ export function FinalCTA() {
           as="h2"
           className="text-display-lg"
           lines={[
-            { text: "DON'T JUST ADD ACM", className: "text-ink-faint" },
+            { text: "DON’T JUST ADD ACM", className: "text-ink-faint" },
             { text: "TO YOUR RESUME.", className: "text-ink-faint" },
           ]}
         />
@@ -44,7 +44,7 @@ export function FinalCTA() {
         </motion.div>
 
         <p className="mt-10 max-w-xl text-[1.0625rem] leading-relaxed text-ink-muted text-pretty">
-          You don&rsquo;t need to know everything. You just need a problem worth caring about and the willingness to
+          You don’t need to know everything. You just need a problem worth caring about and the willingness to
           build.
         </p>
       </div>

@@ -35,7 +35,7 @@ export const slideIn: Variants = {
   show: { opacity: 1, x: 0, transition: { duration: 0.5, ease } },
 };
 
-/** Parent container that staggers its children's `rise`. */
+/** Parent container that staggers its children’s `rise`. */
 export function stagger(delayChildren = 0, staggerChildren = 0.06): Variants {
   return {
     hidden: {},

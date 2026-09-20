@@ -127,12 +127,12 @@ export const projects: Project[] = [
     openRoles: [
       { role: "Research", level: "Any", what: "Read a paper, summarise it for the group, defend your reading" },
       { role: "AI / LLM", level: "Advanced", what: "Simulation work and numerical experiments" },
-      { role: "Technical Writing", level: "Intermediate", what: "Turn the group's notes into something readable" },
+      { role: "Technical Writing", level: "Intermediate", what: "Turn the group’s notes into something readable" },
     ],
     contribute: [
       "You do not need quantum background to start. You need to be willing to read something difficult twice.",
       "Reproduce a result from a paper in simulation and report honestly whether it worked.",
-      "Maintain the annotated bibliography — an underrated, genuinely cite-able contribution.",
+      "Maintain the annotated bibliography — an underrated and genuinely citable contribution.",
     ],
     timeline: [
       { phase: "Idea", state: "done", detail: "Scope agreed: understand the protocols before attempting anything original." },
@@ -176,7 +176,7 @@ export const projects: Project[] = [
     ],
     contribute: [
       "This project has no team yet. The first person in gets to set its direction.",
-      "Archive a term of public notices by hand — the manual pass teaches you the schema.",
+      "Archive a term’s worth of public notices by hand — the manual pass teaches you the schema.",
       "Design the search result. That single component decides whether the product works.",
     ],
     timeline: [
@@ -250,34 +250,36 @@ export const projects: Project[] = [
     ],
     currentState: {
       exists: [
-        "The public site, with problem, project, research, team and contribution surfaces.",
-        "Application flows for joining ACM and for applying to a specific project role.",
-        "An admin view over the same demo data set.",
+        "The public site, deployed, with problem, project, research, team and contribution surfaces.",
+        "Application and submission flows that deliver to a live endpoint.",
+        "Light and dark themes, both measured at zero WCAG AA contrast failures.",
+        "A contribution profile and activity feed built from the project repositories.",
       ],
       notYet: [
-        "No backend yet — every number and profile on the site is demo content.",
-        "No authentication, and no real contribution tracking from GitHub.",
+        "No database — submissions are forwarded rather than stored and queued.",
+        "No authentication, and no automatic contribution tracking from GitHub.",
+        "The admin view reads demo applications and submissions, not real ones.",
       ],
     },
     technologies: ["Next.js", "TypeScript", "Tailwind CSS", "Framer Motion"],
     team: [{ name: "Web team", role: "Design + build" }],
     openRoles: [
       { role: "Frontend", level: "Any", what: "Components, interaction detail, accessibility passes" },
-      { role: "Backend", level: "Intermediate", what: "Replace demo data with a real store and an admin API" },
+      { role: "Backend", level: "Intermediate", what: "Give submissions a real store and wire the admin view to it" },
       { role: "Design", level: "Intermediate", what: "Editorial layout work and the contribution record design" },
     ],
     contribute: [
       "Submit a problem you have noticed. That is the fastest way to change what this site is about.",
       "Take one page and make it better on a 360px screen.",
-      "Wire one surface to a real data source and remove a piece of demo content for good.",
+      "Wire the admin view to real submissions so the last demo surface can go.",
     ],
     timeline: [
       { phase: "Design", state: "done", detail: "Problem-first information architecture agreed." },
       { phase: "Build", state: "done", detail: "Public site, discovery, and application flows." },
-      { phase: "Integrate", state: "active", detail: "Replacing demo data with a real backend, surface by surface." },
+      { phase: "Integrate", state: "active", detail: "Submissions deliver live; storage and the admin view come next." },
       { phase: "Deploy", state: "next", detail: "Contribution tracking wired to real repositories." },
     ],
-    progress: 68,
+    progress: 74,
   },
 ];
 

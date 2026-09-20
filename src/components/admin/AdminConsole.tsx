@@ -127,7 +127,7 @@ function Overview() {
               { ok: true, text: "No problem is presented as an official university brief." },
               { ok: true, text: "Every project declares what does not exist yet." },
               { ok: true, text: "Research pages state that no result is published or peer-reviewed." },
-              { ok: true, text: "Profile, activity and admin figures are marked as demo data." },
+              { ok: true, text: "Applications, submissions and team sizes are marked as demo data." },
             ].map((check) => (
               <li key={check.text} className="flex gap-4 text-sm leading-relaxed text-ink-muted">
                 <span aria-hidden className="mt-0.5 shrink-0 font-mono text-micro text-signal-live">

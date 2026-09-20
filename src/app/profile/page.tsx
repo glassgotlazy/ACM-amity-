@@ -130,7 +130,7 @@ export default function ProfilePage() {
         <SkillBars skills={p.skills} />
       </Section>
 
-      <Section index="04" title="How it started" lede="Nine weeks, from reading a problem to writing up a result.">
+      <Section index="04" title="How it started" lede="From a first offline build to measuring whether the answers are right.">
         <ol className="relative border-l border-line pl-8">
           {p.timeline.map((entry, i) => (
             <Reveal as="li" key={entry.when} delay={i * 0.05} className="relative pb-9 last:pb-0">

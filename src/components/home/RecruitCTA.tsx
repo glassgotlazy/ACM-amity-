@@ -16,7 +16,7 @@ export function RecruitCTA() {
           className="text-display-md"
           lines={[
             { text: "YOUR NEXT PROJECT" },
-            { text: "DOESN'T HAVE TO BE" },
+            { text: "DOESN’T HAVE TO BE" },
             { text: "A COLLEGE ASSIGNMENT.", className: "text-ink-faint" },
           ]}
         />

@@ -23,9 +23,9 @@ export function IdeasTeaser() {
         eyebrow="Project ideas"
         title={
           <span id="ideas">
-            DON&rsquo;T HAVE AN IDEA?
+            DON’T HAVE AN IDEA?
             <br />
-            WE&rsquo;VE GOT PROBLEMS.
+            WE’VE GOT PROBLEMS.
           </span>
         }
         lede="Unclaimed starting points, filtered by how much you already know. None of these has a team yet — the first person in decides what it becomes."

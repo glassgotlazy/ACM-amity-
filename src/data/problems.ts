@@ -96,7 +96,7 @@ export const problems: Problem[] = [
     researchQuestions: [
       "What chunking strategy survives documents that mix tables, dates and prose?",
       "How do you measure whether an answer is correct when there is no labelled dataset?",
-      "Can the system be made to say “I don't know” often enough to be trusted, without becoming useless?",
+      "Can the system be made to say “I don’t know” often enough to be trusted, without becoming useless?",
       "What is the right unit of freshness — the document, the section, or the individual fact?",
     ],
     nextSteps: [
@@ -138,7 +138,7 @@ export const problems: Problem[] = [
       {
         title: "Personal schedule view",
         detail:
-          "A read-only layer that assembles one student's real timetable from electives and section allocation, and shows the diff when it moves.",
+          "A read-only layer that assembles one student’s real timetable from electives and section allocation, and shows the diff when it moves.",
       },
     ],
     technologies: ["Constraint solvers", "Graph algorithms", "APIs", "Notification services", "Calendar formats"],
@@ -160,7 +160,7 @@ export const problems: Problem[] = [
       "What notification frequency stops being helpful and starts being ignored?",
     ],
     nextSteps: [
-      "Model a single department's week as a constraint graph on paper first.",
+      "Model a single department’s week as a constraint graph on paper first.",
       "Write the detector before the solver. Detection alone is a useful product.",
       "Test propagation logic against invented worst cases — two changes that cancel each other out, a change reverted an hour later.",
     ],
@@ -171,7 +171,7 @@ export const problems: Problem[] = [
     title: "The Student Feedback Problem",
     hook: "Thousands of responses. A summary nobody can act on.",
     question:
-      "How might we analyze student feedback while preserving privacy and identifying recurring issues?",
+      "How might we analyse student feedback while preserving privacy and identifying recurring issues?",
     origin: "potential",
     category: "Data",
     domains: ["AI", "Data", "Research"],
@@ -229,7 +229,7 @@ export const problems: Problem[] = [
     title: "The Lost Information Problem",
     hook: "The announcement went out. It is now unfindable.",
     question:
-      "How might we create a centralized, searchable system for university announcements?",
+      "How might we create a centralised, searchable system for university announcements?",
     origin: "example",
     category: "Student Experience",
     domains: ["Web", "Software", "Data"],
@@ -272,7 +272,7 @@ export const problems: Problem[] = [
       "Can categorisation be inferred reliably, or does it need a human in the loop?",
     ],
     nextSteps: [
-      "Archive a term's worth of public notices by hand and try to search them. The manual version teaches you the schema.",
+      "Archive a term’s worth of public notices by hand and try to search them. The manual version teaches you the schema.",
       "Ship search before subscriptions. Search is the thing people will actually use.",
     ],
   },

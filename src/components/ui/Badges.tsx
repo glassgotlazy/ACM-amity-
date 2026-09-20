@@ -57,7 +57,7 @@ export function Tag({ children, className }: { children: React.ReactNode; classN
 }
 
 /**
- * Four bars, filled to the level's ordinal. Difficulty is about the shape of
+ * Four bars, filled to the level’s ordinal. Difficulty is about the shape of
  * the work, never about the person doing it.
  */
 export function DifficultyMeter({

@@ -25,7 +25,7 @@ export default function TeamsPage() {
           <>
             FIND PEOPLE WHOSE SKILLS
             <br />
-            COVER WHAT YOURS DON&rsquo;T.
+            COVER WHAT YOURS DON’T.
           </>
         }
         lede="Teams are how a problem becomes work that actually ships. You join one because of what it works on, not because of what it is called — and most projects need more than one."

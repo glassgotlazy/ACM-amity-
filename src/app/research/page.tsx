@@ -9,7 +9,7 @@ import { ResearchTimeline } from "@/components/research/ResearchTimeline";
 export const metadata: Metadata = {
   title: "Research",
   description:
-    "We don't just build. We ask why. Ongoing research at ACM @ Amity — what we are reading, what we are testing, and what we have not found yet.",
+    "We don’t just build. We ask why. Ongoing research at ACM @ Amity — what we are reading, what we are testing, and what we have not found yet.",
 };
 
 export default function ResearchPage() {
@@ -22,7 +22,7 @@ export default function ResearchPage() {
         eyebrow="Research"
         title={
           <>
-            WE DON&rsquo;T JUST BUILD.
+            WE DON’T JUST BUILD.
             <br />
             WE ASK WHY.
           </>

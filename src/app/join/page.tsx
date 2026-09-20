@@ -14,7 +14,7 @@ export default function JoinPage() {
         eyebrow="Join ACM @ Amity"
         title={
           <>
-            YOU DON&rsquo;T NEED
+            YOU DON’T NEED
             <br />
             TO KNOW EVERYTHING.
           </>

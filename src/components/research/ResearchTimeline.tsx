@@ -18,7 +18,7 @@ const STATE_LABEL: Record<ResearchStage["state"], string> = {
  * nobody.
  */
 /**
- * `variant` is the container's width, not the viewport's. The four-column grid
+ * `variant` is the container’s width, not the viewport’s. The four-column grid
  * needs a full content column; in a sidebar it would squeeze the detail text
  * into a ragged 70-pixel ribbon, so a narrow context stacks instead.
  */
