@@ -1,0 +1,123 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+    --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, monospace;
+    --rule: rgba(255, 255, 255, 0.08);
+    color-scheme: dark;
+  }
+
+  * {
+    border-color: var(--rule);
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+    scroll-behavior: smooth;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.001ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.001ms !important;
+    }
+  }
+
+  body {
+    background-color: #08090b;
+    color: #f4f5f7;
+    font-family: var(--font-sans);
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11", "ss01";
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overflow-x: hidden;
+  }
+
+  ::selection {
+    background: rgba(229, 52, 43, 0.28);
+    color: #fff;
+  }
+
+  :focus-visible {
+    outline: 2px solid #ff4c42;
+    outline-offset: 3px;
+    border-radius: 1px;
+  }
+
+  /* Thin, unobtrusive scrollbar that matches the surface palette. */
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: #08090b;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #23262d;
+    border: 3px solid #08090b;
+    border-radius: 99px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #333842;
+  }
+}
+
+@layer components {
+  /* One shared horizontal rhythm for every page shell. */
+  .shell {
+    @apply mx-auto w-full max-w-shell px-gutter;
+  }
+
+  .rule-t {
+    @apply border-t border-line;
+  }
+
+  .rule-b {
+    @apply border-b border-line;
+  }
+
+  .meta {
+    @apply font-mono text-label uppercase text-ink-faint;
+  }
+
+  .meta-accent {
+    @apply font-mono text-label uppercase text-acm-bright;
+  }
+
+  /* Faint engineering grid used behind key sections. */
+  .grid-field {
+    background-image: linear-gradient(to right, rgba(255, 255, 255, 0.032) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(255, 255, 255, 0.032) 1px, transparent 1px);
+    background-size: 72px 72px;
+  }
+
+  .grid-mask {
+    -webkit-mask-image: radial-gradient(ellipse 70% 60% at 50% 40%, #000 20%, transparent 78%);
+    mask-image: radial-gradient(ellipse 70% 60% at 50% 40%, #000 20%, transparent 78%);
+  }
+
+  .hairline-x > * + * {
+    @apply border-l border-line;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+  .text-pretty {
+    text-wrap: pretty;
+  }
+  .tnum {
+    font-variant-numeric: tabular-nums;
+  }
+}
