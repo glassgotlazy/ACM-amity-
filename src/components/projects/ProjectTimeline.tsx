@@ -20,7 +20,10 @@ const STATE_LABEL: Record<Milestone["state"], string> = {
 export function ProjectTimeline({ milestones }: { milestones: Milestone[] }) {
   const reduce = useReducedMotion();
   const lastDone = milestones.reduce((acc, m, i) => (m.state === "done" || m.state === "active" ? i : acc), 0);
-  const fill = milestones.length > 1 ? lastDone / (milestones.length - 1) : 0;
+  // Markers sit at the START of their grid column, so marker i is at
+  // i / count of the rail — not i / (count - 1). The extra 7px carries the
+  // line to the centre of the 15px marker instead of stopping at its edge.
+  const fill = `calc(${(lastDone / milestones.length) * 100}% + 7px)`;
 
   return (
     <div className="relative">
@@ -29,7 +32,7 @@ export function ProjectTimeline({ milestones }: { milestones: Milestone[] }) {
         <div className="absolute left-0 right-0 top-[7px] h-px bg-line-strong" aria-hidden />
         <motion.div
           className="absolute left-0 top-[7px] h-px origin-left bg-acm"
-          style={{ width: `${fill * 100}%` }}
+          style={{ width: fill }}
           initial={reduce ? undefined : { scaleX: 0 }}
           whileInView={{ scaleX: 1 }}
           viewport={viewportOnce}
