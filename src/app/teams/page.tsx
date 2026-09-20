@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { PageHeader } from "@/components/ui/SectionHeading";
 import { teams } from "@/data/teams";
+import { coreTeam, REGISTRATION_URL } from "@/data/chapter";
 import { Reveal } from "@/components/ui/Reveal";
 import { Tag } from "@/components/ui/Badges";
 import { cn } from "@/lib/utils";
@@ -35,6 +36,37 @@ export default function TeamsPage() {
           { label: "Member counts", value: "Demo data" },
         ]}
       />
+
+      <section className="border-b border-line" aria-labelledby="core-team">
+        <div className="shell py-20">
+          <Reveal className="flex items-baseline gap-4">
+            <span className="meta text-acm">00 /</span>
+            <span className="meta">Chapter leadership</span>
+          </Reveal>
+
+          <div className="mt-10 grid gap-12 lg:grid-cols-[1fr_1.7fr] lg:gap-20">
+            <Reveal delay={0.05}>
+              <h2 id="core-team" className="text-display-sm text-balance">
+                The core team.
+              </h2>
+              <p className="mt-6 max-w-prose text-[0.9375rem] leading-relaxed text-ink-muted text-pretty">
+                Office bearers for the current term. They set direction and unblock work — the building itself happens
+                in the teams below.
+              </p>
+            </Reveal>
+
+            <div className="grid gap-px bg-line sm:grid-cols-2">
+              {coreTeam.map((person, i) => (
+                <Reveal key={person.name} delay={0.06 * i} className="bg-void p-7">
+                  <div className="meta text-acm">{person.role}</div>
+                  <h3 className="mt-4 text-xl font-semibold tracking-[-0.025em]">{person.name}</h3>
+                  <p className="mt-3 text-sm leading-relaxed text-ink-muted text-pretty">{person.remit}</p>
+                </Reveal>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
 
       {/*
         Alternating editorial spreads rather than six identical cards: each team

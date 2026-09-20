@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Reveal } from "@/components/ui/Reveal";
+import { REGISTRATION_URL, coreTeam } from "@/data/chapter";
 
 const COLUMNS = [
   {
@@ -29,13 +30,6 @@ const COLUMNS = [
       { href: "/admin", label: "Admin" },
     ],
   },
-];
-
-/** Placeholders. No invented handles or URLs — these are wired up by a human. */
-const SOCIAL = [
-  { label: "Instagram", value: "Link to be added" },
-  { label: "LinkedIn", value: "Link to be added" },
-  { label: "Contact", value: "Address to be added" },
 ];
 
 export function Footer() {
@@ -85,24 +79,64 @@ export function Footer() {
           </div>
         </div>
 
-        <Reveal className="mt-20 grid gap-px border border-line bg-line sm:grid-cols-4">
-          <div className="bg-void p-6">
-            <div className="meta">Registration</div>
-            <div className="mt-3 flex h-20 w-20 items-center justify-center border border-dashed border-line-strong">
-              <span className="text-center font-mono text-[0.5rem] uppercase leading-tight text-ink-ghost">
-                QR code
-                <br />
-                placeholder
-              </span>
+        <Reveal className="mt-20 grid gap-px border border-line bg-line sm:grid-cols-[auto_1fr]">
+          <div className="flex flex-wrap items-center gap-8 bg-void p-7">
+            {/*
+              White plate: a QR needs a light field to scan reliably, so it is
+              treated as a deliberate object rather than tinted to match.
+
+              The size is a scanning requirement, not a layout preference. This
+              symbol is 45 modules across including its quiet zone; below about
+              120px it stops decoding at all, so it is set at 160–176px to keep
+              roughly four pixels per module and leave headroom for a phone
+              held at an angle.
+            */}
+            <a
+              href={REGISTRATION_URL}
+              target="_blank"
+              rel="noreferrer noopener"
+              className="block shrink-0 bg-white p-2 transition-transform duration-300 ease-out hover:scale-[1.03]"
+              aria-label="Open the ACM @ Amity registration form"
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/registration-qr.svg"
+                alt=""
+                width={176}
+                height={176}
+                className="block h-40 w-40 sm:h-44 sm:w-44"
+              />
+            </a>
+            <div>
+              <div className="meta">Register</div>
+              <p className="mt-3 max-w-[14rem] text-sm leading-relaxed text-ink-muted">
+                Scan, or open the registration form directly.
+              </p>
+              <a
+                href={REGISTRATION_URL}
+                target="_blank"
+                rel="noreferrer noopener"
+                className="group mt-4 inline-flex items-center gap-2 font-mono text-label uppercase text-acm-bright transition-colors hover:text-white"
+              >
+                Registration form
+                <span aria-hidden className="transition-transform duration-300 group-hover:translate-x-1">
+                  ↗
+                </span>
+              </a>
             </div>
-            <p className="mt-3 font-mono text-micro uppercase text-ink-ghost">Registration link to be added</p>
           </div>
-          {SOCIAL.map((item) => (
-            <div key={item.label} className="bg-void p-6">
-              <div className="meta">{item.label}</div>
-              <p className="mt-3 text-sm text-ink-faint">{item.value}</p>
-            </div>
-          ))}
+
+          <div className="flex flex-col justify-center bg-void p-7">
+            <div className="meta">Core team</div>
+            <ul className="mt-5 grid gap-x-10 gap-y-3 sm:grid-cols-2">
+              {coreTeam.map((person) => (
+                <li key={person.name} className="flex items-baseline justify-between gap-4 border-b border-line-faint pb-2.5">
+                  <span className="text-sm text-ink">{person.name}</span>
+                  <span className="shrink-0 font-mono text-micro uppercase text-ink-ghost">{person.role}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
         </Reveal>
 
         <div className="mt-16 flex flex-col gap-4 border-t border-line pt-8 sm:flex-row sm:items-center sm:justify-between">

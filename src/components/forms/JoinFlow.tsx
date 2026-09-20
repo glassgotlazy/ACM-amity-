@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/Button";
 import { MaskedHeadline } from "@/components/ui/MaskedHeadline";
 import { submitForm, trapProps, type SubmissionResult } from "@/lib/submissions";
 import { DeliveryNotice } from "./DeliveryNotice";
+import { REGISTRATION_URL } from "@/data/chapter";
 import { DOMAINS } from "@/data/taxonomy";
 import { ease } from "@/lib/motion";
 import { cn } from "@/lib/utils";
@@ -178,8 +179,34 @@ export function JoinFlow() {
           lines={[{ text: "WELCOME TO" }, { text: "THE BUILD.", className: "text-acm" }]}
         />
 
+        <motion.a
+          href={REGISTRATION_URL}
+          target="_blank"
+          rel="noreferrer noopener"
+          className="group mt-12 flex flex-wrap items-center justify-between gap-6 border border-acm/40 bg-acm-wash p-7 transition-colors duration-200 hover:border-acm"
+          initial={reduce ? undefined : { opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.4 }}
+        >
+          <span>
+            <span className="meta-accent">One more step</span>
+            <span className="mt-3 block text-xl font-semibold tracking-[-0.025em]">
+              Complete your official chapter registration
+            </span>
+            <span className="mt-2 block max-w-prose text-sm leading-relaxed text-ink-muted">
+              This form told us what you want to build. The chapter registration form makes your membership official.
+            </span>
+          </span>
+          <span className="inline-flex shrink-0 items-center gap-2 font-mono text-label uppercase text-acm-bright">
+            Open form
+            <span aria-hidden className="transition-transform duration-300 group-hover:translate-x-1">
+              ↗
+            </span>
+          </span>
+        </motion.a>
+
         <motion.div
-          className="mt-14 grid gap-px bg-line lg:grid-cols-3"
+          className="mt-8 grid gap-px bg-line lg:grid-cols-3"
           initial={reduce ? undefined : { opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.5, delay: 0.5 }}

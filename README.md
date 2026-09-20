@@ -111,6 +111,8 @@ src/
     forms/      Field primitives, ApplyForm, ProblemForm, JoinFlow
     home/ problems/ projects/ research/ activity/ profile/ discover/ ideas/ admin/
   data/         all content, typed — the single source of truth
+                (chapter.ts holds the real, confirmed details: office
+                bearers and the registration link)
   lib/          motion vocabulary and small helpers
 ```
 
@@ -172,8 +174,10 @@ of each page:
   and the entire admin console are placeholder content and are labelled as such
   on the page.
 - **No invented specifics.** No member counts, awards, funding, partnerships,
-  publication status, placement statistics or outcome guarantees. Social and
-  registration links are left as visible placeholders for a human to fill in.
+  publication status, placement statistics or outcome guarantees.
+- **Confirmed details live in `src/data/chapter.ts`** — the office bearers and
+  the registration link — and carry no placeholder labelling, because they are
+  real. Everything demo stays labelled as demo.
 
 Forms report their real delivery state. With no `FORM_ENDPOINT` configured they
 transmit nothing and say so; with one configured they confirm receipt; and if
