@@ -24,14 +24,15 @@ export default function ActivityPage() {
         lede="A community is easiest to judge by what it did recently. This is the log — work shipped, papers read, reviews completed, people arriving."
         meta={[
           { label: "Entries shown", value: String(activity.length) },
-          { label: "Source", value: "Demo data" },
+          { label: "Source", value: "Project history" },
           { label: "Live feed", value: "Not yet wired" },
-          { label: "Window", value: "Recent" },
+          { label: "Updated", value: "By hand" },
         ]}
       >
         <p className="max-w-xl font-mono text-micro uppercase leading-relaxed text-ink-ghost">
-          Demo content · this feed is not yet connected to repository or task activity. The entries below illustrate
-          the shape of a real log rather than reporting one.
+          These are real project milestones, taken from the two ACM repositories. The feed is not yet wired to
+          repository events, so it is updated by hand. Entries describe work on projects rather than output by
+          individuals.
         </p>
       </PageHeader>
 

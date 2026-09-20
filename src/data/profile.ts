@@ -1,10 +1,13 @@
 /**
- * DEMO PROFILE.
+ * A real contribution record, built only from things that can be checked: the
+ * role is confirmed by the chapter, and the project facts come from the two
+ * ACM repositories.
  *
- * Every value below is placeholder content. The shape is what matters: it is
- * modelled on what a real contribution record would hold, so swapping in a
- * live source (repository activity, task completion, research output) is a
- * data change rather than a redesign.
+ * Deliberately absent: per-person commit and task counts. Repository history
+ * on these projects is AI-assisted and shared, so attributing a commit total
+ * to one person would overstate individual authorship — on the one page whose
+ * entire argument is that a contribution record should be true. The counters
+ * below measure project output, and say so.
  */
 
 export type Contribution = {
@@ -38,19 +41,19 @@ export type Profile = {
   timeline: { when: string; what: string }[];
 };
 
-export const demoProfile: Profile = {
+export const contributorProfile: Profile = {
   name: "Anuansh Tiwari",
   handle: "anuansh",
-  standing: "ACM Contributor",
-  course: "B.Tech Computer Science",
-  year: "Year 2",
+  standing: "Technical Head",
+  course: "ACM @ Amity University",
+  year: "Current term",
   statement:
-    "Joining was the easy part. This page is the other part — what I actually worked on, what shipped, and what I am still wrong about.",
+    "Joining was the easy part. This page is the other part — what actually shipped, what is still unfinished, and what I am probably still wrong about.",
   interests: ["AI", "Software", "Research"],
   skills: [
-    { name: "Python", level: 4 },
-    { name: "AI / ML", level: 3 },
-    { name: "APIs", level: 4 },
+    { name: "JavaScript / TypeScript", level: 4 },
+    { name: "Retrieval & LLM integration", level: 3 },
+    { name: "APIs & backend", level: 4 },
     { name: "Git", level: 4 },
     { name: "Research", level: 2 },
   ],
@@ -58,43 +61,40 @@ export const demoProfile: Profile = {
     {
       name: "AI Admissions Assistant",
       slug: "admissions-ai",
-      role: "Backend Contributor",
+      role: "Technical lead",
       status: "IN DEVELOPMENT",
       period: "Current",
       did: [
-        "Hardened the server-side scope gate so out-of-scope requests are rejected before any upstream call.",
-        "Added provider abstraction so the fallback is not tied to one vendor.",
+        "Knowledge base grown to 310 topics that answer offline, with no API key and no network connection.",
+        "Scope gate enforced twice — in the browser and again on the server — so the assistant cannot be repurposed as a general chatbot.",
+        "Provider abstraction added so the optional AI fallback runs on either OpenAI or Claude.",
       ],
     },
     {
-      name: "Quantum Handshake",
-      slug: "quantum-handshake",
-      role: "Research Contributor",
-      status: "ONGOING RESEARCH",
+      name: "ACM BuildHub",
+      slug: "buildhub-platform",
+      role: "Technical lead",
+      status: "CURRENT",
       period: "Current",
       did: [
-        "Annotated four foundational papers for the group bibliography.",
-        "Reproduced baseline protocol behaviour in simulation.",
+        "Problem Lab published with six campus problem statements, each with directions, technologies and open roles.",
+        "Application and submission flows wired to a live endpoint.",
       ],
     },
   ],
   contributions: [
-    { label: "Commits", value: 12, unit: "merged", note: "Across 2 repositories" },
-    { label: "Tasks", value: 8, unit: "completed", note: "Closed and reviewed" },
-    { label: "Projects", value: 2, unit: "active", note: "One build, one research" },
-    { label: "Research", value: 1, unit: "contribution", note: "Annotated bibliography" },
+    { label: "Projects", value: 2, unit: "active", note: "Assistant and platform" },
+    { label: "KB topics", value: 310, unit: "offline", note: "Answer with no network call" },
+    { label: "Problems", value: 6, unit: "published", note: "Open for teams to take" },
+    { label: "Repositories", value: 2, unit: "public", note: "Open to contributors" },
   ],
-  links: [
-    { label: "GitHub", href: null },
-    { label: "LinkedIn", href: null },
-    { label: "Portfolio", href: null },
-  ],
+  links: [{ label: "GitHub", href: "https://github.com/glassgotlazy" }],
   timeline: [
-    { when: "Week 1", what: "Read the Problem Lab. Picked the university knowledge problem." },
-    { when: "Week 2", what: "Joined the AI team as a backend contributor." },
-    { when: "Week 4", what: "First merged change — scope gate hardening." },
-    { when: "Week 6", what: "Joined the research reading group." },
-    { when: "Week 9", what: "First simulation reproduced and written up." },
+    { when: "Start", what: "Admissions assistant rebuilt as a fully offline experience with its own retrieval engine." },
+    { when: "Then", what: "Scope gate added, then hardened so it is enforced on the server as well as the browser." },
+    { when: "Then", what: "Knowledge base grown past 300 topics, with an eligibility checker and cost estimator." },
+    { when: "Then", what: "BuildHub built — Problem Lab, project pages, teams, and the application flows." },
+    { when: "Now", what: "Evaluation. Moving answer quality from something we read to something we measure." },
   ],
 };
 

@@ -6,105 +6,108 @@ export type ActivityItem = {
   text: string;
   actor: string;
   target?: { label: string; href: string };
-  /** Relative, because there is no real timestamp behind it yet. */
   when: string;
   day: string;
 };
 
 /**
- * Demo activity. The shape matches what a real event feed would emit, so the
- * component does not change when a backend replaces this array.
+ * Real project milestones, taken from the commit history of the two ACM
+ * repositories. Each entry describes something that actually shipped.
+ *
+ * Entries describe work on projects, not output by individuals — repository
+ * history is a poor proxy for who contributed what, and this feed does not
+ * pretend otherwise.
  */
 export const activity: ActivityItem[] = [
   {
     id: "a1",
     kind: "build",
-    text: "Admissions AI team updated the chatbot interface and reworked how refusals are shown.",
-    actor: "AI Team",
-    target: { label: "AI Admissions Assistant", href: "/projects/admissions-ai" },
-    when: "2h ago",
-    day: "Today",
+    text: "BuildHub went live: the Problem Lab, project pages, team pages and the application flows are all deployed.",
+    actor: "Web Team",
+    target: { label: "ACM BuildHub", href: "/projects/buildhub-platform" },
+    when: "Latest",
+    day: "This week",
   },
   {
     id: "a2",
-    kind: "role",
-    text: "Opened 3 new roles across the Admissions AI project — frontend, evaluation and UX.",
-    actor: "AI Team",
-    target: { label: "Open roles", href: "/projects/admissions-ai" },
-    when: "5h ago",
-    day: "Today",
+    kind: "build",
+    text: "Form submissions wired to a live endpoint — membership applications, project applications and problem submissions now reach the team.",
+    actor: "Web Team",
+    target: { label: "Join ACM", href: "/join" },
+    when: "Latest",
+    day: "This week",
   },
   {
     id: "a3",
     kind: "problem",
-    text: "A new problem submission was received and is queued for review.",
+    text: "Six campus problem statements published to the Problem Lab, each with possible directions, technologies and open roles.",
     actor: "Problem Lab",
     target: { label: "Problem Lab", href: "/problems" },
-    when: "7h ago",
-    day: "Today",
+    when: "This week",
+    day: "This week",
   },
   {
     id: "a4",
-    kind: "research",
-    text: "Research team completed a literature review pass on device-independent protocols.",
-    actor: "Research Team",
-    target: { label: "Quantum Handshake", href: "/research/quantum-handshake" },
-    when: "Yesterday",
+    kind: "role",
+    text: "Seventeen roles opened across five projects, from beginner frontend work to advanced retrieval engineering.",
+    actor: "ACM @ Amity",
+    target: { label: "All projects", href: "/projects" },
+    when: "This week",
     day: "This week",
   },
   {
     id: "a5",
-    kind: "team",
-    text: "New contributor joined the Web team and picked up the accessibility pass.",
-    actor: "Web Team",
-    target: { label: "Web Team", href: "/teams" },
-    when: "Yesterday",
-    day: "This week",
+    kind: "build",
+    text: "Admissions Assistant knowledge base reached 310 offline topics, with an eligibility checker, cost estimator and shareable answer links.",
+    actor: "AI Team",
+    target: { label: "AI Admissions Assistant", href: "/projects/admissions-ai" },
+    when: "Recently",
+    day: "Earlier",
   },
   {
     id: "a6",
-    kind: "build",
-    text: "Baseline protocol simulation reproduced textbook behaviour under idealised conditions.",
-    actor: "Research Team",
-    target: { label: "Quantum Handshake", href: "/research/quantum-handshake" },
-    when: "2 days ago",
-    day: "This week",
+    kind: "review",
+    text: "Scope gate hardened so out-of-scope questions are rejected in the browser and again on the server, before any upstream call.",
+    actor: "AI Team",
+    target: { label: "AI Admissions Assistant", href: "/projects/admissions-ai" },
+    when: "Recently",
+    day: "Earlier",
   },
   {
     id: "a7",
-    kind: "review",
-    text: "Cybersecurity team completed a data-handling review of the feedback pipeline proposal.",
-    actor: "Cybersecurity Team",
-    target: { label: "Campus Feedback Intelligence", href: "/projects/campus-feedback-intelligence" },
-    when: "3 days ago",
-    day: "This week",
+    kind: "build",
+    text: "Assistant gained provider abstraction — the AI fallback works with either OpenAI or Claude, so it is not tied to one vendor.",
+    actor: "AI Team",
+    target: { label: "AI Admissions Assistant", href: "/projects/admissions-ai" },
+    when: "Recently",
+    day: "Earlier",
   },
   {
     id: "a8",
-    kind: "problem",
-    text: "The Campus Navigation problem statement was expanded with accessible-route requirements.",
-    actor: "Problem Lab",
-    target: { label: "Campus Navigation", href: "/problems/campus-navigation" },
-    when: "4 days ago",
-    day: "This week",
+    kind: "build",
+    text: "Serverless functions added so the assistant's AI fallback works in a deployed environment, not only locally.",
+    actor: "AI Team",
+    target: { label: "AI Admissions Assistant", href: "/projects/admissions-ai" },
+    when: "Recently",
+    day: "Earlier",
   },
   {
     id: "a9",
     kind: "build",
-    text: "Campus Information Hub moved from idea to a written problem statement, and is looking for a founding team.",
-    actor: "Software Team",
-    target: { label: "Campus Information Hub", href: "/projects/campus-information-hub" },
-    when: "Last week",
+    text: "Assistant rebuilt as a fully offline experience — the knowledge base answers without an API key, a server or a network connection.",
+    actor: "AI Team",
+    target: { label: "AI Admissions Assistant", href: "/projects/admissions-ai" },
+    when: "Earlier",
     day: "Earlier",
   },
   {
     id: "a10",
     kind: "research",
-    text: "Evaluation methodology reading group started, shared across three projects.",
+    text: "Quantum Handshake reading group opened, working through foundational key distribution papers.",
     actor: "Research Team",
-    target: { label: "Research Hub", href: "/research" },
-    when: "Last week",
-    day: "Earlier",
+    target: { label: "Quantum Handshake", href: "/research/quantum-handshake" },
+    when: "Ongoing",
+    day: "Ongoing",
   },
 ];
 

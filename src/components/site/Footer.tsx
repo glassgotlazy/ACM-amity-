@@ -144,8 +144,8 @@ export function Footer() {
             © {new Date().getFullYear()} ACM @ Amity University · Student chapter
           </p>
           <p className="max-w-xl font-mono text-micro uppercase leading-relaxed text-ink-ghost">
-            Problem statements here are student-written explorations, not official university briefs. Profile and
-            activity figures are demo content.
+            Problem statements here are student-written explorations, not official university briefs. Application and
+            submission figures in the admin view are demo content.
           </p>
         </div>
       </div>

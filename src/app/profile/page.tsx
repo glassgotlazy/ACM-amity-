@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { demoProfile, CONTRIBUTION_MODEL, TRACKED } from "@/data/profile";
+import { contributorProfile, CONTRIBUTION_MODEL, TRACKED } from "@/data/profile";
 import { Reveal } from "@/components/ui/Reveal";
 import { Tag } from "@/components/ui/Badges";
 import { Section } from "@/components/ui/Section";
@@ -14,7 +14,7 @@ export const metadata: Metadata = {
 };
 
 export default function ProfilePage() {
-  const p = demoProfile;
+  const p = contributorProfile;
 
   return (
     <>
@@ -55,11 +55,25 @@ export default function ProfilePage() {
               <div className="meta mt-10 border-b border-line pb-3">Links</div>
               <ul className="mt-5 space-y-3">
                 {p.links.map((link) => (
-                  <li key={link.label} className="flex items-baseline justify-between gap-4">
-                    <span className="text-sm text-ink-muted">{link.label}</span>
-                    <span className="font-mono text-micro uppercase text-ink-ghost">
-                      {link.href ?? "Not linked"}
-                    </span>
+                  <li key={link.label}>
+                    {link.href ? (
+                      <a
+                        href={link.href}
+                        target="_blank"
+                        rel="noreferrer noopener"
+                        className="group flex items-baseline justify-between gap-4 text-sm text-ink-muted transition-colors hover:text-acm-bright"
+                      >
+                        {link.label}
+                        <span aria-hidden className="transition-transform duration-300 group-hover:translate-x-1">
+                          ↗
+                        </span>
+                      </a>
+                    ) : (
+                      <span className="flex items-baseline justify-between gap-4 text-sm text-ink-faint">
+                        {link.label}
+                        <span className="font-mono text-micro uppercase text-ink-ghost">Not linked</span>
+                      </span>
+                    )}
                   </li>
                 ))}
               </ul>
@@ -68,9 +82,9 @@ export default function ProfilePage() {
 
           <Reveal delay={0.18} className="mt-14 border border-line px-6 py-4">
             <p className="font-mono text-micro uppercase leading-relaxed text-ink-ghost">
-              <span className="text-acm">Demo profile ·</span> every figure on this page is placeholder content. The
-              structure is modelled on what a real contribution record would hold, so a live source can replace it
-              without redesigning the page.
+              <span className="text-acm">What this counts ·</span> project output that can be checked against the
+              public repositories — not commits or tasks attributed to one person. Work on these projects is shared and
+              AI-assisted, so a personal commit total would overstate individual authorship.
             </p>
           </Reveal>
         </div>
