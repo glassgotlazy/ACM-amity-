@@ -6,6 +6,8 @@ import Link from "next/link";
 import { TextField, TextArea, ChipGroup } from "./Field";
 import { Button } from "@/components/ui/Button";
 import { MaskedHeadline } from "@/components/ui/MaskedHeadline";
+import { submitForm, trapProps, type SubmissionResult } from "@/lib/submissions";
+import { DeliveryNotice } from "./DeliveryNotice";
 import { DOMAINS } from "@/data/taxonomy";
 import { ease } from "@/lib/motion";
 import { cn } from "@/lib/utils";
@@ -72,7 +74,9 @@ export function JoinFlow() {
   const [direction, setDirection] = useState(1);
   const [values, setValues] = useState<Values>(EMPTY);
   const [error, setError] = useState<string | null>(null);
-  const [done, setDone] = useState(false);
+  const [sending, setSending] = useState(false);
+  const [result, setResult] = useState<SubmissionResult | null>(null);
+  const [trap, setTrap] = useState("");
   const stepRef = useRef<HTMLDivElement>(null);
 
   const current = STEPS[step];
@@ -121,11 +125,28 @@ export function JoinFlow() {
     return false;
   }
 
-  function next() {
+  async function next() {
     if (!validate()) return;
     setDirection(1);
-    if (step === STEPS.length - 1) setDone(true);
-    else setStep((s) => s + 1);
+
+    if (step < STEPS.length - 1) {
+      setStep((s) => s + 1);
+      return;
+    }
+
+    setSending(true);
+    const outcome = await submitForm("join", { ...values }, trap);
+    setSending(false);
+
+    // A failed send keeps the applicant on the final step with everything
+    // they typed, rather than congratulating them on a lost application.
+    if (outcome.status === "failed") {
+      setError(outcome.message);
+      setResult(outcome);
+      return;
+    }
+    setError(null);
+    setResult(outcome);
   }
 
   function back() {
@@ -140,7 +161,7 @@ export function JoinFlow() {
     exit: (d: number) => (reduce ? { opacity: 0 } : { opacity: 0, x: d * -28 }),
   };
 
-  if (done) {
+  if (result && result.status !== "failed") {
     return (
       <motion.div
         className="shell py-24"
@@ -178,10 +199,9 @@ export function JoinFlow() {
           ))}
         </motion.div>
 
-        <p className="mt-12 max-w-2xl border-t border-line pt-7 font-mono text-micro uppercase leading-relaxed text-ink-ghost">
-          Demo notice · BuildHub has no backend yet, so nothing was transmitted or stored. This flow will be wired to a
-          real endpoint before recruitment opens.
-        </p>
+        <div className="mt-12 max-w-2xl">
+          <DeliveryNotice result={result} />
+        </div>
       </motion.div>
     );
   }
@@ -325,6 +345,13 @@ export function JoinFlow() {
               ) : null}
             </div>
 
+            <input
+              {...trapProps}
+              value={trap}
+              onChange={(e) => setTrap(e.target.value)}
+              aria-label="Leave this field empty"
+            />
+
             <AnimatePresence>
               {error ? (
                 <motion.p
@@ -343,13 +370,15 @@ export function JoinFlow() {
       </div>
 
       <div className="flex flex-wrap items-center gap-5 border-t border-line pt-9">
-        <Button size="lg" onClick={next} arrow>
-          {step === STEPS.length - 1 ? "Finish" : "Continue"}
+        <Button size="lg" onClick={next} arrow disabled={sending}>
+          {sending ? "Sending…" : step === STEPS.length - 1 ? "Finish" : "Continue"}
         </Button>
         <Button variant="ghost" onClick={back} className={cn(step === 0 && "pointer-events-none opacity-0")}>
           ← Back
         </Button>
-        <span className="ml-auto font-mono text-micro uppercase text-ink-ghost">Demo form · nothing is sent</span>
+        <span className="ml-auto font-mono text-micro uppercase text-ink-ghost">
+          Step {String(step + 1).padStart(2, "0")} of {String(STEPS.length).padStart(2, "0")}
+        </span>
       </div>
     </div>
   );

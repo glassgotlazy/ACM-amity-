@@ -5,6 +5,8 @@ import { useState } from "react";
 import { TextField, TextArea, SelectField, Checkbox } from "./Field";
 import { Button } from "@/components/ui/Button";
 import { PROBLEM_CATEGORIES } from "@/data/taxonomy";
+import { submitForm, trapProps, type SubmissionResult } from "@/lib/submissions";
+import { DeliveryNotice, DeliveryError } from "./DeliveryNotice";
 
 type Values = {
   what: string;
@@ -35,14 +37,16 @@ export function ProblemForm() {
   const [values, setValues] = useState<Values>(EMPTY);
   const [anonymous, setAnonymous] = useState(false);
   const [errors, setErrors] = useState<Partial<Record<keyof Values, string>>>({});
-  const [sent, setSent] = useState(false);
+  const [sending, setSending] = useState(false);
+  const [result, setResult] = useState<SubmissionResult | null>(null);
+  const [trap, setTrap] = useState("");
 
   function set<K extends keyof Values>(key: K, value: Values[K]) {
     setValues((v) => ({ ...v, [key]: value }));
     setErrors((e) => ({ ...e, [key]: undefined }));
   }
 
-  function submit(event: React.FormEvent) {
+  async function submit(event: React.FormEvent) {
     event.preventDefault();
     const next: Partial<Record<keyof Values, string>> = {};
     if (values.what.trim().length < 15) next.what = "Describe it in a sentence or two";
@@ -53,10 +57,20 @@ export function ProblemForm() {
       next.email = "Enter a valid email";
     }
     setErrors(next);
-    if (Object.keys(next).length === 0) setSent(true);
+    if (Object.keys(next).length > 0) return;
+
+    setSending(true);
+    // An anonymous submission must not carry identifying fields to the
+    // destination at all — stripping them in the UI only would still send them.
+    const payload = anonymous
+      ? { ...values, name: "", email: "", anonymous: true }
+      : { ...values, anonymous: false };
+    const outcome = await submitForm("problem-submission", payload, trap);
+    setSending(false);
+    setResult(outcome);
   }
 
-  if (sent) {
+  if (result && result.status !== "failed") {
     return (
       <motion.div
         initial={reduce ? undefined : { opacity: 0, y: 12 }}
@@ -85,11 +99,9 @@ export function ProblemForm() {
             </li>
           ))}
         </ul>
-        <p className="mt-8 border-t border-line pt-6 font-mono text-micro uppercase leading-relaxed text-ink-ghost">
-          Demo notice · BuildHub has no backend yet, so nothing was transmitted or stored.
-        </p>
+        <DeliveryNotice result={result} />
         <div className="mt-9">
-          <Button variant="outline" onClick={() => { setValues(EMPTY); setSent(false); }}>
+          <Button variant="outline" onClick={() => { setValues(EMPTY); setResult(null); }}>
             Submit another
           </Button>
         </div>
@@ -193,12 +205,21 @@ export function ProblemForm() {
         ) : null}
       </div>
 
+      <input
+        {...trapProps}
+        value={trap}
+        onChange={(e) => setTrap(e.target.value)}
+        aria-label="Leave this field empty"
+      />
+
+      {result?.status === "failed" ? <DeliveryError message={result.message} /> : null}
+
       <div className="flex flex-wrap items-center gap-6 border-t border-line pt-8">
-        <Button type="submit" size="lg" arrow>
-          Submit problem
+        <Button type="submit" size="lg" arrow disabled={sending}>
+          {sending ? "Sending…" : "Submit problem"}
         </Button>
         <p className="max-w-sm font-mono text-micro uppercase leading-relaxed text-ink-ghost">
-          Reviewed before publication · never published automatically · demo form, nothing is sent
+          Reviewed before publication · never published automatically
         </p>
       </div>
     </form>

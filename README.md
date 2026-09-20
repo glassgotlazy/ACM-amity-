@@ -24,8 +24,59 @@ npm start          # serve the production build
 npm run typecheck  # tsc --noEmit
 ```
 
-Node 20+ is required. There are no environment variables and no services to
-configure — every surface currently renders from local data.
+Node 20+ is required. The site runs with no configuration at all; see
+**Collecting submissions** below for the one optional variable.
+
+### Collecting submissions
+
+The four forms — Join ACM, project applications, problem submissions and
+project proposals — all post to `/api/submit`, which forwards to whatever is in
+`FORM_ENDPOINT`.
+
+```bash
+cp .env.example .env
+# FORM_ENDPOINT=https://formspree.io/f/xxxxxxxx
+```
+
+On Vercel, add `FORM_ENDPOINT` under **Settings → Environment Variables** and
+redeploy. Any endpoint accepting a JSON `POST` works — Formspree, Tally, a
+Zapier or Make catch-hook, or your own service.
+
+It is a **server-only** variable, so a destination URL containing a key never
+reaches the browser. Do not add a `NEXT_PUBLIC_` prefix.
+
+Each submission arrives as JSON with a `_subject` line, the `kind`, an ISO
+`receivedAt`, and the form's fields:
+
+```json
+{
+  "_subject": "ACM BuildHub — Project role application",
+  "kind": "project-application",
+  "receivedAt": "2026-01-14T09:22:10.113Z",
+  "name": "…", "email": "…", "course": "…", "role": "Backend",
+  "project": "AI Admissions Assistant"
+}
+```
+
+**Leaving `FORM_ENDPOINT` unset is a supported state, not a broken one.** The
+forms still validate, animate and confirm, but nothing is transmitted and every
+confirmation screen says so. The notice is driven by what actually happened, so
+the site cannot tell a student their application was received when it was not —
+and a delivery that fails shows an error and keeps their answers, rather than a
+confirmation for something that never arrived.
+
+Submissions are filtered by a honeypot field that is off-screen and skipped in
+the tab order; a request that fills it gets a normal-looking success and is
+discarded. Payloads are size-capped per field and in total before forwarding.
+
+An anonymous problem submission has its identity fields cleared **before** the
+request leaves the browser, so "anonymous" means nothing identifying is sent —
+not merely that it is hidden in the interface.
+
+> Rate limiting is deliberately not implemented here. A per-instance counter is
+> close to meaningless on serverless, where requests spread across instances.
+> If submissions are abused, add rate limiting at the edge (Vercel WAF, or
+> Upstash-backed middleware) rather than in the route.
 
 ---
 
@@ -45,6 +96,7 @@ configure — every surface currently renders from local data.
 | `/discover` | Two questions, then a ranked shortlist |
 | `/join` | Seven-step membership application |
 | `/admin` | Back-office view over every managed entity |
+| `/api/submit` | Server route that receives every form and forwards it |
 
 ---
 
@@ -123,8 +175,10 @@ of each page:
   publication status, placement statistics or outcome guarantees. Social and
   registration links are left as visible placeholders for a human to fill in.
 
-Forms validate and confirm, but transmit nothing — there is no backend yet, and
-each confirmation screen says so instead of implying an application was filed.
+Forms report their real delivery state. With no `FORM_ENDPOINT` configured they
+transmit nothing and say so; with one configured they confirm receipt; and if
+delivery fails they show an error rather than implying an application was filed.
+See **Collecting submissions**.
 
 ## Accessibility
 
@@ -137,6 +191,8 @@ reduced-motion support.
 
 Each file in `src/data/` exports a typed array and its accessors. Point those
 accessors at a real source and the pages follow unchanged. The natural order is
-problems and projects first (the content surfaces), then applications and
-submissions (which need an endpoint and a review queue), then the contribution
-profile (which needs authentication and repository activity).
+problems and projects first (the content surfaces), then the contribution
+profile (which needs authentication and repository activity). Applications and
+submissions are already wired — point `FORM_ENDPOINT` at a destination, or
+replace the forwarding call in `src/app/api/submit/route.ts` with a database
+write and let `/admin` read from the same store.

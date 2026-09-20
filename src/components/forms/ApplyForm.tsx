@@ -5,6 +5,8 @@ import { useState } from "react";
 import { TextField, TextArea, SelectField } from "./Field";
 import { Button } from "@/components/ui/Button";
 import { ease } from "@/lib/motion";
+import { submitForm, trapProps, type SubmissionResult } from "@/lib/submissions";
+import { DeliveryNotice, DeliveryError } from "./DeliveryNotice";
 
 type Values = {
   name: string;
@@ -44,14 +46,16 @@ export function ApplyForm({ projectName, roles }: { projectName: string; roles: 
   const reduce = useReducedMotion();
   const [values, setValues] = useState<Values>({ ...EMPTY, role: roles[0] ?? "" });
   const [errors, setErrors] = useState<Partial<Record<keyof Values, string>>>({});
-  const [sent, setSent] = useState(false);
+  const [sending, setSending] = useState(false);
+  const [result, setResult] = useState<SubmissionResult | null>(null);
+  const [trap, setTrap] = useState("");
 
   function set<K extends keyof Values>(key: K, value: Values[K]) {
     setValues((v) => ({ ...v, [key]: value }));
     setErrors((e) => ({ ...e, [key]: undefined }));
   }
 
-  function submit(event: React.FormEvent) {
+  async function submit(event: React.FormEvent) {
     event.preventDefault();
     const next: Partial<Record<keyof Values, string>> = {};
     if (!values.name.trim()) next.name = "Required";
@@ -62,10 +66,22 @@ export function ApplyForm({ projectName, roles }: { projectName: string; roles: 
 
     setErrors(next);
     if (Object.keys(next).length > 0) return;
-    setSent(true);
+
+    setSending(true);
+    const outcome = await submitForm("project-application", { ...values, project: projectName }, trap);
+    setSending(false);
+
+    // A failed delivery keeps the student on the form with their answers
+    // intact, rather than showing a confirmation for something that did not
+    // arrive.
+    if (outcome.status === "failed") {
+      setResult(outcome);
+      return;
+    }
+    setResult(outcome);
   }
 
-  if (sent) {
+  if (result && result.status !== "failed") {
     return (
       <motion.div
         initial={reduce ? undefined : { opacity: 0, y: 12 }}
@@ -82,10 +98,7 @@ export function ApplyForm({ projectName, roles }: { projectName: string; roles: 
           The project lead reviews applications before anyone is added to a team. Expect a conversation about what you
           want to work on rather than an interview.
         </p>
-        <p className="mt-6 border-t border-line pt-5 font-mono text-micro uppercase leading-relaxed text-ink-ghost">
-          Demo notice · BuildHub has no backend yet, so nothing was transmitted or stored. Applications will be wired to
-          a real endpoint before recruitment opens.
-        </p>
+        <DeliveryNotice result={result} />
       </motion.div>
     );
   }
@@ -160,7 +173,19 @@ export function ApplyForm({ projectName, roles }: { projectName: string; roles: 
         placeholder="What about this project interests you, and what would you want to work on first?"
       />
 
+      <input
+        {...trapProps}
+        value={trap}
+        onChange={(e) => setTrap(e.target.value)}
+        aria-label="Leave this field empty"
+      />
+
       <AnimatePresence>
+        {result?.status === "failed" ? (
+          <motion.div initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
+            <DeliveryError message={result.message} />
+          </motion.div>
+        ) : null}
         {Object.keys(errors).length > 0 ? (
           <motion.p
             initial={{ opacity: 0, y: -6 }}
@@ -175,12 +200,9 @@ export function ApplyForm({ projectName, roles }: { projectName: string; roles: 
       </AnimatePresence>
 
       <div className="flex flex-wrap items-center gap-5 border-t border-line pt-7">
-        <Button type="submit" size="lg" arrow>
-          Apply
+        <Button type="submit" size="lg" arrow disabled={sending}>
+          {sending ? "Sending…" : "Apply"}
         </Button>
-        <p className="font-mono text-micro uppercase leading-relaxed text-ink-ghost">
-          Demo form · nothing is sent
-        </p>
       </div>
     </form>
   );

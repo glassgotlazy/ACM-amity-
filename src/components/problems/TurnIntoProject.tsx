@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/Button";
 import { TextField, TextArea, SelectField, ChipGroup } from "@/components/forms/Field";
 import { ROLES } from "@/data/taxonomy";
 import { ease } from "@/lib/motion";
+import { submitForm, trapProps, type SubmissionResult } from "@/lib/submissions";
+import { DeliveryNotice, DeliveryError } from "@/components/forms/DeliveryNotice";
 
 const STAGES = ["PROBLEM", "DEFINE", "RESEARCH", "DESIGN", "BUILD", "TEST", "DEPLOY"] as const;
 
@@ -24,13 +26,13 @@ export function TurnIntoProject({ problemTitle, suggestedName }: { problemTitle:
         Turn this into a project
       </Button>
       <Modal open={open} onClose={() => setOpen(false)} title={problemTitle} eyebrow="Problem → Project" wide>
-        <Flow suggestedName={suggestedName} />
+        <Flow suggestedName={suggestedName} problemTitle={problemTitle} />
       </Modal>
     </>
   );
 }
 
-function Flow({ suggestedName }: { suggestedName: string }) {
+function Flow({ suggestedName, problemTitle }: { suggestedName: string; problemTitle: string }) {
   const reduce = useReducedMotion();
   const [stage, setStage] = useState(reduce ? STAGES.length : 0);
 
@@ -83,7 +85,7 @@ function Flow({ suggestedName }: { suggestedName: string }) {
             transition={{ duration: 0.45, ease }}
             className="pt-8"
           >
-            <ProposalForm suggestedName={suggestedName} />
+            <ProposalForm suggestedName={suggestedName} problemTitle={problemTitle} />
           </motion.div>
         ) : (
           <motion.p
@@ -110,7 +112,7 @@ type Values = {
 
 const SIZES = ["2 people", "3 people", "4 people", "5 or more"] as const;
 
-function ProposalForm({ suggestedName }: { suggestedName: string }) {
+function ProposalForm({ suggestedName, problemTitle }: { suggestedName: string; problemTitle: string }) {
   const reduce = useReducedMotion();
   const [values, setValues] = useState<Values>({
     name: suggestedName,
@@ -121,19 +123,26 @@ function ProposalForm({ suggestedName }: { suggestedName: string }) {
     roles: [],
   });
   const [errors, setErrors] = useState<Partial<Record<keyof Values, string>>>({});
-  const [sent, setSent] = useState(false);
+  const [sending, setSending] = useState(false);
+  const [result, setResult] = useState<SubmissionResult | null>(null);
+  const [trap, setTrap] = useState("");
 
-  function submit(event: React.FormEvent) {
+  async function submit(event: React.FormEvent) {
     event.preventDefault();
     const next: Partial<Record<keyof Values, string>> = {};
     if (!values.name.trim()) next.name = "Required";
     if (values.concept.trim().length < 20) next.concept = "Describe the approach in a sentence or two";
     if (values.roles.length === 0) next.roles = "Pick at least one role";
     setErrors(next);
-    if (Object.keys(next).length === 0) setSent(true);
+    if (Object.keys(next).length > 0) return;
+
+    setSending(true);
+    const outcome = await submitForm("project-proposal", { ...values, problem: problemTitle }, trap);
+    setSending(false);
+    setResult(outcome);
   }
 
-  if (sent) {
+  if (result && result.status !== "failed") {
     return (
       <motion.div
         initial={reduce ? undefined : { opacity: 0, y: 10 }}
@@ -149,10 +158,7 @@ function ProposalForm({ suggestedName }: { suggestedName: string }) {
           A proposal is reviewed with you before it becomes an ACM project — the conversation is about scope and what
           the first milestone should be, not about whether the idea is good enough.
         </p>
-        <p className="mt-6 border-t border-line pt-5 font-mono text-micro uppercase leading-relaxed text-ink-ghost">
-          Demo notice · nothing was transmitted or stored. Proposals will be wired to a real endpoint before
-          recruitment opens.
-        </p>
+        <DeliveryNotice result={result} />
       </motion.div>
     );
   }
@@ -211,11 +217,19 @@ function ProposalForm({ suggestedName }: { suggestedName: string }) {
         placeholder="At the end of a term, what exists that did not before?"
       />
 
+      <input
+        {...trapProps}
+        value={trap}
+        onChange={(e) => setTrap(e.target.value)}
+        aria-label="Leave this field empty"
+      />
+
+      {result?.status === "failed" ? <DeliveryError message={result.message} /> : null}
+
       <div className="flex flex-wrap items-center gap-5 border-t border-line pt-7">
-        <Button type="submit" size="lg" arrow>
-          Start a project
+        <Button type="submit" size="lg" arrow disabled={sending}>
+          {sending ? "Sending…" : "Start a project"}
         </Button>
-        <p className="font-mono text-micro uppercase text-ink-ghost">Demo form · nothing is sent</p>
       </div>
     </form>
   );
