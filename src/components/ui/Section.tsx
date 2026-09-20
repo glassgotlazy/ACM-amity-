@@ -27,7 +27,7 @@ export function Section({
         <div className="lg:sticky lg:top-28 lg:self-start">
           <Reveal>
             <div className="flex items-baseline gap-3">
-              {index ? <span className="meta tnum text-acm">{index}</span> : null}
+              {index ? <span className="meta tnum text-acm-bright">{index}</span> : null}
               <h2 className="meta text-ink">{title}</h2>
             </div>
             {lede ? <p className="mt-5 text-sm leading-relaxed text-ink-faint">{lede}</p> : null}

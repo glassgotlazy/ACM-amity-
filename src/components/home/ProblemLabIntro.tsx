@@ -28,14 +28,14 @@ export function ProblemLabIntro() {
 
       <div className="shell relative py-section">
         <div className="flex items-baseline gap-4">
-          <span className="meta text-acm">02 /</span>
+          <span className="meta text-acm-bright">02 /</span>
           <span className="meta">Problem Lab</span>
         </div>
 
         <MaskedHeadline
           className="mt-10 text-display-md"
           id="problem-lab"
-          lines={[{ text: "DON'T START WITH AN IDEA." }, { text: "START WITH A PROBLEM.", className: "text-acm" }]}
+          lines={[{ text: "DON'T START WITH AN IDEA." }, { text: "START WITH A PROBLEM.", className: "text-acm-bright" }]}
         />
 
         <div className="mt-14 grid gap-14 lg:grid-cols-[1.35fr_1fr] lg:gap-20">

@@ -40,7 +40,7 @@ export default function ResearchPage() {
       <section className="border-b border-line">
         <div className="shell py-20">
           <Reveal className="flex flex-wrap items-center gap-5">
-            <span className="meta text-acm">Featured</span>
+            <span className="meta text-acm-bright">Featured</span>
             <StatusPill status={featured.status} />
             <span className="font-mono text-micro uppercase text-ink-faint">{featured.field}</span>
           </Reveal>
@@ -134,7 +134,7 @@ export default function ResearchPage() {
               Everything else — the methodology, the simulation work, the writing — is learned by doing it badly first,
               which is what the group is for.
             </p>
-            <Link href="/join" className="inline-flex items-center gap-2 font-mono text-label uppercase text-acm-bright hover:text-white">
+            <Link href="/join" className="inline-flex items-center gap-2 font-mono text-label uppercase text-acm-bright hover:text-ink">
               Join the reading group →
             </Link>
           </div>

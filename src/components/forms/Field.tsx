@@ -25,7 +25,7 @@ function Shell({
       <label htmlFor={id} className="flex items-baseline justify-between gap-4">
         <span className="meta text-ink-muted">
           {label}
-          {required ? <span className="ml-1.5 text-acm">*</span> : null}
+          {required ? <span className="ml-1.5 text-acm-bright">*</span> : null}
         </span>
         {hint ? <span className="font-mono text-micro uppercase text-ink-ghost">{hint}</span> : null}
       </label>
@@ -137,7 +137,7 @@ export function ChipGroup({
       <legend className="flex w-full items-baseline justify-between gap-4">
         <span className="meta text-ink-muted">
           {label}
-          {required ? <span className="ml-1.5 text-acm">*</span> : null}
+          {required ? <span className="ml-1.5 text-acm-bright">*</span> : null}
         </span>
         {hint ? <span className="font-mono text-micro uppercase text-ink-ghost">{hint}</span> : null}
       </legend>

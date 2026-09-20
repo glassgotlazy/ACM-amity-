@@ -26,7 +26,7 @@ export function ArrowLink({
       href={href}
       className={cn(
         "group inline-flex items-center gap-2 font-mono text-label uppercase transition-colors duration-200",
-        tone === "accent" ? "text-acm-bright hover:text-white" : "text-ink-muted hover:text-ink",
+        tone === "accent" ? "text-acm-bright hover:text-ink" : "text-ink-muted hover:text-ink",
         className,
       )}
     >

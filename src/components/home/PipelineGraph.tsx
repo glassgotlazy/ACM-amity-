@@ -112,7 +112,7 @@ export function PipelineGraph() {
               strokeWidth={lit ? 0.5 : 0.35}
               className={cn(
                 "transition-[stroke,stroke-width,opacity] duration-300",
-                lit || (primary && hover === null) ? "stroke-acm" : "stroke-white/18",
+                lit || (primary && hover === null) ? "stroke-acm" : "stroke-ink/20",
               )}
               style={{ opacity: faded ? 0.15 : 1 }}
               initial={reduce ? undefined : { pathLength: 0 }}
@@ -164,7 +164,7 @@ export function PipelineGraph() {
                   "transition-all duration-300",
                   node.column === 0 && "fill-void stroke-acm",
                   node.column === 1 && "fill-acm stroke-acm",
-                  node.column === 2 && "fill-void stroke-white/50",
+                  node.column === 2 && "fill-void stroke-ink/45",
                 )}
                 strokeWidth="0.5"
               />

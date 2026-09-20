@@ -5,34 +5,39 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        void: "#08090B",
+        // Channel-based so opacity modifiers work across both themes; the
+        // values themselves live in globals.css.
+        void: "rgb(var(--void) / <alpha-value>)",
         surface: {
-          DEFAULT: "#101216",
-          raised: "#15171C",
-          high: "#1B1E24",
-        },
-        line: {
-          DEFAULT: "rgba(255,255,255,0.08)",
-          strong: "rgba(255,255,255,0.14)",
-          faint: "rgba(255,255,255,0.05)",
+          DEFAULT: "rgb(var(--surface) / <alpha-value>)",
+          raised: "rgb(var(--surface-raised) / <alpha-value>)",
+          high: "rgb(var(--surface-high) / <alpha-value>)",
         },
         ink: {
-          DEFAULT: "#F4F5F7",
-          muted: "#9AA0AA",
-          faint: "#6B7280",
-          ghost: "#464C56",
+          DEFAULT: "rgb(var(--ink) / <alpha-value>)",
+          muted: "rgb(var(--ink-muted) / <alpha-value>)",
+          faint: "rgb(var(--ink-faint) / <alpha-value>)",
+          ghost: "rgb(var(--ink-ghost) / <alpha-value>)",
         },
         acm: {
-          DEFAULT: "#E5342B",
-          bright: "#FF4C42",
-          deep: "#B4211A",
-          wash: "rgba(229,52,43,0.12)",
+          DEFAULT: "rgb(var(--acm) / <alpha-value>)",
+          bright: "rgb(var(--acm-bright) / <alpha-value>)",
+          deep: "rgb(var(--acm-deep) / <alpha-value>)",
+          solid: "rgb(var(--acm-solid) / <alpha-value>)",
+          wash: "rgb(var(--acm) / 0.1)",
         },
         signal: {
-          live: "#4ADE80",
-          work: "#FBBF24",
-          idea: "#60A5FA",
+          live: "rgb(var(--signal-live) / <alpha-value>)",
+          work: "rgb(var(--signal-work) / <alpha-value>)",
+          idea: "rgb(var(--signal-idea) / <alpha-value>)",
         },
+        // Hairlines carry their own alpha, so no modifier support is needed.
+        line: {
+          DEFAULT: "var(--line)",
+          strong: "var(--line-strong)",
+          faint: "var(--line-faint)",
+        },
+        scrim: "var(--scrim)",
       },
       fontFamily: {
         sans: ["var(--font-sans)", "ui-sans-serif", "system-ui", "sans-serif"],

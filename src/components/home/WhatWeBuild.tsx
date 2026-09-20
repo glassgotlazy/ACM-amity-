@@ -39,7 +39,7 @@ export function WhatWeBuild() {
 
       <Reveal className="mt-8 border border-line px-6 py-5" delay={0.1}>
         <p className="font-mono text-micro uppercase leading-relaxed text-ink-faint">
-          <span className="text-acm">Note ·</span> The admissions assistant is a working student project, not an
+          <span className="text-acm-bright">Note ·</span> The admissions assistant is a working student project, not an
           official university admissions channel. Quantum Handshake is an ongoing research effort with no published
           result. Neither is presented as more than it is.
         </p>

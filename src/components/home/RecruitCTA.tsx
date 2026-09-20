@@ -33,7 +33,7 @@ export function RecruitCTA() {
           <div className="mt-8 flex flex-wrap gap-3">
             <Link
               href="/join"
-              className="group inline-flex items-center gap-3 bg-acm px-7 py-4 font-mono text-label uppercase text-white transition-colors duration-200 hover:bg-acm-bright"
+              className="group inline-flex items-center gap-3 bg-acm-solid px-7 py-4 font-mono text-label uppercase text-white transition-colors duration-200 hover:bg-acm-deep"
             >
               Join ACM
               <span aria-hidden className="transition-transform duration-300 ease-out group-hover:translate-x-1">

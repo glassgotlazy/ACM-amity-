@@ -6,6 +6,7 @@ import { AnimatePresence, motion, useReducedMotion, useScroll, useMotionValueEve
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import { ease } from "@/lib/motion";
+import { ThemeToggle } from "./ThemeToggle";
 
 const NAV = [
   { href: "/projects", label: "Projects" },
@@ -45,7 +46,7 @@ export function Navbar() {
     <>
       <a
         href="#main"
-        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[200] focus:bg-acm focus:px-4 focus:py-3 focus:font-mono focus:text-label focus:uppercase focus:text-white"
+        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[200] focus:bg-acm-solid focus:px-4 focus:py-3 focus:font-mono focus:text-label focus:uppercase focus:text-white"
       >
         Skip to content
       </a>
@@ -95,10 +96,12 @@ export function Navbar() {
             })}
           </nav>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <ThemeToggle />
+
             <Link
               href="/join"
-              className="group hidden h-10 items-center gap-2.5 bg-acm px-5 font-mono text-label uppercase text-white transition-colors duration-200 hover:bg-acm-bright sm:inline-flex"
+              className="group hidden h-10 items-center gap-2.5 bg-acm-solid px-5 font-mono text-label uppercase text-white transition-colors duration-200 hover:bg-acm-deep sm:inline-flex"
             >
               Join ACM
               <span aria-hidden className="transition-transform duration-300 ease-out group-hover:translate-x-1">
@@ -154,7 +157,7 @@ export function Navbar() {
                     >
                       <Link href={item.href} className="flex items-baseline justify-between py-5">
                         <span className="text-3xl font-semibold tracking-[-0.03em]">{item.label}</span>
-                        <span className="meta text-acm">{String(i + 1).padStart(2, "0")}</span>
+                        <span className="meta text-acm-bright">{String(i + 1).padStart(2, "0")}</span>
                       </Link>
                     </motion.li>
                   ))}
@@ -176,12 +179,15 @@ export function Navbar() {
                 </ul>
               </nav>
 
-              <Link
-                href="/join"
-                className="mt-10 flex h-14 items-center justify-center gap-2 bg-acm font-mono text-label uppercase text-white"
-              >
-                Join ACM →
-              </Link>
+              <div className="mt-10 flex items-center gap-3">
+                <Link
+                  href="/join"
+                  className="flex h-14 flex-1 items-center justify-center gap-2 bg-acm-solid font-mono text-label uppercase text-white"
+                >
+                  Join ACM →
+                </Link>
+                <ThemeToggle className="h-14 w-14 border border-line-strong" />
+              </div>
             </div>
           </motion.div>
         ) : null}

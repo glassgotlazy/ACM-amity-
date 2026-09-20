@@ -40,7 +40,7 @@ export default function TeamsPage() {
       <section className="border-b border-line" aria-labelledby="core-team">
         <div className="shell py-20">
           <Reveal className="flex items-baseline gap-4">
-            <span className="meta text-acm">00 /</span>
+            <span className="meta text-acm-bright">00 /</span>
             <span className="meta">Chapter leadership</span>
           </Reveal>
 
@@ -58,7 +58,7 @@ export default function TeamsPage() {
             <div className="grid gap-px bg-line sm:grid-cols-2">
               {coreTeam.map((person, i) => (
                 <Reveal key={person.name} delay={0.06 * i} className="bg-void p-7">
-                  <div className="meta text-acm">{person.role}</div>
+                  <div className="meta text-acm-bright">{person.role}</div>
                   <h3 className="mt-4 text-xl font-semibold tracking-[-0.025em]">{person.name}</h3>
                   <p className="mt-3 text-sm leading-relaxed text-ink-muted text-pretty">{person.remit}</p>
                 </Reveal>
@@ -91,7 +91,7 @@ export default function TeamsPage() {
               >
                 <div className={cn(flipped && "lg:order-2")}>
                   <Reveal className="flex items-baseline gap-4">
-                    <span className="meta tnum text-acm">{String(i + 1).padStart(2, "0")}</span>
+                    <span className="meta tnum text-acm-bright">{String(i + 1).padStart(2, "0")}</span>
                     <span className="meta">{team.domains.join(" · ")}</span>
                   </Reveal>
 
@@ -138,7 +138,7 @@ export default function TeamsPage() {
                   </Reveal>
 
                   <Reveal delay={0.14} className="mt-10 border-t border-line pt-7">
-                    <div className="meta text-acm">Open positions</div>
+                    <div className="meta text-acm-bright">Open positions</div>
                     <ul className="mt-5 space-y-5">
                       {team.openPositions.map((pos) => (
                         <li key={pos.role}>
@@ -192,7 +192,7 @@ export default function TeamsPage() {
               follows from what that problem needs.
             </p>
             <div className="flex flex-wrap gap-6 pt-3">
-              <Link href="/discover" className="font-mono text-label uppercase text-acm-bright hover:text-white">
+              <Link href="/discover" className="font-mono text-label uppercase text-acm-bright hover:text-ink">
                 Find your project →
               </Link>
               <Link href="/problems" className="font-mono text-label uppercase text-ink-muted hover:text-ink">

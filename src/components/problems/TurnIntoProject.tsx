@@ -54,7 +54,7 @@ function Flow({ suggestedName, problemTitle }: { suggestedName: string; problemT
             <li key={name} className="flex items-center gap-3">
               <motion.span
                 className={`font-mono text-micro uppercase ${
-                  i === 0 ? "text-acm" : reached ? "text-ink" : "text-ink-ghost"
+                  i === 0 ? "text-acm-bright" : reached ? "text-ink" : "text-ink-ghost"
                 }`}
                 initial={reduce ? undefined : { opacity: 0.25, y: 4 }}
                 animate={reached ? { opacity: 1, y: 0 } : { opacity: 0.25, y: 0 }}

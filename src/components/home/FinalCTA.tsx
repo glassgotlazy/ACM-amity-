@@ -29,7 +29,7 @@ export function FinalCTA() {
           as="h3"
           className="mt-8 text-display-lg"
           delay={0.12}
-          lines={[{ text: "ADD WHAT YOU BUILT" }, { text: "THROUGH ACM.", className: "text-acm" }]}
+          lines={[{ text: "ADD WHAT YOU BUILT" }, { text: "THROUGH ACM.", className: "text-acm-bright" }]}
         />
 
         <motion.div

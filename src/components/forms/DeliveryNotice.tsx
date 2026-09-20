@@ -17,7 +17,7 @@ export function DeliveryNotice({ result }: { result: SubmissionResult }) {
 
   return (
     <p className="mt-6 border-t border-line pt-5 font-mono text-micro uppercase leading-relaxed text-ink-ghost">
-      <span className="text-acm">Demo notice ·</span> No submission destination is configured for this deployment, so
+      <span className="text-acm-bright">Demo notice ·</span> No submission destination is configured for this deployment, so
       nothing was transmitted or stored. Set FORM_ENDPOINT to start collecting.
     </p>
   );

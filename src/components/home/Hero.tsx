@@ -71,7 +71,7 @@ export function Hero() {
             >
               <Link
                 href="/projects"
-                className="group inline-flex h-14 items-center gap-3 bg-acm px-8 font-mono text-[0.75rem] uppercase tracking-[0.16em] text-white transition-colors duration-200 hover:bg-acm-bright"
+                className="group inline-flex h-14 items-center gap-3 bg-acm-solid px-8 font-mono text-[0.75rem] uppercase tracking-[0.16em] text-white transition-colors duration-200 hover:bg-acm-deep"
               >
                 Explore projects
                 <span aria-hidden className="transition-transform duration-300 ease-out group-hover:translate-x-1">

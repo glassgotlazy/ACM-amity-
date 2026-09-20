@@ -95,7 +95,7 @@ export function Footer() {
               href={REGISTRATION_URL}
               target="_blank"
               rel="noreferrer noopener"
-              className="block shrink-0 bg-white p-2 transition-transform duration-300 ease-out hover:scale-[1.03]"
+              className="block shrink-0 border border-line bg-white p-2 transition-transform duration-300 ease-out hover:scale-[1.03]"
               aria-label="Open the ACM @ Amity registration form"
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -116,7 +116,7 @@ export function Footer() {
                 href={REGISTRATION_URL}
                 target="_blank"
                 rel="noreferrer noopener"
-                className="group mt-4 inline-flex items-center gap-2 font-mono text-label uppercase text-acm-bright transition-colors hover:text-white"
+                className="group mt-4 inline-flex items-center gap-2 font-mono text-label uppercase text-acm-bright transition-colors hover:text-ink"
               >
                 Registration form
                 <span aria-hidden className="transition-transform duration-300 group-hover:translate-x-1">

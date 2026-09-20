@@ -17,7 +17,7 @@ export function SectionHeading({ index, eyebrow, title, lede, action, align = "l
   return (
     <div className={cn("rule-b pb-10", className)}>
       <Reveal className="flex items-baseline gap-4">
-        <span className="meta text-acm">{index ? `${index} /` : null}</span>
+        <span className="meta text-acm-bright">{index ? `${index} /` : null}</span>
         <span className="meta">{eyebrow}</span>
       </Reveal>
 
@@ -67,7 +67,7 @@ export function PageHeader({
       <div className="pointer-events-none absolute inset-0 grid-field grid-mask opacity-60" aria-hidden />
       <div className="shell relative pb-16 pt-32 sm:pt-40">
         <Reveal className="flex items-baseline gap-4">
-          <span className="meta text-acm">{index ? `${index} /` : null}</span>
+          <span className="meta text-acm-bright">{index ? `${index} /` : null}</span>
           <span className="meta">{eyebrow}</span>
         </Reveal>
 

@@ -25,7 +25,7 @@ export default function ProblemsPage() {
           <>
             DON&rsquo;T START WITH AN IDEA.
             <br />
-            <span className="text-acm">START WITH A PROBLEM.</span>
+            <span className="text-acm-bright">START WITH A PROBLEM.</span>
           </>
         }
         lede="Universities are rapidly adopting AI, automation, digital platforms and data-driven systems. That creates new challenges that still need better solutions. Find a problem worth solving."
@@ -73,7 +73,7 @@ export default function ProblemsPage() {
                 "Build. Document what broke. The failures are the part nobody else can copy from you.",
               ].map((step, i) => (
                 <li key={step} className="flex gap-6 border-b border-line pb-5">
-                  <span className="meta tnum shrink-0 text-acm">{String(i + 1).padStart(2, "0")}</span>
+                  <span className="meta tnum shrink-0 text-acm-bright">{String(i + 1).padStart(2, "0")}</span>
                   <span className="text-[0.9375rem] leading-relaxed text-ink-muted text-pretty">{step}</span>
                 </li>
               ))}

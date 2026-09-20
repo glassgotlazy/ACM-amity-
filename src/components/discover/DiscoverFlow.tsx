@@ -259,7 +259,7 @@ export function DiscoverFlow() {
                   </p>
                   <Link
                     href="/problems/submit"
-                    className="mt-7 inline-flex font-mono text-label uppercase text-acm-bright hover:text-white"
+                    className="mt-7 inline-flex font-mono text-label uppercase text-acm-bright hover:text-ink"
                   >
                     Submit a problem →
                   </Link>
@@ -292,7 +292,7 @@ function ResultBlock({ title, index, children }: { title: string; index: string;
   return (
     <section className="mt-12">
       <div className="flex items-baseline gap-4">
-        <span className="meta tnum text-acm">{index}</span>
+        <span className="meta tnum text-acm-bright">{index}</span>
         <h3 className="meta text-ink">{title}</h3>
       </div>
       <div className="mt-4">{children}</div>

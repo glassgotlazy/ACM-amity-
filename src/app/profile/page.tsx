@@ -22,7 +22,7 @@ export default function ProfilePage() {
         <div className="pointer-events-none absolute inset-0 grid-field grid-mask opacity-50" aria-hidden />
         <div className="shell relative pb-16 pt-32 sm:pt-40">
           <Reveal className="flex items-baseline gap-4">
-            <span className="meta text-acm">07 /</span>
+            <span className="meta text-acm-bright">07 /</span>
             <span className="meta">Contribution profile</span>
           </Reveal>
 
@@ -82,7 +82,7 @@ export default function ProfilePage() {
 
           <Reveal delay={0.18} className="mt-14 border border-line px-6 py-4">
             <p className="font-mono text-micro uppercase leading-relaxed text-ink-ghost">
-              <span className="text-acm">What this counts ·</span> project output that can be checked against the
+              <span className="text-acm-bright">What this counts ·</span> project output that can be checked against the
               public repositories — not commits or tasks attributed to one person. Work on these projects is shared and
               AI-assisted, so a personal commit total would overstate individual authorship.
             </p>
@@ -185,7 +185,7 @@ export default function ProfilePage() {
           </h2>
           <Link
             href="/join"
-            className="group inline-flex h-14 shrink-0 items-center gap-3 bg-acm px-8 font-mono text-label uppercase text-white transition-colors duration-200 hover:bg-acm-bright"
+            className="group inline-flex h-14 shrink-0 items-center gap-3 bg-acm-solid px-8 font-mono text-label uppercase text-white transition-colors duration-200 hover:bg-acm-deep"
           >
             Start your record
             <span aria-hidden className="transition-transform duration-300 group-hover:translate-x-1">

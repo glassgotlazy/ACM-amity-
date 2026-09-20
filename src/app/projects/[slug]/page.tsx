@@ -75,7 +75,7 @@ export default async function ProjectPage({ params }: { params: Promise<{ slug: 
         <ol className="grid gap-px bg-line sm:grid-cols-2">
           {project.building.map((item, i) => (
             <Reveal as="li" key={item} delay={i * 0.05} className="bg-void p-7">
-              <span className="meta tnum text-acm">{String(i + 1).padStart(2, "0")}</span>
+              <span className="meta tnum text-acm-bright">{String(i + 1).padStart(2, "0")}</span>
               <p className="mt-4 text-[0.9375rem] leading-relaxed text-ink-muted text-pretty">{item}</p>
             </Reveal>
           ))}
@@ -137,7 +137,7 @@ export default async function ProjectPage({ params }: { params: Promise<{ slug: 
               <div className="meta">{member.role}</div>
               <p
                 className={`mt-4 text-lg font-medium tracking-[-0.02em] ${
-                  member.name === "Open" ? "text-acm" : "text-ink"
+                  member.name === "Open" ? "text-acm-bright" : "text-ink"
                 }`}
               >
                 {member.name === "Open" ? "Position open" : member.name}
@@ -157,7 +157,7 @@ export default async function ProjectPage({ params }: { params: Promise<{ slug: 
               className="grid gap-3 border-b border-line py-7 lg:grid-cols-[10rem_9rem_1fr] lg:items-baseline lg:gap-10"
             >
               <span className="text-lg font-medium tracking-[-0.02em]">{role.role}</span>
-              <span className="meta text-acm">{role.level}</span>
+              <span className="meta text-acm-bright">{role.level}</span>
               <span className="text-[0.9375rem] leading-relaxed text-ink-muted">{role.what}</span>
             </Reveal>
           ))}

@@ -98,7 +98,7 @@ function Overview() {
           >
             <div className="meta">{stat.label}</div>
             <div className="mt-5 text-5xl tnum tracking-[-0.04em]">{stat.value}</div>
-            <div className="mt-4 font-mono text-micro uppercase text-acm">{stat.delta}</div>
+            <div className="mt-4 font-mono text-micro uppercase text-acm-bright">{stat.delta}</div>
           </motion.div>
         ))}
       </div>
@@ -242,7 +242,7 @@ function ProjectsTable() {
           <td className={cn(cell, "tnum")}>{p.openRoles.length}</td>
           <td className={cn(cell, "tnum")}>{p.progress}%</td>
           <td className={cell}>
-            <Link href={`/projects/${p.slug}`} className="font-mono text-micro uppercase text-acm-bright hover:text-white">
+            <Link href={`/projects/${p.slug}`} className="font-mono text-micro uppercase text-acm-bright hover:text-ink">
               View →
             </Link>
           </td>
@@ -265,7 +265,7 @@ function ProblemsTable() {
           <td className={cn(cell, "font-mono text-micro uppercase")}>{p.level}</td>
           <td className={cn(cell, "tnum")}>{p.openRoles.length}</td>
           <td className={cell}>
-            <Link href={`/problems/${p.slug}`} className="font-mono text-micro uppercase text-acm-bright hover:text-white">
+            <Link href={`/problems/${p.slug}`} className="font-mono text-micro uppercase text-acm-bright hover:text-ink">
               View →
             </Link>
           </td>

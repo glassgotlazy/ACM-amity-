@@ -12,7 +12,7 @@ export function ProblemOfTheWeek({ problem }: { problem: Problem }) {
     <section className="shell py-section" aria-labelledby="potw">
       <Reveal className="flex flex-wrap items-baseline justify-between gap-4 border-b border-line pb-4">
         <div className="flex items-baseline gap-4">
-          <span className="meta text-acm">03 /</span>
+          <span className="meta text-acm-bright">03 /</span>
           <span className="meta">Problem of the week</span>
         </div>
         <span className="flex items-center gap-2 font-mono text-micro uppercase text-ink-ghost">

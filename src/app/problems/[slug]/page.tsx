@@ -41,7 +41,7 @@ export default async function ProblemPage({ params }: { params: Promise<{ slug: 
           </Reveal>
 
           <Reveal delay={0.05} className="mt-10 flex flex-wrap items-center gap-4">
-            <span className="meta tnum text-acm">PROBLEM {String(problem.index).padStart(2, "0")}</span>
+            <span className="meta tnum text-acm-bright">PROBLEM {String(problem.index).padStart(2, "0")}</span>
             <OriginTag origin={problem.origin} />
             <span className="font-mono text-micro uppercase text-ink-faint">{problem.category}</span>
           </Reveal>
@@ -92,7 +92,7 @@ export default async function ProblemPage({ params }: { params: Promise<{ slug: 
         <div className="grid gap-px bg-line sm:grid-cols-2">
           {problem.directions.map((dir, i) => (
             <Reveal key={dir.title} delay={i * 0.05} className="bg-void p-7 lg:p-8">
-              <span className="meta tnum text-acm">{String.fromCharCode(65 + i)}</span>
+              <span className="meta tnum text-acm-bright">{String.fromCharCode(65 + i)}</span>
               <h3 className="mt-5 text-lg font-semibold tracking-[-0.02em]">{dir.title}</h3>
               <p className="mt-4 text-[0.9375rem] leading-relaxed text-ink-muted text-pretty">{dir.detail}</p>
             </Reveal>
@@ -159,7 +159,7 @@ export default async function ProblemPage({ params }: { params: Promise<{ slug: 
             <Reveal as="li" key={slot.role} delay={i * 0.05} className="bg-void p-7">
               <div className="flex items-baseline justify-between gap-4">
                 <span className="text-lg font-medium tracking-[-0.02em]">{slot.role}</span>
-                <span className="meta tnum text-acm">×{slot.count}</span>
+                <span className="meta tnum text-acm-bright">×{slot.count}</span>
               </div>
               <p className="mt-4 text-sm leading-relaxed text-ink-muted">{slot.note}</p>
             </Reveal>
@@ -184,7 +184,7 @@ export default async function ProblemPage({ params }: { params: Promise<{ slug: 
               delay={i * 0.05}
               className="flex gap-6 border-b border-line py-6 last:border-0"
             >
-              <span aria-hidden className="meta pt-1 text-acm">
+              <span aria-hidden className="meta pt-1 text-acm-bright">
                 ?
               </span>
               <p className="max-w-prose text-[1.0625rem] leading-relaxed text-ink-muted text-pretty">{q}</p>

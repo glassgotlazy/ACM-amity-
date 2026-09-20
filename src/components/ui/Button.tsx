@@ -13,7 +13,7 @@ const base =
   "disabled:pointer-events-none disabled:opacity-40";
 
 const variants: Record<Variant, string> = {
-  primary: "bg-acm text-white hover:bg-acm-bright",
+  primary: "bg-acm-solid text-white hover:bg-acm-deep",
   outline: "border border-line-strong text-ink hover:border-acm hover:text-acm-bright",
   ghost: "border border-transparent text-ink-muted hover:text-ink",
   quiet: "bg-surface-raised text-ink hover:bg-surface-high",

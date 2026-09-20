@@ -48,7 +48,7 @@ export function ContributionCounters({ contributions }: { contributions: Contrib
             <span className="text-5xl tracking-[-0.04em] text-ink">
               <Counter to={c.value} />
             </span>
-            <span className="font-mono text-micro uppercase text-acm">{c.unit}</span>
+            <span className="font-mono text-micro uppercase text-acm-bright">{c.unit}</span>
           </div>
           <p className="mt-4 font-mono text-micro uppercase text-ink-ghost">{c.note}</p>
         </motion.div>

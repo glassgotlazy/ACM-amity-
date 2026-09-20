@@ -176,7 +176,7 @@ export function JoinFlow() {
           className="mt-8 text-display-lg"
           trigger="mount"
           delay={0.15}
-          lines={[{ text: "WELCOME TO" }, { text: "THE BUILD.", className: "text-acm" }]}
+          lines={[{ text: "WELCOME TO" }, { text: "THE BUILD.", className: "text-acm-bright" }]}
         />
 
         <motion.a
@@ -217,7 +217,7 @@ export function JoinFlow() {
             { t: "Or get matched", d: "Two questions and a shortlist, if you would rather not browse.", href: "/discover" },
           ].map((card, i) => (
             <Link key={card.t} href={card.href} className="group bg-void p-8 transition-colors hover:bg-surface/50">
-              <span className="meta tnum text-acm">{String(i + 1).padStart(2, "0")}</span>
+              <span className="meta tnum text-acm-bright">{String(i + 1).padStart(2, "0")}</span>
               <span className="mt-5 block text-xl font-semibold tracking-[-0.03em] transition-colors group-hover:text-acm-bright">
                 {card.t}
               </span>
@@ -238,7 +238,7 @@ export function JoinFlow() {
       {/* Step rail */}
       <div className="border-b border-line pb-5">
         <div className="flex items-center justify-between gap-4">
-          <span className="meta tnum text-acm">
+          <span className="meta tnum text-acm-bright">
             Step {String(step + 1).padStart(2, "0")} / {String(STEPS.length).padStart(2, "0")}
           </span>
           <span className="meta text-ink-ghost">{current.label}</span>

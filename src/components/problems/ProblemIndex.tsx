@@ -72,7 +72,7 @@ export function ProblemIndex() {
           </p>
           <a
             href="/problems/submit"
-            className="mt-7 inline-flex items-center gap-2 font-mono text-label uppercase text-acm-bright hover:text-white"
+            className="mt-7 inline-flex items-center gap-2 font-mono text-label uppercase text-acm-bright hover:text-ink"
           >
             Submit a problem →
           </a>

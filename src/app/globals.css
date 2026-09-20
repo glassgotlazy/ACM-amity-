@@ -3,15 +3,91 @@
 @tailwind utilities;
 
 @layer base {
+  /*
+   * Every colour on the site resolves through these tokens. They are stored as
+   * bare RGB channels so Tailwind's opacity modifiers keep working
+   * (`bg-surface/30` becomes `rgb(var(--surface) / 0.3)`), which is what lets a
+   * single set of utility classes serve both themes.
+   *
+   * Dark is the default and lives on :root, so the site renders correctly even
+   * if the theme script never runs.
+   */
   :root {
     --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
     --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, monospace;
-    --rule: rgba(255, 255, 255, 0.08);
+
+    --void: 8 9 11;
+    --surface: 16 18 22;
+    --surface-raised: 21 23 28;
+    --surface-high: 27 30 36;
+
+    --ink: 244 245 247;
+    --ink-muted: 163 169 179;
+    --ink-faint: 143 150 164;
+    --ink-ghost: 129 135 145;
+
+    --acm: 229 52 43;
+    --acm-bright: 255 76 66;
+    --acm-deep: 180 33 26;
+    /* Filled buttons only: white text needs 4.5:1, which the display red misses. */
+    --acm-solid: 222 50 41;
+
+    --signal-live: 74 222 128;
+    --signal-work: 251 191 36;
+    --signal-idea: 96 165 250;
+
+    /* Non-channel tokens: hairlines, scrims and the engineering grid. */
+    --line: rgba(255, 255, 255, 0.08);
+    --line-strong: rgba(255, 255, 255, 0.14);
+    --line-faint: rgba(255, 255, 255, 0.05);
+    --grid-line: rgba(255, 255, 255, 0.032);
+    --scrim: rgba(0, 0, 0, 0.8);
+    --scrollbar-thumb: #23262d;
+    --scrollbar-thumb-hover: #333842;
+
     color-scheme: dark;
   }
 
+  /*
+   * Light is a designed counterpart, not an inversion. The page sits on a warm
+   * off-white so panels can be pure white and still read as raised, and the
+   * accent deepens rather than brightens — on a light field, prominence comes
+   * from going darker, and #E5342B at small sizes does not clear contrast
+   * requirements against white.
+   */
+  :root[data-theme="light"] {
+    --void: 250 250 248;
+    --surface: 255 255 255;
+    --surface-raised: 255 255 255;
+    --surface-high: 241 241 238;
+
+    --ink: 20 22 26;
+    --ink-muted: 86 92 101;
+    --ink-faint: 89 96 105;
+    --ink-ghost: 103 109 117;
+
+    --acm: 198 40 31;
+    --acm-bright: 154 26 20;
+    --acm-deep: 120 20 15;
+    --acm-solid: 198 40 31;
+
+    --signal-live: 21 128 61;
+    --signal-work: 161 98 7;
+    --signal-idea: 29 78 216;
+
+    --line: rgba(0, 0, 0, 0.11);
+    --line-strong: rgba(0, 0, 0, 0.2);
+    --line-faint: rgba(0, 0, 0, 0.06);
+    --grid-line: rgba(0, 0, 0, 0.04);
+    --scrim: rgba(12, 14, 18, 0.55);
+    --scrollbar-thumb: #d3d3cd;
+    --scrollbar-thumb-hover: #b9b9b2;
+
+    color-scheme: light;
+  }
+
   * {
-    border-color: var(--rule);
+    border-color: var(--line);
   }
 
   html {
@@ -33,8 +109,8 @@
   }
 
   body {
-    background-color: #08090b;
-    color: #f4f5f7;
+    background-color: rgb(var(--void));
+    color: rgb(var(--ink));
     font-family: var(--font-sans);
     font-feature-settings: "cv02", "cv03", "cv04", "cv11", "ss01";
     -webkit-font-smoothing: antialiased;
@@ -42,37 +118,46 @@
     overflow-x: hidden;
   }
 
+  /*
+   * Theme changes are instant by default; the transition is opted into by the
+   * toggle for the duration of the switch only, so page loads and route
+   * changes never animate their colours.
+   */
+  :root[data-theme-switching] body,
+  :root[data-theme-switching] body * {
+    transition: background-color 220ms ease, border-color 220ms ease, color 220ms ease,
+      fill 220ms ease, stroke 220ms ease;
+  }
+
   ::selection {
-    background: rgba(229, 52, 43, 0.28);
-    color: #fff;
+    background: rgb(var(--acm) / 0.25);
+    color: rgb(var(--ink));
   }
 
   :focus-visible {
-    outline: 2px solid #ff4c42;
+    outline: 2px solid rgb(var(--acm-bright));
     outline-offset: 3px;
     border-radius: 1px;
   }
 
-  /* Thin, unobtrusive scrollbar that matches the surface palette. */
   ::-webkit-scrollbar {
     width: 10px;
     height: 10px;
   }
   ::-webkit-scrollbar-track {
-    background: #08090b;
+    background: rgb(var(--void));
   }
   ::-webkit-scrollbar-thumb {
-    background: #23262d;
-    border: 3px solid #08090b;
+    background: var(--scrollbar-thumb);
+    border: 3px solid rgb(var(--void));
     border-radius: 99px;
   }
   ::-webkit-scrollbar-thumb:hover {
-    background: #333842;
+    background: var(--scrollbar-thumb-hover);
   }
 }
 
 @layer components {
-  /* One shared horizontal rhythm for every page shell. */
   .shell {
     @apply mx-auto w-full max-w-shell px-gutter;
   }
@@ -93,10 +178,9 @@
     @apply font-mono text-label uppercase text-acm-bright;
   }
 
-  /* Faint engineering grid used behind key sections. */
   .grid-field {
-    background-image: linear-gradient(to right, rgba(255, 255, 255, 0.032) 1px, transparent 1px),
-      linear-gradient(to bottom, rgba(255, 255, 255, 0.032) 1px, transparent 1px);
+    background-image: linear-gradient(to right, var(--grid-line) 1px, transparent 1px),
+      linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px);
     background-size: 72px 72px;
   }
 
@@ -107,6 +191,20 @@
 
   .hairline-x > * + * {
     @apply border-l border-line;
+  }
+}
+
+@layer components {
+  /* Theme glyph halves: dark is the default, so the light half is hidden
+     until the light theme is active. */
+  .theme-glyph-light {
+    display: none;
+  }
+  :root[data-theme="light"] .theme-glyph-dark {
+    display: none;
+  }
+  :root[data-theme="light"] .theme-glyph-light {
+    display: inline;
   }
 }
 

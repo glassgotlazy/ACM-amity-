@@ -81,7 +81,7 @@ export default async function ResearchDetailPage({ params }: { params: Promise<{
         <ul className="grid gap-px bg-line sm:grid-cols-2">
           {project.literature.map((entry, i) => (
             <Reveal as="li" key={entry.theme} delay={i * 0.05} className="bg-void p-7">
-              <span className="meta tnum text-acm">{String(i + 1).padStart(2, "0")}</span>
+              <span className="meta tnum text-acm-bright">{String(i + 1).padStart(2, "0")}</span>
               <h3 className="mt-4 text-lg font-medium tracking-[-0.02em]">{entry.theme}</h3>
               <p className="mt-3 text-sm leading-relaxed text-ink-muted">{entry.note}</p>
             </Reveal>
@@ -152,7 +152,7 @@ export default async function ResearchDetailPage({ params }: { params: Promise<{
         <Reveal className="mt-9" delay={0.12}>
           <Link
             href="/join"
-            className="group inline-flex h-14 items-center gap-3 bg-acm px-8 font-mono text-label uppercase text-white transition-colors duration-200 hover:bg-acm-bright"
+            className="group inline-flex h-14 items-center gap-3 bg-acm-solid px-8 font-mono text-label uppercase text-white transition-colors duration-200 hover:bg-acm-deep"
           >
             Join the research team
             <span aria-hidden className="transition-transform duration-300 group-hover:translate-x-1">

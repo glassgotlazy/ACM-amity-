@@ -16,7 +16,7 @@ export type Officer = {
 
 export const coreTeam: Officer[] = [
   {
-    name: "Paridhi Laxhar",
+    name: "Paridhi Laxkar",
     role: "Chair",
     remit: "Direction of the chapter, and what ACM @ Amity commits to each term.",
   },

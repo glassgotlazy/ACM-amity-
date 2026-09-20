@@ -5,7 +5,7 @@ export default function NotFound() {
     <div className="relative overflow-hidden">
       <div className="pointer-events-none absolute inset-0 grid-field grid-mask opacity-50" aria-hidden />
       <div className="shell relative flex min-h-[70vh] flex-col justify-center py-32">
-        <span className="meta text-acm">404 / Not found</span>
+        <span className="meta text-acm-bright">404 / Not found</span>
         <h1 className="mt-8 max-w-3xl text-display-md text-balance">
           This page doesn&rsquo;t exist. Several problems on campus still do.
         </h1>
@@ -15,7 +15,7 @@ export default function NotFound() {
         <div className="mt-12 flex flex-wrap gap-3">
           <Link
             href="/problems"
-            className="group inline-flex h-14 items-center gap-3 bg-acm px-8 font-mono text-label uppercase text-white transition-colors duration-200 hover:bg-acm-bright"
+            className="group inline-flex h-14 items-center gap-3 bg-acm-solid px-8 font-mono text-label uppercase text-white transition-colors duration-200 hover:bg-acm-deep"
           >
             Explore problems
             <span aria-hidden className="transition-transform duration-300 group-hover:translate-x-1">

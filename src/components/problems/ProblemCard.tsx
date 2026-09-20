@@ -47,7 +47,7 @@ export function ProblemCard({ problem, index }: { problem: Problem; index: numbe
       ) : null}
 
       <div className="flex items-center justify-between border-b border-line px-6 py-4">
-        <span className="meta tnum text-acm">PROBLEM {pad(problem.index)}</span>
+        <span className="meta tnum text-acm-bright">PROBLEM {pad(problem.index)}</span>
         <OriginTag origin={problem.origin} className="border-0 px-0 py-0" />
       </div>
 

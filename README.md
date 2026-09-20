@@ -125,15 +125,53 @@ pages.
 
 ### Design system
 
-Defined once in `tailwind.config.ts` and `src/app/globals.css`:
+Every colour resolves through CSS custom properties in `src/app/globals.css`,
+stored as bare RGB channels so Tailwind's opacity modifiers still work
+(`bg-surface/30` → `rgb(var(--surface) / 0.3)`). That is what lets one set of
+utility classes serve both themes — no `dark:` variants anywhere.
 
-- **Surface** `#08090B` void, `#101216` / `#15171C` raised
 - **Accent** a single ACM-inspired red, reserved for actions, active states and
   status. The site is designed to hold up when the accent is barely used.
 - **Type** Inter for text, JetBrains Mono for the uppercase metadata labels that
   carry the editorial numbering (`01 / PROBLEM LAB`)
 - **Structure** hairline rules and shared borders instead of card shadows;
   radii of 2–4px; no gradients
+
+### Themes
+
+Dark is the default and lives on `:root`, so the site renders correctly even if
+the theme script never runs. Light is a designed counterpart, not an inversion:
+the page sits on a warm off-white so panels can be pure white and still read as
+raised, and the accent *deepens* rather than brightens, because on a light field
+prominence comes from going darker.
+
+A first visit follows the system preference; an explicit choice is stored under
+`acm-theme` and wins from then on. To make the site always open dark regardless
+of system setting, drop the `matchMedia` branch from `THEME_SCRIPT` in
+`src/app/layout.tsx`.
+
+The script is inline and synchronous in `<head>` — deferring it would paint the
+wrong theme first. The toggle's glyph is chosen by CSS off `:root[data-theme]`
+rather than by React state, so its markup is identical on server and client and
+there is no hydration mismatch or icon flash.
+
+Three tokens exist for reasons that are not obvious:
+
+- **`--acm-solid`** backs filled buttons. The display red at 11px does not give
+  white text 4.5:1, so buttons use a fractionally darker red. Button hover
+  *darkens* (`--acm-deep`) rather than brightening, which stays visible in both
+  themes and raises the label's contrast instead of lowering it.
+- **`--scrim`** is the modal veil, so light mode gets a softer one.
+- **`--grid-line`** drives the engineering grid, which is white-on-dark and
+  black-on-light.
+
+Both themes are verified at **zero WCAG AA failures** across all 15 routes by
+`contrast.mjs`, which walks every text node, resolves its real background
+through ancestors and checks the ratio against the AA threshold for its size.
+The muted scale is tiered deliberately — roughly 4.6:1 / 5.6:1 / 7.1:1 for
+`ink-ghost` / `ink-faint` / `ink-muted` — so metadata stays quiet while still
+clearing the floor. If you restyle, re-run that check rather than trusting the
+palette.
 
 ### Motion
 

@@ -75,7 +75,7 @@ export function IdeaIndex() {
                 <div className="grid gap-8 py-9 lg:grid-cols-[1.4fr_1fr_1fr] lg:gap-12">
                   <div>
                     <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-                      <span className="meta text-acm">{idea.band}</span>
+                      <span className="meta text-acm-bright">{idea.band}</span>
                       <span className="h-3 w-px bg-line-strong" aria-hidden />
                       <DifficultyMeter level={idea.level} />
                     </div>
@@ -91,7 +91,7 @@ export function IdeaIndex() {
                       {idea.problemSlug ? (
                         <Link
                           href={`/problems/${idea.problemSlug}`}
-                          className="font-mono text-micro uppercase text-acm-bright hover:text-white"
+                          className="font-mono text-micro uppercase text-acm-bright hover:text-ink"
                         >
                           Linked problem →
                         </Link>
