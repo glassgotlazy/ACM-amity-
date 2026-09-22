@@ -1,9 +1,10 @@
 "use client";
 
 import { motion, useReducedMotion } from "framer-motion";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import { buildStats, applications, submissions, STATE_TONE } from "@/data/admin";
+import { buildStats } from "@/data/admin";
+import { Queue } from "./Queue";
 import { projects, allOpenRoles } from "@/data/projects";
 import { problems } from "@/data/problems";
 import { teams } from "@/data/teams";
@@ -14,7 +15,7 @@ import { cn } from "@/lib/utils";
 import { ease } from "@/lib/motion";
 import { SignOut } from "./SignOut";
 
-const TABS = ["Overview", "Applications", "Submissions", "Projects", "Problems", "Teams", "Research", "Activity"] as const;
+const TABS = ["Overview", "Applications", "Submissions", "Proposals", "Members", "Projects", "Problems", "Teams", "Research", "Activity"] as const;
 type Tab = (typeof TABS)[number];
 
 export function AdminConsole() {
@@ -68,8 +69,18 @@ export function AdminConsole() {
         </h2>
 
         {tab === "Overview" ? <Overview /> : null}
-        {tab === "Applications" ? <Applications /> : null}
-        {tab === "Submissions" ? <Submissions /> : null}
+        {tab === "Applications" ? <Queue kind="project-application" /> : null}
+        {tab === "Submissions" ? (
+          <>
+            <p className="mb-8 max-w-2xl font-mono text-micro uppercase leading-relaxed text-ink-ghost">
+              Submissions are never published automatically. Nothing here is visible on the public site until it is
+              written up as a problem statement.
+            </p>
+            <Queue kind="problem-submission" />
+          </>
+        ) : null}
+        {tab === "Proposals" ? <Queue kind="project-proposal" /> : null}
+        {tab === "Members" ? <Queue kind="join" /> : null}
         {tab === "Projects" ? <ProjectsTable /> : null}
         {tab === "Problems" ? <ProblemsTable /> : null}
         {tab === "Teams" ? <TeamsTable /> : null}
@@ -80,9 +91,36 @@ export function AdminConsole() {
   );
 }
 
+function useQueueCounts() {
+  const [counts, setCounts] = useState<{ apps: number | null; subs: number | null; ready: boolean }>({ apps: null, subs: null, ready: false });
+  useEffect(() => {
+    let alive = true;
+    (async () => {
+      try {
+        const [a, s] = await Promise.all([
+          fetch("/api/admin/submissions?kind=project-application&state=new", { cache: "no-store" }),
+          fetch("/api/admin/submissions?kind=problem-submission&state=new", { cache: "no-store" }),
+        ]);
+        if (!alive) return;
+        if (a.ok && s.ok) {
+          const [ar, sr] = await Promise.all([a.json(), s.json()]);
+          setCounts({ apps: ar.rows.length, subs: sr.rows.length, ready: true });
+        } else setCounts({ apps: null, subs: null, ready: true });
+      } catch {
+        if (alive) setCounts({ apps: null, subs: null, ready: true });
+      }
+    })();
+    return () => { alive = false; };
+  }, []);
+  return counts;
+}
+
 function Overview() {
   const reduce = useReducedMotion();
+  const q = useQueueCounts();
   const stats = buildStats({
+    newApplications: q.apps,
+    queuedSubmissions: q.subs,
     projects: projects.length,
     needLeads: projects.filter((p) => p.team.every((t) => t.name === "Open")).length,
     openRoles: allOpenRoles().length,
@@ -111,8 +149,8 @@ function Overview() {
         <Panel title="Needs attention">
           <ul className="space-y-4">
             {[
-              `${applications.filter((a) => a.state === "new").length} applications have not been opened.`,
-              `${submissions.filter((s) => s.state === "queued").length} problem submissions are waiting for review.`,
+              q.apps === null ? "Application queue: storage not configured." : `${q.apps} application${q.apps === 1 ? "" : "s"} not yet opened.`,
+              q.subs === null ? "Submission queue: storage not configured." : `${q.subs} problem submission${q.subs === 1 ? "" : "s"} awaiting review.`,
               `${projects.filter((p) => p.team.every((t) => t.name === "Open")).length} project(s) have no lead assigned.`,
               `${allOpenRoles().length} roles are listed as open across all projects.`,
             ].map((line) => (
@@ -131,7 +169,7 @@ function Overview() {
               { ok: true, text: "No problem is presented as an official university brief." },
               { ok: true, text: "Every project declares what does not exist yet." },
               { ok: true, text: "Research pages state that no result is published or peer-reviewed." },
-              { ok: true, text: "Applications, submissions and team sizes are marked as demo data." },
+              { ok: true, text: "Applications and submissions are real stored records; only team sizes remain a demo figure." },
             ].map((check) => (
               <li key={check.text} className="flex gap-4 text-sm leading-relaxed text-ink-muted">
                 <span aria-hidden className="mt-0.5 shrink-0 font-mono text-micro text-signal-live">
@@ -191,47 +229,7 @@ function Row({ children, index }: { children: React.ReactNode; index: number }) 
 
 const cell = "py-4 pr-6 text-sm text-ink-muted align-top";
 
-function Applications() {
-  return (
-    <Table head={["ID", "Applicant", "Course", "Applying to", "Role", "State", "Received"]}>
-      {applications.map((a, i) => (
-        <Row key={a.id} index={i}>
-          <td className={cn(cell, "font-mono text-micro uppercase text-ink-ghost")}>{a.id}</td>
-          <td className={cn(cell, "text-ink")}>{a.name}</td>
-          <td className={cell}>{a.course}</td>
-          <td className={cell}>{a.target}</td>
-          <td className={cell}>{a.role}</td>
-          <td className={cn(cell, "font-mono text-micro uppercase", STATE_TONE[a.state])}>{a.state}</td>
-          <td className={cn(cell, "font-mono text-micro uppercase text-ink-ghost")}>{a.when}</td>
-        </Row>
-      ))}
-    </Table>
-  );
-}
 
-function Submissions() {
-  return (
-    <>
-      <p className="mb-8 max-w-2xl font-mono text-micro uppercase leading-relaxed text-ink-ghost">
-        Submissions are never published automatically. A queued item is not visible anywhere on the public site.
-      </p>
-      <Table head={["ID", "Problem", "Area", "Submitted", "State", "Received"]}>
-        {submissions.map((s, i) => (
-          <Row key={s.id} index={i}>
-            <td className={cn(cell, "font-mono text-micro uppercase text-ink-ghost")}>{s.id}</td>
-            <td className={cn(cell, "text-ink")}>{s.title}</td>
-            <td className={cell}>{s.area}</td>
-            <td className={cn(cell, "font-mono text-micro uppercase text-ink-ghost")}>
-              {s.anonymous ? "Anonymous" : "Named"}
-            </td>
-            <td className={cn(cell, "font-mono text-micro uppercase", STATE_TONE[s.state])}>{s.state}</td>
-            <td className={cn(cell, "font-mono text-micro uppercase text-ink-ghost")}>{s.when}</td>
-          </Row>
-        ))}
-      </Table>
-    </>
-  );
-}
 
 function ProjectsTable() {
   return (

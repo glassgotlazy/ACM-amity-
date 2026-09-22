@@ -251,35 +251,34 @@ export const projects: Project[] = [
     currentState: {
       exists: [
         "The public site, deployed, with problem, project, research, team and contribution surfaces.",
-        "Application and submission flows that deliver to a live endpoint.",
+        "Application and submission flows that are stored and reviewed in a real admin queue.",
         "Light and dark themes, both measured at zero WCAG AA contrast failures.",
         "A contribution profile and activity feed built from the project repositories.",
       ],
       notYet: [
-        "No database — submissions are forwarded rather than stored and queued.",
-        "No authentication, and no automatic contribution tracking from GitHub.",
-        "The admin view reads demo applications and submissions, not real ones.",
+        "No authentication for members — the admin view is gated by one shared password.",
+        "No automatic contribution tracking from GitHub.",
       ],
     },
     technologies: ["Next.js", "TypeScript", "Tailwind CSS", "Framer Motion"],
     team: [{ name: "Web team", role: "Design + build" }],
     openRoles: [
       { role: "Frontend", level: "Any", what: "Components, interaction detail, accessibility passes" },
-      { role: "Backend", level: "Intermediate", what: "Give submissions a real store and wire the admin view to it" },
+      { role: "Backend", level: "Intermediate", what: "Wire contribution tracking to real repository activity" },
       { role: "Design", level: "Intermediate", what: "Editorial layout work and the contribution record design" },
     ],
     contribute: [
       "Submit a problem you have noticed. That is the fastest way to change what this site is about.",
       "Take one page and make it better on a 360px screen.",
-      "Wire the admin view to real submissions so the last demo surface can go.",
+      "Replace the last demo figure — team sizes — with a real roster.",
     ],
     timeline: [
       { phase: "Design", state: "done", detail: "Problem-first information architecture agreed." },
       { phase: "Build", state: "done", detail: "Public site, discovery, and application flows." },
-      { phase: "Integrate", state: "active", detail: "Submissions deliver live; storage and the admin view come next." },
-      { phase: "Deploy", state: "next", detail: "Contribution tracking wired to real repositories." },
+      { phase: "Integrate", state: "done", detail: "Submissions stored and reviewed in the admin queue." },
+      { phase: "Deploy", state: "active", detail: "Contribution tracking wired to real repositories." }
     ],
-    progress: 74,
+    progress: 82,
   },
 ];
 

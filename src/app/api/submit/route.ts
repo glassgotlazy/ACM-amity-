@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { isStorageConfigured, storeSubmission } from "@/lib/supabase";
 
 /**
  * The single ingress point for every form on the site.
@@ -67,33 +68,52 @@ export async function POST(request: Request) {
     return NextResponse.json({ delivered: true, mode: "accepted" });
   }
 
+  const clean = sanitise(body.payload);
   const endpoint = process.env.FORM_ENDPOINT;
-  if (!endpoint) {
+  const storage = isStorageConfigured();
+
+  if (!endpoint && !storage) {
     return NextResponse.json({ delivered: false, mode: "not-configured" });
   }
 
-  try {
-    const response = await fetch(endpoint, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", Accept: "application/json" },
-      body: JSON.stringify({
-        _subject: `ACM BuildHub — ${LABEL[kind]}`,
-        kind,
-        receivedAt: new Date().toISOString(),
-        ...sanitise(body.payload),
-      }),
-      signal: AbortSignal.timeout(10_000),
-    });
-
-    if (!response.ok) {
-      console.error(`[submit] destination returned ${response.status} for ${kind}`);
-      return NextResponse.json({ delivered: false, error: "destination_failed" }, { status: 502 });
+  // Two sinks, each optional. Storage is the queue the admin view reads;
+  // FORM_ENDPOINT is a copy to an inbox. A submission counts as delivered if
+  // at least one configured sink accepted it — a stored application is safe
+  // even if the inbox copy bounced.
+  let stored = false;
+  if (storage) {
+    try {
+      await storeSubmission(kind, clean, clean.anonymous === true);
+      stored = true;
+    } catch (error) {
+      console.error("[submit] storage failed:", error);
     }
-
-    return NextResponse.json({ delivered: true, mode: "forwarded" });
-  } catch (error) {
-    // Never echo the destination or the error detail back to the browser.
-    console.error("[submit] delivery failed:", error);
-    return NextResponse.json({ delivered: false, error: "delivery_failed" }, { status: 502 });
   }
+
+  let forwarded = false;
+  if (endpoint) {
+    try {
+      const response = await fetch(endpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Accept: "application/json" },
+        body: JSON.stringify({
+          _subject: `ACM BuildHub — ${LABEL[kind]}`,
+          kind,
+          receivedAt: new Date().toISOString(),
+          ...clean,
+        }),
+        signal: AbortSignal.timeout(10_000),
+      });
+      if (response.ok) forwarded = true;
+      else console.error(`[submit] destination returned ${response.status} for ${kind}`);
+    } catch (error) {
+      // Never echo the destination or the error detail back to the browser.
+      console.error("[submit] delivery failed:", error);
+    }
+  }
+
+  if (stored || forwarded) {
+    return NextResponse.json({ delivered: true, mode: stored ? "stored" : "forwarded" });
+  }
+  return NextResponse.json({ delivered: false, error: "delivery_failed" }, { status: 502 });
 }

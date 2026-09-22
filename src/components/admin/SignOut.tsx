@@ -1,10 +1,8 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 export function SignOut() {
-  const router = useRouter();
   const [busy, setBusy] = useState(false);
 
   async function signOut() {
@@ -13,8 +11,9 @@ export function SignOut() {
     try {
       await fetch("/api/admin/session", { method: "DELETE" });
     } finally {
-      router.replace("/admin/login");
-      router.refresh();
+      // Hard navigation for the same reason as sign-in: the cached client
+      // tree for /admin must not survive the cookie being cleared.
+      window.location.assign("/admin/login");
     }
   }
 

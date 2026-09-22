@@ -58,6 +58,34 @@ Each submission arrives as JSON with a `_subject` line, the `kind`, an ISO
 }
 ```
 
+### Storing submissions (the admin queue)
+
+With `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` set, every submission is
+also **stored**, and `/admin` shows a live queue per kind — membership
+applications, project applications, problem submissions, project proposals —
+with state (new → reviewing → accepted / declined / published) and a note.
+
+```bash
+# 1. Create a Supabase project. Settings → API: copy Project URL and the
+#    service_role key (NOT the anon key).
+# 2. SQL editor: run supabase/schema.sql once.
+# 3. Vercel → Environment Variables (Production): SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY.
+# 4. Set ADMIN_PASSWORD too, or /admin stays locked. Redeploy.
+```
+
+Storage is spoken to over PostgREST with plain `fetch` — no SDK, no new
+dependency. The table has RLS enabled and **no policies**: the site uses the
+service-role key, which bypasses RLS; the public anon key can read nothing.
+Both variables are server-only.
+
+`FORM_ENDPOINT` and storage are independent sinks. A submission counts as
+delivered if at least one configured sink accepted it, so a stored
+application is safe even if the inbox copy bounced. Keep both, or drop
+`FORM_ENDPOINT` once the queue is in use.
+
+`/api/admin/*` routes check the same signed cookie as the `/admin` pages;
+middleware alone would leave the queue readable by URL.
+
 **Leaving `FORM_ENDPOINT` unset is a supported state, not a broken one.** The
 forms still validate, animate and confirm, but nothing is transmitted and every
 confirmation screen says so. The notice is driven by what actually happened, so
@@ -96,7 +124,9 @@ not merely that it is hidden in the interface.
 | `/discover` | Two questions, then a ranked shortlist |
 | `/join` | Seven-step membership application |
 | `/admin` | Back-office view over every managed entity |
-| `/api/submit` | Server route that receives every form and forwards it |
+| `/api/submit` | Receives every form; stores to Supabase and/or forwards to `FORM_ENDPOINT` |
+| `/api/admin/session` | Admin sign-in / sign-out (shared password, signed cookie) |
+| `/api/admin/submissions` | Queue list and per-row state/note updates; cookie-checked |
 
 ---
 

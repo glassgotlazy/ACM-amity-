@@ -1,12 +1,11 @@
 "use client";
 
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { TextField } from "@/components/forms/Field";
 import { Button } from "@/components/ui/Button";
 
 export function AdminLogin() {
-  const router = useRouter();
   const params = useSearchParams();
   const unconfigured = params.get("unconfigured") === "1";
 
@@ -30,8 +29,12 @@ export function AdminLogin() {
         body: JSON.stringify({ password }),
       });
       if (res.ok) {
-        router.replace("/admin");
-        router.refresh();
+        // Hard navigation on purpose. The client router prefetches /admin
+        // while this page is open and caches its 307 → /admin/login; a soft
+        // router.replace("/admin") then serves that cached redirect and never
+        // asks the server, leaving the user on the login page with a valid
+        // cookie. Crossing an auth boundary must hit middleware.
+        window.location.assign("/admin");
         return;
       }
       const data = (await res.json().catch(() => ({}))) as { error?: string };

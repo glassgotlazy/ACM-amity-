@@ -67,6 +67,9 @@ export function Footer() {
                     <li key={link.href}>
                       <Link
                         href={link.href}
+                        // /admin redirects every visitor without a session; prefetching
+                        // it only caches a 307 the router would later reuse.
+                        prefetch={link.href === "/admin" ? false : undefined}
                         className="text-sm text-ink-muted transition-colors duration-200 hover:text-ink"
                       >
                         {link.label}
@@ -144,8 +147,8 @@ export function Footer() {
             © {new Date().getFullYear()} ACM @ Amity University · Student chapter
           </p>
           <p className="max-w-xl font-mono text-micro uppercase leading-relaxed text-ink-ghost">
-            Problem statements here are student-written explorations, not official university briefs. Application and
-            submission figures in the admin view are demo content.
+            Problem statements here are student-written explorations, not official university briefs. Team sizes are a
+            demo figure.
           </p>
         </div>
       </div>
