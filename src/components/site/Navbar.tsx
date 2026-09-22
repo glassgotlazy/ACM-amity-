@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import { ease } from "@/lib/motion";
 import { ThemeToggle } from "./ThemeToggle";
+import { openSearch } from "./CommandPalette";
 
 const NAV = [
   { href: "/projects", label: "Projects" },
@@ -97,6 +98,21 @@ export function Navbar() {
           </nav>
 
           <div className="flex items-center gap-2 sm:gap-3">
+            <button
+              type="button"
+              onClick={openSearch}
+              aria-label="Search the site"
+              className="inline-flex h-10 items-center gap-2.5 border border-line px-3.5 font-mono text-label uppercase text-ink-faint transition-colors duration-200 hover:border-line-strong hover:text-ink"
+            >
+              <svg viewBox="0 0 16 16" className="h-[13px] w-[13px] shrink-0" aria-hidden focusable="false">
+                <circle cx="7" cy="7" r="4.6" fill="none" stroke="currentColor" strokeWidth="1.4" />
+                <path d="M10.5 10.5 14 14" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+              </svg>
+              <span className="hidden lg:inline">Search</span>
+              <kbd className="hidden border border-line px-1 py-px font-mono text-[0.5625rem] text-ink-ghost lg:inline">
+                ⌘K
+              </kbd>
+            </button>
             <ThemeToggle />
 
             <Link

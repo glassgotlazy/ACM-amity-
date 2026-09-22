@@ -6,6 +6,7 @@ import { Footer } from "@/components/site/Footer";
 import { Cursor } from "@/components/site/Cursor";
 import { ScrollProgress } from "@/components/site/ScrollProgress";
 import { PageTransition } from "@/components/site/PageTransition";
+import { CommandPalette } from "@/components/site/CommandPalette";
 import { SITE_URL } from "@/lib/site";
 
 const inter = Inter({
@@ -70,6 +71,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <ScrollProgress />
         <Cursor />
         <Navbar />
+        <CommandPalette />
         <main id="main">
           <PageTransition>{children}</PageTransition>
         </main>
