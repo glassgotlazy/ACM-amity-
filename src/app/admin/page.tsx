@@ -14,12 +14,11 @@ export default function AdminPage() {
       <PageHeader
         eyebrow="Admin"
         title="BUILDHUB CONSOLE"
-        lede="A working view over everything the platform manages — applications, problem submissions, projects, teams, research and activity."
+        lede="The queue: every application, problem submission and project proposal, plus the catalogue of projects, problems, teams and research."
       >
         <p className="max-w-2xl border border-line px-6 py-4 font-mono text-micro uppercase leading-relaxed text-ink-ghost">
-          <span className="text-acm-bright">Demo console ·</span> every figure and row below is placeholder content. There is
-          no authentication and no backend — this view exists to show the shape of the eventual back office, and no
-          real application or submission is stored anywhere.
+          <span className="text-acm-bright">Core team only ·</span> applications, submissions and proposals here are
+          real stored records. Nothing is published automatically. Team sizes are the one remaining demo figure.
         </p>
       </PageHeader>
 
