@@ -396,11 +396,14 @@ export function problemBySlug(slug: string) {
 }
 
 /**
- * Demo rotation for the homepage feature. It advances on its own each week so
- * the section is never stale; a backend can replace it with a real editorial
- * pick later. Call this from a server component only — the result is baked
- * into the rendered HTML, so the client never recomputes it and there is no
- * hydration mismatch at a week boundary.
+ * Rotation for the homepage feature. It advances on its own each week so the
+ * section is never stale; a backend can replace it with a real editorial pick
+ * later.
+ *
+ * Call this from a server component only. The result is baked into the
+ * rendered HTML, so the client never recomputes it and there is no hydration
+ * mismatch at a week boundary — and the page that renders it must set
+ * `revalidate`, or the pick freezes at build time.
  */
 export function problemOfTheWeek(): Problem {
   const week = Math.floor(Date.now() / 6048e5);

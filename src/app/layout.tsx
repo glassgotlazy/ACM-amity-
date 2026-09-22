@@ -6,6 +6,7 @@ import { Footer } from "@/components/site/Footer";
 import { Cursor } from "@/components/site/Cursor";
 import { ScrollProgress } from "@/components/site/ScrollProgress";
 import { PageTransition } from "@/components/site/PageTransition";
+import { SITE_URL } from "@/lib/site";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -22,7 +23,7 @@ const mono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://acm-buildhub.example"),
+  metadataBase: new URL(SITE_URL),
   title: {
     default: "ACM BuildHub — ACM @ Amity University",
     template: "%s — ACM BuildHub",

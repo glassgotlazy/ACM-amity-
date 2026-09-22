@@ -9,6 +9,15 @@ import { RecruitCTA } from "@/components/home/RecruitCTA";
 import { FinalCTA } from "@/components/home/FinalCTA";
 import { problemOfTheWeek } from "@/data/problems";
 
+/**
+ * The homepage is prerendered, so without revalidation the weekly pick would
+ * be frozen at build time and the section's "rotates weekly" claim would be
+ * false until the next deploy. Regenerating daily is far more often than the
+ * pick changes, which guarantees the rotation lands on time while keeping the
+ * page static for every visitor.
+ */
+export const revalidate = 86400;
+
 export default function Home() {
   // Resolved on the server so the weekly pick is baked into the HTML.
   const featured = problemOfTheWeek();
