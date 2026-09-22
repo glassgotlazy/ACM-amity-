@@ -50,17 +50,21 @@ export function ThemeToggle({ className }: { className?: string }) {
       // Inert until hydrated, so it can never look interactive before it works.
       disabled={!mounted}
       className={cn(
-        "group flex h-10 w-10 items-center justify-center text-ink-faint transition-colors duration-200 hover:text-ink disabled:opacity-60",
+        "group inline-flex h-10 items-center gap-2.5 border border-line px-3.5 font-mono text-label uppercase text-ink-faint",
+        "transition-colors duration-200 hover:border-line-strong hover:text-ink disabled:opacity-60",
         className,
       )}
     >
-      <svg viewBox="0 0 16 16" className="h-[15px] w-[15px]" aria-hidden focusable="false">
+      <svg viewBox="0 0 16 16" className="h-[13px] w-[13px] shrink-0" aria-hidden focusable="false">
         <circle cx="8" cy="8" r="6.25" fill="none" stroke="currentColor" strokeWidth="1.3" />
-        {/* The filled half flips side with the theme — a contrast mark rather
-            than a sun or a moon, which suits the rest of the iconography. */}
+        {/* Filled half flips with the theme — a contrast mark, not a sun or moon. */}
         <path d="M8 1.75 A6.25 6.25 0 0 1 8 14.25 Z" fill="currentColor" className="theme-glyph-dark" />
         <path d="M8 1.75 A6.25 6.25 0 0 0 8 14.25 Z" fill="currentColor" className="theme-glyph-light" />
       </svg>
+      {/* Label names the theme you will get, matching the aria-label's intent.
+          Both are rendered and CSS picks one, so server and client markup match. */}
+      <span className="theme-label-dark">Light</span>
+      <span className="theme-label-light">Dark</span>
     </button>
   );
 }

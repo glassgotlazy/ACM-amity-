@@ -206,6 +206,17 @@
   :root[data-theme="light"] .theme-glyph-light {
     display: inline;
   }
+
+  /* Label halves follow the same rule as the glyph. */
+  .theme-label-light {
+    display: none;
+  }
+  :root[data-theme="light"] .theme-label-dark {
+    display: none;
+  }
+  :root[data-theme="light"] .theme-label-light {
+    display: inline;
+  }
 }
 
 @layer utilities {

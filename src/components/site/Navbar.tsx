@@ -179,15 +179,14 @@ export function Navbar() {
                 </ul>
               </nav>
 
-              <div className="mt-10 flex items-center gap-3">
-                <Link
-                  href="/join"
-                  className="flex h-14 flex-1 items-center justify-center gap-2 bg-acm-solid font-mono text-label uppercase text-white"
-                >
-                  Join ACM →
-                </Link>
-                <ThemeToggle className="h-14 w-14 border border-line-strong" />
-              </div>
+              {/* Theme toggle lives in the header bar, visible without opening
+                  the menu, so it is not repeated here. */}
+              <Link
+                href="/join"
+                className="mt-10 flex h-14 items-center justify-center gap-2 bg-acm-solid font-mono text-label uppercase text-white"
+              >
+                Join ACM →
+              </Link>
             </div>
           </motion.div>
         ) : null}
