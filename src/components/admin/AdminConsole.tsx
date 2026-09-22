@@ -12,6 +12,7 @@ import { activity } from "@/data/activity";
 import { StatusPill } from "@/components/ui/Badges";
 import { cn } from "@/lib/utils";
 import { ease } from "@/lib/motion";
+import { SignOut } from "./SignOut";
 
 const TABS = ["Overview", "Applications", "Submissions", "Projects", "Problems", "Teams", "Research", "Activity"] as const;
 type Tab = (typeof TABS)[number];
@@ -49,6 +50,9 @@ export function AdminConsole() {
             <span className="relative z-10">{t}</span>
           </button>
         ))}
+        <span className="ml-auto flex items-center">
+          <SignOut />
+        </span>
       </nav>
 
       <motion.div
