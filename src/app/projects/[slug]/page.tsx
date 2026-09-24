@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { projects, projectBySlug } from "@/data/projects";
+import { getProject, getProjects } from "@/lib/cms/read";
 import { StatusPill, Tag } from "@/components/ui/Badges";
 import { Reveal } from "@/components/ui/Reveal";
 import { ArrowLink } from "@/components/ui/ArrowLink";
@@ -10,20 +10,20 @@ import { ProgressTicks } from "@/components/projects/ProjectCard";
 import { ApplyPanel } from "@/components/projects/ApplyPanel";
 import { Section, Prose } from "@/components/ui/Section";
 
-export function generateStaticParams() {
-  return projects.map((p) => ({ slug: p.slug }));
+export async function generateStaticParams() {
+  return (await getProjects()).map((p) => ({ slug: p.slug }));
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
-  const project = projectBySlug(slug);
+  const project = await getProject(slug);
   if (!project) return { title: "Project not found" };
   return { title: project.name, description: project.summary };
 }
 
 export default async function ProjectPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const project = projectBySlug(slug);
+  const project = await getProject(slug);
   if (!project) notFound();
 
   return (
@@ -54,7 +54,43 @@ export default async function ProjectPage({ params }: { params: Promise<{ slug: 
           <Reveal delay={0.16} className="mt-12 flex flex-wrap items-center gap-x-8 gap-y-5">
             <ApplyPanel projectName={project.name} roles={project.openRoles.map((r) => r.role)} />
             <ProgressTicks value={project.progress} />
+            {project.liveUrl || project.repo ? (
+              <span className="flex flex-wrap gap-x-6 gap-y-2">
+                {project.liveUrl ? (
+                  <a
+                    href={project.liveUrl}
+                    target="_blank"
+                    rel="noreferrer noopener"
+                    className="font-mono text-label uppercase text-acm-bright transition-colors hover:text-ink"
+                  >
+                    Live project ↗
+                  </a>
+                ) : null}
+                {project.repo ? (
+                  <a
+                    href={project.repo}
+                    target="_blank"
+                    rel="noreferrer noopener"
+                    className="font-mono text-label uppercase text-acm-bright transition-colors hover:text-ink"
+                  >
+                    Source code ↗
+                  </a>
+                ) : null}
+              </span>
+            ) : null}
           </Reveal>
+
+          {project.image ? (
+            <Reveal delay={0.2} className="mt-14">
+              {/* eslint-disable-next-line @next/next/no-img-element -- CMS image, size-checked on upload */}
+              <img
+                src={project.image}
+                alt=""
+                decoding="async"
+                className="aspect-[21/9] w-full border border-line object-cover"
+              />
+            </Reveal>
+          ) : null}
         </div>
       </header>
 

@@ -1,5 +1,4 @@
 import { problems } from "@/data/problems";
-import { projects } from "@/data/projects";
 import { ideas } from "@/data/ideas";
 import { teams } from "@/data/teams";
 import { researchProjects } from "@/data/research";
@@ -30,32 +29,46 @@ export const KIND_LABEL: Record<SearchKind, string> = {
 const lower = (s: string) => s.toLowerCase();
 const join = (xs: readonly string[]) => lower(xs.join(" "));
 
+/** The fields of a project that search needs; sent to the browser with the page. */
+export type SearchProject = {
+  slug: string;
+  name: string;
+  summary: string;
+  category: string;
+  domains: string[];
+  technologies: string[];
+  roles: string[];
+};
+
 /**
- * Built once from the same data the pages render, so search can never show
- * something the site does not. Tiny corpus (a few dozen entries), so this is
- * a plain in-memory scorer — no index library, no network.
+ * Built from the same data the pages render, so search can never show
+ * something the site does not. Projects come from the CMS and are passed in;
+ * everything else is static. Tiny corpus (a few dozen entries), so this is a
+ * plain in-memory scorer — no index library, no network.
  */
-export const SEARCH_INDEX: SearchEntry[] = [
-  ...problems.map((p) => ({
-    id: `problem:${p.slug}`,
-    kind: "problem" as const,
-    title: p.title,
-    subtitle: p.hook,
-    href: `/problems/${p.slug}`,
-    title_: lower(p.title),
-    tags_: join([p.category, ...p.domains, ...p.technologies, p.potentialProject.name, ...p.openRoles]),
-    body_: lower(`${p.question} ${p.hook}`),
-  })),
-  ...projects.map((p) => ({
-    id: `project:${p.slug}`,
-    kind: "project" as const,
-    title: p.name,
-    subtitle: p.summary,
-    href: `/projects/${p.slug}`,
-    title_: lower(p.name),
-    tags_: join([p.category, ...p.domains, ...p.technologies, ...p.openRoles.map((r) => r.role)]),
-    body_: lower(p.summary),
-  })),
+const problemEntries: SearchEntry[] = problems.map((p) => ({
+  id: `problem:${p.slug}`,
+  kind: "problem",
+  title: p.title,
+  subtitle: p.hook,
+  href: `/problems/${p.slug}`,
+  title_: lower(p.title),
+  tags_: join([p.category, ...p.domains, ...p.technologies, p.potentialProject.name, ...p.openRoles]),
+  body_: lower(`${p.question} ${p.hook}`),
+}));
+
+const projectEntry = (p: SearchProject): SearchEntry => ({
+  id: `project:${p.slug}`,
+  kind: "project",
+  title: p.name,
+  subtitle: p.summary,
+  href: `/projects/${p.slug}`,
+  title_: lower(p.name),
+  tags_: join([p.category, ...p.domains, ...p.technologies, ...p.roles]),
+  body_: lower(p.summary),
+});
+
+const otherEntries: SearchEntry[] = [
   ...ideas.map((i) => ({
     id: `idea:${i.slug}`,
     kind: "idea" as const,
@@ -91,6 +104,7 @@ export const SEARCH_INDEX: SearchEntry[] = [
     ["Find your project", "Two questions, then a shortlist.", "/discover", "match recommend quiz"],
     ["Submit a problem", "Noticed something that should work better?", "/problems/submit", "report suggest"],
     ["Problem Lab", "Every problem statement.", "/problems", "browse all"],
+    ["Events", "Sessions, workshops and build nights.", "/events", "workshop session meetup calendar"],
     ["Activity", "What actually shipped recently.", "/activity", "log updates news"],
     ["Contribution profile", "The record, not the membership.", "/profile", "portfolio"],
   ].map(([title, subtitle, href, extra]) => ({
@@ -105,6 +119,10 @@ export const SEARCH_INDEX: SearchEntry[] = [
   })),
 ];
 
+export function buildIndex(projects: SearchProject[]): SearchEntry[] {
+  return [...problemEntries, ...projects.map(projectEntry), ...otherEntries];
+}
+
 const KIND_ORDER: SearchKind[] = ["problem", "project", "idea", "research", "team", "page"];
 
 /**
@@ -112,12 +130,12 @@ const KIND_ORDER: SearchKind[] = ["problem", "project", "idea", "research", "tea
  * surface every research entry. Title hits weigh most, a title prefix most of
  * all; tags next; body last. Ties break by kind order, then alphabetically.
  */
-export function search(query: string, limit = 12): SearchEntry[] {
+export function search(index: SearchEntry[], query: string, limit = 12): SearchEntry[] {
   const tokens = lower(query).split(/\s+/).filter((t) => t.length > 0);
   if (tokens.length === 0) return [];
 
   const scored: { entry: SearchEntry; score: number }[] = [];
-  for (const entry of SEARCH_INDEX) {
+  for (const entry of index) {
     let score = 0;
     let allHit = true;
     for (const tok of tokens) {
@@ -145,9 +163,7 @@ export function search(query: string, limit = 12): SearchEntry[] {
 }
 
 /** Shown before anyone types: the fastest routes into the site. */
-export const SEARCH_SUGGESTIONS: SearchEntry[] = [
-  SEARCH_INDEX.find((e) => e.id === "page:/problems")!,
-  SEARCH_INDEX.find((e) => e.id === "page:/discover")!,
-  SEARCH_INDEX.find((e) => e.id === "page:/join")!,
-  ...SEARCH_INDEX.filter((e) => e.kind === "problem").slice(0, 3),
-];
+export function suggestions(index: SearchEntry[]): SearchEntry[] {
+  const page = (href: string) => index.find((e) => e.id === `page:${href}`)!;
+  return [page("/problems"), page("/discover"), page("/join"), ...index.filter((e) => e.kind === "problem").slice(0, 3)];
+}

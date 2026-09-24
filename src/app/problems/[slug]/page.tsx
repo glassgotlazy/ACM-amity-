@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { problems, problemBySlug } from "@/data/problems";
-import { projects } from "@/data/projects";
+import { getProjects } from "@/lib/cms/read";
 import { DifficultyMeter, OriginTag, Tag } from "@/components/ui/Badges";
 import { level } from "@/data/taxonomy";
 import { Reveal } from "@/components/ui/Reveal";
@@ -27,7 +27,7 @@ export default async function ProblemPage({ params }: { params: Promise<{ slug: 
   if (!problem) notFound();
 
   const lvl = level(problem.level);
-  const linkedProject = projects.find((p) => p.problemSlug === problem.slug);
+  const linkedProject = (await getProjects()).find((p) => p.problemSlug === problem.slug);
 
   return (
     <article>

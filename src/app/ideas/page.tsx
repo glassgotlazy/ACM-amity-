@@ -3,6 +3,7 @@ import { PageHeader } from "@/components/ui/SectionHeading";
 import { IdeaIndex } from "@/components/ideas/IdeaIndex";
 import { ideas } from "@/data/ideas";
 import { RecruitCTA } from "@/components/home/RecruitCTA";
+import { getSection } from "@/lib/cms/read";
 
 export const metadata: Metadata = {
   title: "Project Ideas",
@@ -10,7 +11,8 @@ export const metadata: Metadata = {
     "Unclaimed starting points for students who want to build but have not found a problem yet — filtered by level and domain.",
 };
 
-export default function IdeasPage() {
+export default async function IdeasPage() {
+  const recruit = await getSection("recruit");
   return (
     <>
       <PageHeader
@@ -32,7 +34,7 @@ export default function IdeasPage() {
         ]}
       />
       <IdeaIndex />
-      <RecruitCTA />
+      <RecruitCTA section={recruit} />
     </>
   );
 }

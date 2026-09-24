@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { motion, useReducedMotion } from "framer-motion";
-import type { Project } from "@/data/projects";
+import type { Project } from "@/lib/cms/types";
 import { StatusPill, Tag } from "@/components/ui/Badges";
 import { viewportOnce } from "@/lib/motion";
 import { cn } from "@/lib/utils";

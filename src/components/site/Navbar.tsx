@@ -8,22 +8,12 @@ import { cn } from "@/lib/utils";
 import { ease } from "@/lib/motion";
 import { ThemeToggle } from "./ThemeToggle";
 import { openSearch } from "./CommandPalette";
+import { isAdminPath } from "./HideOnAdmin";
+import { Wordmark } from "./Wordmark";
+import type { Brand, NavItem } from "@/lib/cms/types";
 
-const NAV = [
-  { href: "/projects", label: "Projects" },
-  { href: "/problems", label: "Problem Lab" },
-  { href: "/research", label: "Research" },
-  { href: "/teams", label: "Teams" },
-  { href: "/activity", label: "Activity" },
-];
-
-const MOBILE_EXTRA = [
-  { href: "/discover", label: "Find your project" },
-  { href: "/ideas", label: "Project ideas" },
-  { href: "/profile", label: "Contribution profile" },
-];
-
-export function Navbar() {
+/** Links, their order and the wordmark all come from the CMS via the layout. */
+export function Navbar({ brand, items, extra }: { brand: Brand; items: NavItem[]; extra: NavItem[] }) {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
@@ -43,6 +33,8 @@ export function Navbar() {
     };
   }, [open]);
 
+  if (isAdminPath(pathname)) return null;
+
   return (
     <>
       <a
@@ -61,22 +53,16 @@ export function Navbar() {
         )}
       >
         <div className="shell flex h-[4.5rem] items-center justify-between gap-8">
-          <Link href="/" className="group flex items-center gap-3" aria-label="ACM at Amity University — BuildHub home">
-            <span className="text-[1.0625rem] font-semibold leading-none tracking-[-0.03em]">ACM</span>
-            <span className="h-4 w-px bg-line-strong" aria-hidden />
-            <span className="font-mono text-micro uppercase leading-[1.3] text-ink-faint transition-colors duration-200 group-hover:text-ink-muted">
-              @ Amity
-              <br />
-              BuildHub
-            </span>
+          <Link href="/" className="group flex items-center gap-3" aria-label={brand.label}>
+            <Wordmark brand={brand} size="sm" />
           </Link>
 
           <nav aria-label="Primary" className="hidden items-center gap-1 lg:flex">
-            {NAV.map((item) => {
+            {items.map((item) => {
               const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
               return (
                 <Link
-                  key={item.href}
+                  key={item.id}
                   href={item.href}
                   aria-current={active ? "page" : undefined}
                   className={cn(
@@ -163,9 +149,9 @@ export function Navbar() {
             <div className="shell flex h-full flex-col justify-between overflow-y-auto pb-10 pt-6">
               <nav aria-label="Mobile">
                 <ul>
-                  {NAV.map((item, i) => (
+                  {items.map((item, i) => (
                     <motion.li
-                      key={item.href}
+                      key={item.id}
                       initial={reduce ? false : { opacity: 0, y: 12 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.4, delay: 0.04 * i, ease }}
@@ -180,9 +166,9 @@ export function Navbar() {
                 </ul>
 
                 <ul className="mt-8 space-y-4">
-                  {MOBILE_EXTRA.map((item, i) => (
+                  {extra.map((item, i) => (
                     <motion.li
-                      key={item.href}
+                      key={item.id}
                       initial={reduce ? false : { opacity: 0 }}
                       animate={{ opacity: 1 }}
                       transition={{ duration: 0.4, delay: 0.24 + 0.04 * i }}

@@ -7,7 +7,10 @@ import { Cursor } from "@/components/site/Cursor";
 import { ScrollProgress } from "@/components/site/ScrollProgress";
 import { PageTransition } from "@/components/site/PageTransition";
 import { CommandPalette } from "@/components/site/CommandPalette";
+import { HideOnAdmin } from "@/components/site/HideOnAdmin";
 import { SITE_URL } from "@/lib/site";
+import { getNav, getProjects, getSettings, getSocial, getTeam } from "@/lib/cms/read";
+import { brandCaption } from "@/lib/cms/types";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -23,22 +26,27 @@ const mono = JetBrains_Mono({
   weight: ["400", "500"],
 });
 
-export const metadata: Metadata = {
-  metadataBase: new URL(SITE_URL),
-  title: {
-    default: "ACM BuildHub — ACM @ Amity University",
-    template: "%s — ACM BuildHub",
-  },
-  description:
-    "Real problems. Real projects. Real technical experience. ACM BuildHub is where students at Amity University find a problem worth solving, build a team around it, and leave with something they can show.",
-  keywords: ["ACM", "Amity University", "student projects", "research", "AI", "quantum computing", "cybersecurity"],
-  openGraph: {
-    title: "ACM BuildHub — Build something worth showing.",
-    description: "Real problems. Real projects. Real technical experience.",
-    type: "website",
-  },
-  robots: { index: true, follow: true },
-};
+/** Name, description and favicon come from Site Settings in the admin. */
+export async function generateMetadata(): Promise<Metadata> {
+  const s = await getSettings();
+  return {
+    metadataBase: new URL(SITE_URL),
+    title: {
+      default: `${s.site_name} — ${s.organization}`,
+      template: `%s — ${s.site_name}`,
+    },
+    description: s.description,
+    keywords: ["ACM", "Amity University", "student projects", "research", "AI", "quantum computing", "cybersecurity"],
+    openGraph: {
+      title: s.site_name,
+      description: s.tagline,
+      siteName: s.site_name,
+      type: "website",
+    },
+    icons: { icon: s.favicon_url ?? "/favicon.svg" },
+    robots: { index: true, follow: true },
+  };
+}
 
 export const viewport: Viewport = {
   themeColor: [
@@ -61,7 +69,25 @@ var light = s ? s==="light" : window.matchMedia("(prefers-color-scheme: light)")
 if(light)document.documentElement.setAttribute("data-theme","light");
 }catch(e){}})();`;
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const [settings, nav, social, team, projects] = await Promise.all([
+    getSettings(),
+    getNav(),
+    getSocial(),
+    getTeam(),
+    getProjects(),
+  ]);
+  const brand = {
+    short: settings.short_name,
+    caption: brandCaption(settings),
+    logo: settings.logo_url,
+    label: `${settings.organization} — ${settings.site_name} home`,
+  };
+  const header = nav.filter((n) => n.in_header);
+  // Mobile menu: the header links, then the browse links that only live in
+  // the footer columns. "Take part" links are actions, covered by the CTA.
+  const mobileExtra = nav.filter((n) => !n.in_header && (n.footer_group === "platform" || n.footer_group === "community"));
+
   return (
     <html lang="en" className={`${inter.variable} ${mono.variable}`} suppressHydrationWarning>
       <head>
@@ -70,12 +96,24 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="min-h-screen antialiased">
         <ScrollProgress />
         <Cursor />
-        <Navbar />
-        <CommandPalette />
+        <Navbar brand={brand} items={header} extra={mobileExtra} />
+        <CommandPalette
+          projects={projects.map((p) => ({
+            slug: p.slug,
+            name: p.name,
+            summary: p.summary,
+            category: p.category,
+            domains: p.domains,
+            technologies: p.technologies,
+            roles: p.openRoles.map((r) => r.role),
+          }))}
+        />
         <main id="main">
           <PageTransition>{children}</PageTransition>
         </main>
-        <Footer />
+        <HideOnAdmin>
+          <Footer brand={brand} settings={settings} nav={nav} social={social} team={team} />
+        </HideOnAdmin>
       </body>
     </html>
   );

@@ -7,26 +7,30 @@ import { SectionHeading } from "@/components/ui/SectionHeading";
 import { Reveal } from "@/components/ui/Reveal";
 import { ArrowLink } from "@/components/ui/ArrowLink";
 import { viewportOnce } from "@/lib/motion";
+import { Lines } from "@/components/ui/Lines";
+import type { Section } from "@/lib/cms/types";
 
-export function ContributionPitch() {
+export function ContributionPitch({ section, index }: { section: Section; index: string }) {
   const reduce = useReducedMotion();
 
   return (
     <section className="border-y border-line bg-surface/30" aria-labelledby="contribution">
       <div className="shell py-section">
         <SectionHeading
-          index="05"
-          eyebrow="Contribution"
+          index={index}
+          eyebrow={section.eyebrow}
           title={
             <span id="contribution">
-              YOUR MEMBERSHIP SAYS YOU JOINED.
-              <br />
-              YOUR CONTRIBUTIONS SHOW WHAT YOU DID.
+              <Lines text={section.title} />
             </span>
           }
-          lede="Every project you touch through ACM leaves a trace — a commit, a review, a write-up, a deployed service. This platform exists to keep that record, so you leave with evidence rather than a line on a list."
+          lede={section.body || undefined}
           align="wide"
-          action={<ArrowLink href="/profile">See a profile</ArrowLink>}
+          action={
+            section.primary_label && section.primary_href ? (
+              <ArrowLink href={section.primary_href}>{section.primary_label}</ArrowLink>
+            ) : undefined
+          }
         />
 
         <div className="mt-14 grid gap-px bg-line lg:grid-cols-2">
@@ -72,9 +76,7 @@ export function ContributionPitch() {
               </motion.li>
             ))}
           </ul>
-          <p className="mt-6 font-mono text-micro uppercase text-ink-ghost">
-            Contribution tracking is not wired to a live source yet — the profile you can view is demo content.
-          </p>
+          {section.note ? <p className="mt-6 font-mono text-micro uppercase text-ink-ghost">{section.note}</p> : null}
         </Reveal>
       </div>
     </section>

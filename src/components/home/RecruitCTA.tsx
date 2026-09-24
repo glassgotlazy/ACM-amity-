@@ -4,8 +4,9 @@ import { motion, useReducedMotion } from "framer-motion";
 import Link from "next/link";
 import { MaskedHeadline } from "@/components/ui/MaskedHeadline";
 import { viewportOnce } from "@/lib/motion";
+import { lines, type Section } from "@/lib/cms/types";
 
-export function RecruitCTA() {
+export function RecruitCTA({ section }: { section: Section }) {
   const reduce = useReducedMotion();
 
   return (
@@ -14,11 +15,11 @@ export function RecruitCTA() {
         <MaskedHeadline
           id="recruit"
           className="text-display-md"
-          lines={[
-            { text: "YOUR NEXT PROJECT" },
-            { text: "DOESN’T HAVE TO BE" },
-            { text: "A COLLEGE ASSIGNMENT.", className: "text-ink-faint" },
-          ]}
+          // The last line is set back in a fainter ink, as designed.
+          lines={lines(section.title).map((text, i, all) => ({
+            text,
+            className: all.length > 1 && i === all.length - 1 ? "text-ink-faint" : undefined,
+          }))}
         />
 
         <motion.div
@@ -27,28 +28,32 @@ export function RecruitCTA() {
           viewport={viewportOnce}
           transition={{ duration: 0.6, delay: 0.2 }}
         >
-          <p className="max-w-sm text-[1.0625rem] leading-relaxed text-ink-muted">
-            Build something. Research something. Solve something.
-          </p>
+          {section.body ? (
+            <p className="max-w-sm text-[1.0625rem] leading-relaxed text-ink-muted">{section.body}</p>
+          ) : null}
           <div className="mt-8 flex flex-wrap gap-3">
+            {section.primary_label && section.primary_href ? (
             <Link
-              href="/join"
+              href={section.primary_href}
               className="group inline-flex items-center gap-3 bg-acm-solid px-7 py-4 font-mono text-label uppercase text-white transition-colors duration-200 hover:bg-acm-deep"
             >
-              Join ACM
+              {section.primary_label}
               <span aria-hidden className="transition-transform duration-300 ease-out group-hover:translate-x-1">
                 →
               </span>
             </Link>
+            ) : null}
+            {section.secondary_label && section.secondary_href ? (
             <Link
-              href="/problems"
+              href={section.secondary_href}
               className="group inline-flex items-center gap-3 border border-line-strong px-7 py-4 font-mono text-label uppercase transition-colors duration-200 hover:border-acm hover:text-acm-bright"
             >
-              Explore problems
+              {section.secondary_label}
               <span aria-hidden className="transition-transform duration-300 ease-out group-hover:translate-x-1">
                 →
               </span>
             </Link>
+            ) : null}
           </div>
         </motion.div>
       </div>

@@ -8,7 +8,6 @@ import { Button } from "@/components/ui/Button";
 import { MaskedHeadline } from "@/components/ui/MaskedHeadline";
 import { submitForm, trapProps, type SubmissionResult } from "@/lib/submissions";
 import { DeliveryNotice } from "./DeliveryNotice";
-import { REGISTRATION_URL } from "@/data/chapter";
 import { DOMAINS } from "@/data/taxonomy";
 import { ease } from "@/lib/motion";
 import { cn } from "@/lib/utils";
@@ -69,7 +68,7 @@ const STEPS: StepDef[] = [
  * keeps the whole application feeling like a conversation instead of an
  * administrative task.
  */
-export function JoinFlow() {
+export function JoinFlow({ registrationUrl }: { registrationUrl: string | null }) {
   const reduce = useReducedMotion();
   const [step, setStep] = useState(0);
   const [direction, setDirection] = useState(1);
@@ -179,8 +178,9 @@ export function JoinFlow() {
           lines={[{ text: "WELCOME TO" }, { text: "THE BUILD.", className: "text-acm-bright" }]}
         />
 
+        {registrationUrl ? (
         <motion.a
-          href={REGISTRATION_URL}
+          href={registrationUrl}
           target="_blank"
           rel="noreferrer noopener"
           className="group mt-12 flex flex-wrap items-center justify-between gap-6 border border-acm/40 bg-acm-wash p-7 transition-colors duration-200 hover:border-acm"
@@ -204,6 +204,7 @@ export function JoinFlow() {
             </span>
           </span>
         </motion.a>
+        ) : null}
 
         <motion.div
           className="mt-8 grid gap-px bg-line lg:grid-cols-3"

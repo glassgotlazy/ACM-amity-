@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, useReducedMotion } from "framer-motion";
-import type { Milestone } from "@/data/projects";
+import type { Milestone } from "@/lib/cms/types";
 import { cn } from "@/lib/utils";
 import { viewportOnce } from "@/lib/motion";
 

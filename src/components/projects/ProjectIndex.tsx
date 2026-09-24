@@ -2,14 +2,14 @@
 
 import { AnimatePresence, LayoutGroup } from "framer-motion";
 import { useMemo, useState } from "react";
-import { projects } from "@/data/projects";
+import type { Project } from "@/lib/cms/types";
 import { DOMAINS } from "@/data/taxonomy";
 import { FilterBar } from "@/components/ui/FilterBar";
 import { ProjectRow } from "./ProjectCard";
 
 const FILTERS = ["All", ...DOMAINS.filter((d) => d !== "IoT" && d !== "Design")] as const;
 
-export function ProjectIndex() {
+export function ProjectIndex({ projects }: { projects: Project[] }) {
   const [filter, setFilter] = useState<string>("All");
 
   const counts = useMemo(() => {

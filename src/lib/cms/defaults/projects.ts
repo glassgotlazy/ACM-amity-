@@ -1,36 +1,12 @@
-import type { Domain, Role, StatusId } from "./taxonomy";
+import type { Project } from "../types";
 
-export type Milestone = {
-  phase: string;
-  state: "done" | "active" | "next" | "later";
-  detail: string;
-};
-
-export type Project = {
-  slug: string;
-  name: string;
-  category: string;
-  status: StatusId;
-  domains: Domain[];
-  /** One line, used on cards and in search. */
-  summary: string;
-  /** The problem the project exists to answer. */
-  problem: string;
-  problemSlug?: string;
-  building: string[];
-  /** Deliberately precise about what exists today versus what does not. */
-  currentState: { exists: string[]; notYet: string[] };
-  technologies: string[];
-  team: { name: string; role: string }[];
-  openRoles: { role: Role; level: string; what: string }[];
-  contribute: string[];
-  timeline: Milestone[];
-  progress: number;
-  featured?: boolean;
-  repo?: string;
-};
-
-export const projects: Project[] = [
+/**
+ * The projects the site shipped with. Used only until the CMS is initialised
+ * (see supabase/cms.sql): "Load current website content" in the admin copies
+ * these into the database, after which the database is the only source and
+ * this file is never read by the public site again.
+ */
+export const defaultProjects: Omit<Project, "id">[] = [
   {
     slug: "admissions-ai",
     name: "AI Admissions Assistant",
@@ -281,14 +257,3 @@ export const projects: Project[] = [
     progress: 82,
   },
 ];
-
-export function projectBySlug(slug: string) {
-  return projects.find((p) => p.slug === slug);
-}
-
-export const featuredProjects = projects.filter((p) => p.featured);
-
-/** Every open role across every project — used by /teams and the admin view. */
-export function allOpenRoles() {
-  return projects.flatMap((p) => p.openRoles.map((r) => ({ ...r, project: p.name, slug: p.slug })));
-}

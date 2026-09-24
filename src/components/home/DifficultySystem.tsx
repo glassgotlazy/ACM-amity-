@@ -4,21 +4,27 @@ import { motion, useReducedMotion } from "framer-motion";
 import { LEVELS } from "@/data/taxonomy";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { viewportOnce } from "@/lib/motion";
+import { Lines } from "@/components/ui/Lines";
+import type { Section } from "@/lib/cms/types";
 
 /**
  * Levels presented as a staircase — each row indents and its bar grows, so
  * the escalation is visible before any of the text is read.
  */
-export function DifficultySystem() {
+export function DifficultySystem({ section, index }: { section: Section; index: string }) {
   const reduce = useReducedMotion();
 
   return (
     <section className="shell py-section" aria-labelledby="levels">
       <SectionHeading
-        index="04"
-        eyebrow="Difficulty system"
-        title={<span id="levels">FOUR LEVELS. NONE OF THEM ABOUT YOU.</span>}
-        lede="Difficulty here describes the work — its technical complexity, its scope, how much research it needs and how many things have to agree with each other. It is not a statement about who is capable of doing it."
+        index={index}
+        eyebrow={section.eyebrow}
+        title={
+          <span id="levels">
+            <Lines text={section.title} />
+          </span>
+        }
+        lede={section.body || undefined}
         align="wide"
       />
 

@@ -5,7 +5,7 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import { DOMAINS, COMFORT, type ComfortId } from "@/data/taxonomy";
 import { ideas } from "@/data/ideas";
-import { projects } from "@/data/projects";
+import type { Project } from "@/lib/cms/types";
 import { problems } from "@/data/problems";
 import { DifficultyMeter, StatusPill, Tag } from "@/components/ui/Badges";
 import { Button } from "@/components/ui/Button";
@@ -24,7 +24,7 @@ const COMFORT_LEVELS: Record<ComfortId, string[]> = {
 
 type Step = 0 | 1 | 2;
 
-export function DiscoverFlow() {
+export function DiscoverFlow({ projects }: { projects: Project[] }) {
   const reduce = useReducedMotion();
   const [step, setStep] = useState<Step>(0);
   const [interests, setInterests] = useState<string[]>([]);

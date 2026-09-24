@@ -1,6 +1,6 @@
 import type { MetadataRoute } from "next";
 import { SITE_URL } from "@/lib/site";
-import { projects } from "@/data/projects";
+import { getEvents, getProjects } from "@/lib/cms/read";
 import { problems } from "@/data/problems";
 import { researchProjects } from "@/data/research";
 
@@ -11,8 +11,9 @@ import { researchProjects } from "@/data/research";
  *
  * /admin is deliberately absent — it is excluded in robots.ts too.
  */
-export default function sitemap(): MetadataRoute.Sitemap {
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const now = new Date();
+  const [projects, events] = await Promise.all([getProjects(), getEvents()]);
 
   const staticRoutes: { path: string; priority: number; frequency: MetadataRoute.Sitemap[number]["changeFrequency"] }[] = [
     { path: "", priority: 1, frequency: "weekly" },
@@ -25,6 +26,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { path: "/teams", priority: 0.7, frequency: "monthly" },
     { path: "/problems/submit", priority: 0.6, frequency: "monthly" },
     { path: "/activity", priority: 0.5, frequency: "weekly" },
+    ...(events.length ? [{ path: "/events", priority: 0.6, frequency: "weekly" as const }] : []),
     { path: "/profile", priority: 0.4, frequency: "monthly" },
   ];
 

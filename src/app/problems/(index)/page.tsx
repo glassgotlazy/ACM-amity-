@@ -3,6 +3,7 @@ import Link from "next/link";
 import { PageHeader } from "@/components/ui/SectionHeading";
 import { ProblemIndex } from "@/components/problems/ProblemIndex";
 import { DifficultySystem } from "@/components/home/DifficultySystem";
+import { getSection } from "@/lib/cms/read";
 import { problems } from "@/data/problems";
 import { PROBLEM_CATEGORIES } from "@/data/taxonomy";
 import { Reveal } from "@/components/ui/Reveal";
@@ -13,7 +14,8 @@ export const metadata: Metadata = {
     "Don’t start with an idea. Start with a problem. Student-written problem statements from around campus, each with possible directions, technologies and open roles.",
 };
 
-export default function ProblemsPage() {
+export default async function ProblemsPage() {
+  const difficulty = await getSection("difficulty");
   const roleCount = new Set(problems.flatMap((p) => p.openRoles)).size;
 
   return (
@@ -82,7 +84,7 @@ export default function ProblemsPage() {
         </div>
       </section>
 
-      <DifficultySystem />
+      <DifficultySystem section={difficulty} index="" />
     </>
   );
 }

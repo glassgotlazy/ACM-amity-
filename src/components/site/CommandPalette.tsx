@@ -3,7 +3,7 @@
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { KIND_LABEL, SEARCH_SUGGESTIONS, search, type SearchEntry } from "@/lib/search";
+import { KIND_LABEL, buildIndex, search, suggestions, type SearchEntry, type SearchProject } from "@/lib/search";
 import { ease } from "@/lib/motion";
 import { cn } from "@/lib/utils";
 
@@ -21,7 +21,7 @@ export function openSearch() {
  * Search runs synchronously in memory on every keystroke — the corpus is a
  * few dozen entries, so debouncing would add latency for nothing.
  */
-export function CommandPalette() {
+export function CommandPalette({ projects }: { projects: SearchProject[] }) {
   const router = useRouter();
   const reduce = useReducedMotion();
   const [open, setOpen] = useState(false);
@@ -30,7 +30,8 @@ export function CommandPalette() {
   const inputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLUListElement>(null);
 
-  const results = useMemo(() => (query.trim() ? search(query) : SEARCH_SUGGESTIONS), [query]);
+  const index = useMemo(() => buildIndex(projects), [projects]);
+  const results = useMemo(() => (query.trim() ? search(index, query) : suggestions(index)), [index, query]);
 
   const close = useCallback(() => {
     setOpen(false);

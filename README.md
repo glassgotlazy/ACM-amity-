@@ -86,6 +86,50 @@ application is safe even if the inbox copy bounced. Keep both, or drop
 `/api/admin/*` routes check the same signed cookie as the `/admin` pages;
 middleware alone would leave the queue readable by URL.
 
+### Editing the website (CMS)
+
+The admin console (`/admin`) edits the site itself: Site Settings (name, logo,
+favicon, contact, registration link and QR, footer), Navigation (one list feeds
+the header, mobile menu and footer columns, plus social links), Homepage
+(show, hide, reorder and edit every section), Team and Roles, Events,
+Projects, Announcements and a Media library. Saving revalidates the affected
+pages, so a change is live on the next request — no redeploy.
+
+```bash
+# One-time setup, after the submissions queue above works:
+# 1. Supabase SQL editor: run supabase/cms.sql once (additive; never touches submissions).
+# 2. /admin → Dashboard → "Load current website content".
+```
+
+Until step 2 the public site renders its built-in defaults
+(`src/lib/cms/defaults/`), so deploying this code changes nothing for
+visitors. Step 2 copies those defaults into the tables once; from then on the
+database is the only source and an empty table means "show nothing", never
+"fall back".
+
+- **Structured tables**, one per entity (`site_settings`, `nav_items`,
+  `social_links`, `page_sections`, `roles`, `team_members`, `events`,
+  `projects`, `project_members`, `announcements`). The only JSON columns are
+  small fixed-shape lists (project timeline and open roles, a section's hero
+  focus areas), validated by the server.
+- **Roles are rows.** Renaming one renames it everywhere. A role that members
+  still hold cannot be deleted until they are moved to another role
+  (`ON DELETE RESTRICT`, and the admin asks for the replacement).
+- **Links are validated.** Internal links must resolve to an existing page
+  (`src/lib/cms/routes.ts`); anything else must be a full `https://` address.
+- **Images** go to the public `cms-media` Storage bucket through
+  `/api/admin/media`, which checks the real file type, size and pixel
+  dimensions from the bytes. SVG uploads are not accepted.
+- **Reads are server-side and cached** (`src/lib/cms/read.ts`, tagged
+  `unstable_cache`), so pages stay static and visitors never wait on the
+  database. An hourly revalidate is only a backstop for edits made directly
+  in Supabase.
+- **Submissions stay separate.** A project proposal in the queue does not
+  become a project; publishing one means creating it under Projects.
+
+Problem statements, working teams, research and the activity log still live
+in `src/data/` and appear read-only under Catalogue.
+
 **Leaving `FORM_ENDPOINT` unset is a supported state, not a broken one.** The
 forms still validate, animate and confirm, but nothing is transmitted and every
 confirmation screen says so. The notice is driven by what actually happened, so
@@ -112,7 +156,7 @@ not merely that it is hidden in the interface.
 
 | Route | What it is |
 | --- | --- |
-| `/` | Homepage — hero, featured projects, Problem Lab, problem of the week, difficulty system, project ideas, contribution model |
+| `/` | Homepage — sections, their order and their text come from the CMS |
 | `/projects` · `/projects/[slug]` | Project index and detail, with an application flow per role |
 | `/problems` · `/problems/[slug]` | The Problem Lab, and a full statement page per problem |
 | `/problems/submit` | Student problem submission |
@@ -123,10 +167,13 @@ not merely that it is hidden in the interface.
 | `/profile` | A contribution record (demo) |
 | `/discover` | Two questions, then a ranked shortlist |
 | `/join` | Seven-step membership application |
-| `/admin` | Back-office view over every managed entity |
+| `/events` | Upcoming and past events (CMS) |
+| `/admin` | Admin console: dashboard, submissions queue and every CMS section |
 | `/api/submit` | Receives every form; stores to Supabase and/or forwards to `FORM_ENDPOINT` |
 | `/api/admin/session` | Admin sign-in / sign-out (shared password, signed cookie) |
 | `/api/admin/submissions` | Queue list and per-row state/note updates; cookie-checked |
+| `/api/admin/cms/*` | CMS reads and writes, validated server-side; cookie-checked |
+| `/api/admin/media` | Media library upload, list and delete; cookie-checked |
 
 ---
 
@@ -140,15 +187,14 @@ src/
     site/       chrome — Navbar, Footer, Cursor, ScrollProgress, PageTransition
     forms/      Field primitives, ApplyForm, ProblemForm, JoinFlow
     home/ problems/ projects/ research/ activity/ profile/ discover/ ideas/ admin/
-  data/         all content, typed — the single source of truth
-                (chapter.ts holds the real, confirmed details: office
-                bearers and the registration link)
+  data/         content not yet in the CMS (problems, ideas, research,
+                working teams, activity) and the shared taxonomy
+  lib/cms/      CMS types, read layer, validation, writes, media, defaults
   lib/          motion vocabulary and small helpers
 ```
 
-**Data is fully separated from presentation.** Every page reads from `src/data/`,
-so replacing demo content with a backend is a change to one directory rather
-than a rewrite. `src/data/taxonomy.ts` holds the shared vocabulary — domains,
+**Data is fully separated from presentation.** Pages read CMS content through
+`src/lib/cms/read.ts` and everything else from `src/data/`. `src/data/taxonomy.ts` holds the shared vocabulary — domains,
 difficulty levels, statuses, roles, problem provenance — and every badge, filter
 and label on the site derives from it, so the taxonomy cannot drift between
 pages.
@@ -238,14 +284,14 @@ of each page:
 - **Research claims nothing.** No published paper, no submission under review,
   no result. Sections without content say `COMING SOON` rather than being
   hidden, and every research page carries an accuracy note.
-- **Demo data says so.** Profile figures, activity entries, contributor counts
-  and the entire admin console are placeholder content and are labelled as such
-  on the page.
+- **Demo data says so.** Profile figures and contributor counts are placeholder
+  content and are labelled as such on the page.
 - **No invented specifics.** No member counts, awards, funding, partnerships,
   publication status, placement statistics or outcome guarantees.
-- **Confirmed details live in `src/data/chapter.ts`** — the office bearers and
-  the registration link — and carry no placeholder labelling, because they are
-  real. Everything demo stays labelled as demo.
+- **Confirmed details are CMS content** — the office bearers and the
+  registration link are edited under Team and Site Settings, and carry no
+  placeholder labelling, because they are real. Everything demo stays
+  labelled as demo.
 
 Forms report their real delivery state. With no `FORM_ENDPOINT` configured they
 transmit nothing and say so; with one configured they confirm receipt; and if
@@ -261,10 +307,9 @@ reduced-motion support.
 
 ## Replacing the demo data
 
-Each file in `src/data/` exports a typed array and its accessors. Point those
-accessors at a real source and the pages follow unchanged. The natural order is
-problems and projects first (the content surfaces), then the contribution
-profile (which needs authentication and repository activity). Applications and
-submissions are already wired — point `FORM_ENDPOINT` at a destination, or
-replace the forwarding call in `src/app/api/submit/route.ts` with a database
-write and let `/admin` read from the same store.
+Projects, team, events, navigation and site text are already in the CMS.
+What remains in `src/data/` exports a typed array and its accessors; moving one
+into the CMS follows the same pattern — a table in `supabase/cms.sql`, a
+cached getter in `src/lib/cms/read.ts`, a validator, and a `Collection` screen
+in the admin. The contribution profile needs authentication and repository
+activity first.

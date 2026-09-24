@@ -1,49 +1,53 @@
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { ArrowLink } from "@/components/ui/ArrowLink";
 import { FeatureProject } from "@/components/projects/ProjectCard";
-import { featuredProjects } from "@/data/projects";
 import { Reveal } from "@/components/ui/Reveal";
+import { Lines } from "@/components/ui/Lines";
+import type { Project, Section } from "@/lib/cms/types";
 
-export function WhatWeBuild() {
+export function WhatWeBuild({ section, index, projects }: { section: Section; index: string; projects: Project[] }) {
   return (
     <section className="shell py-section" aria-labelledby="what-we-build">
       <SectionHeading
-        index="01"
-        eyebrow="What we build"
+        index={index}
+        eyebrow={section.eyebrow}
         title={
           <span id="what-we-build">
-            WE BUILD THINGS
-            <br />
-            THAT MATTER.
+            <Lines text={section.title} />
           </span>
         }
         lede={
-          <>
-            <p>
-              Not another collection of ideas sitting inside a presentation. These are problems students can explore,
-              contribute to and learn from.
-            </p>
-            <p className="mt-5 font-mono text-micro uppercase leading-relaxed text-ink-ghost">
-              Every project below states what exists today and what does not.
-            </p>
-          </>
+          section.body || section.subtitle ? (
+            <>
+              {section.body ? <p>{section.body}</p> : null}
+              {section.subtitle ? (
+                <p className="mt-5 font-mono text-micro uppercase leading-relaxed text-ink-ghost">{section.subtitle}</p>
+              ) : null}
+            </>
+          ) : undefined
         }
-        action={<ArrowLink href="/projects">All projects</ArrowLink>}
+        action={
+          section.primary_label && section.primary_href ? (
+            <ArrowLink href={section.primary_href}>{section.primary_label}</ArrowLink>
+          ) : undefined
+        }
       />
 
-      <div className="mt-12 grid gap-px bg-line lg:grid-cols-2">
-        {featuredProjects.map((project, i) => (
-          <FeatureProject key={project.slug} project={project} index={i} />
-        ))}
-      </div>
+      {projects.length ? (
+        <div className="mt-12 grid gap-px bg-line lg:grid-cols-2">
+          {projects.map((project, i) => (
+            <FeatureProject key={project.slug} project={project} index={i} />
+          ))}
+        </div>
+      ) : null}
 
-      <Reveal className="mt-8 border border-line px-6 py-5" delay={0.1}>
-        <p className="font-mono text-micro uppercase leading-relaxed text-ink-faint">
-          <span className="text-acm-bright">Note ·</span> The admissions assistant is a working student project, not an
-          official university admissions channel. Quantum Handshake is an ongoing research effort with no published
-          result. Neither is presented as more than it is.
-        </p>
-      </Reveal>
+      {section.note ? (
+        <Reveal className="mt-8 border border-line px-6 py-5" delay={0.1}>
+          <p className="font-mono text-micro uppercase leading-relaxed text-ink-faint">
+            <span className="text-acm-bright">Note ·</span> {section.note}
+          </p>
+        </Reveal>
+      ) : null}
     </section>
   );
 }

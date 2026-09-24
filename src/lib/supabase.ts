@@ -22,18 +22,25 @@ export type StoredSubmission = {
   note: string | null;
 };
 
-function config() {
+export function storageConfig() {
   const url = process.env.SUPABASE_URL?.replace(/\/+$/, "");
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
   return url && key ? { url, key } : null;
 }
 
 export function isStorageConfigured(): boolean {
-  return config() !== null;
+  return storageConfig() !== null;
 }
 
-async function rest<T>(path: string, init: RequestInit & { prefer?: string } = {}): Promise<T> {
-  const cfg = config();
+/** Thrown for any non-2xx answer; `status` lets callers tell "missing" from "broken". */
+export class StorageError extends Error {
+  constructor(public status: number) {
+    super(`storage_${status}`);
+  }
+}
+
+export async function rest<T>(path: string, init: RequestInit & { prefer?: string } = {}): Promise<T> {
+  const cfg = storageConfig();
   if (!cfg) throw new Error("storage_not_configured");
   const { prefer, ...rest } = init;
   const res = await fetch(`${cfg.url}/rest/v1/${path}`, {
@@ -50,9 +57,11 @@ async function rest<T>(path: string, init: RequestInit & { prefer?: string } = {
   if (!res.ok) {
     // Body may carry table names; log server-side only.
     console.error(`[storage] ${init.method ?? "GET"} ${path} -> ${res.status} ${await res.text().catch(() => "")}`);
-    throw new Error(`storage_${res.status}`);
+    throw new StorageError(res.status);
   }
-  return res.status === 204 ? (undefined as T) : ((await res.json()) as T);
+  // Writes without `return=representation` answer 201/204 with an empty body.
+  const text = await res.text();
+  return (text ? JSON.parse(text) : undefined) as T;
 }
 
 export async function storeSubmission(

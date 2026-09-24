@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { PageHeader } from "@/components/ui/SectionHeading";
 import { ProjectIndex } from "@/components/projects/ProjectIndex";
-import { projects, allOpenRoles } from "@/data/projects";
+import { getProjects, getSection } from "@/lib/cms/read";
+import { allOpenRoles } from "@/lib/cms/types";
 import { RecruitCTA } from "@/components/home/RecruitCTA";
 
 export const metadata: Metadata = {
@@ -10,7 +11,8 @@ export const metadata: Metadata = {
     "Every ACM @ Amity project, with what exists today and what does not. Find one with an open role and start contributing.",
 };
 
-export default function ProjectsPage() {
+export default async function ProjectsPage() {
+  const [projects, recruit] = await Promise.all([getProjects(), getSection("recruit")]);
   const active = projects.filter((p) => p.status === "development" || p.status === "current" || p.status === "ongoing");
   const needLeads = projects.filter((p) => p.team.every((t) => t.name === "Open"));
 
@@ -30,12 +32,12 @@ export default function ProjectsPage() {
         meta={[
           { label: "Projects", value: String(projects.length) },
           { label: "Active", value: String(active.length) },
-          { label: "Open roles", value: String(allOpenRoles().length) },
+          { label: "Open roles", value: String(allOpenRoles(projects).length) },
           { label: "Need a lead", value: String(needLeads.length) },
         ]}
       />
-      <ProjectIndex />
-      <RecruitCTA />
+      <ProjectIndex projects={projects} />
+      <RecruitCTA section={recruit} />
     </>
   );
 }

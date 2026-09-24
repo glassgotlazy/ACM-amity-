@@ -36,12 +36,14 @@ type Props = {
   footnote?: string;
 };
 
+type Brand = { short: string; caption: string };
+
 /**
  * One card for every shareable surface. Satori supports a subset of CSS —
  * flexbox only, no grid — so the layout is deliberately built from stacked
  * flex rows rather than the site's own grid classes.
  */
-export async function renderOgImage({ eyebrow, title, footnote }: Props) {
+export async function renderOgImage({ eyebrow, title, footnote }: Props, brand: Brand) {
   // Long problem titles need to step down a size or they overflow the card.
   const fontSize = title.length > 46 ? 68 : title.length > 30 ? 84 : 100;
 
@@ -60,10 +62,10 @@ export async function renderOgImage({ eyebrow, title, footnote }: Props) {
         }}
       >
         <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
-          <div style={{ fontSize: 30, color: INK, letterSpacing: "-0.03em" }}>ACM</div>
+          <div style={{ fontSize: 30, color: INK, letterSpacing: "-0.03em" }}>{brand.short}</div>
           <div style={{ width: 1, height: 26, backgroundColor: "rgba(255,255,255,0.22)" }} />
           <div style={{ fontSize: 19, color: MUTED, letterSpacing: "0.16em", textTransform: "uppercase" }}>
-            @ Amity University
+            {brand.caption}
           </div>
         </div>
 

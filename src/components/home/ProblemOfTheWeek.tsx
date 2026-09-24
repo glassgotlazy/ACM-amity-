@@ -2,23 +2,26 @@ import Link from "next/link";
 import type { Problem } from "@/data/problems";
 import { DifficultyMeter, OriginTag, Tag } from "@/components/ui/Badges";
 import { Reveal } from "@/components/ui/Reveal";
+import type { Section } from "@/lib/cms/types";
 
 /**
  * A single editorial slot. It rotates weekly from the problem set today; the
  * component takes the problem as a prop so a backend pick drops straight in.
  */
-export function ProblemOfTheWeek({ problem }: { problem: Problem }) {
+export function ProblemOfTheWeek({ problem, section, index }: { problem: Problem; section: Section; index: string }) {
   return (
     <section className="shell py-section" aria-labelledby="potw">
       <Reveal className="flex flex-wrap items-baseline justify-between gap-4 border-b border-line pb-4">
         <div className="flex items-baseline gap-4">
-          <span className="meta text-acm-bright">03 /</span>
-          <span className="meta">Problem of the week</span>
+          <span className="meta text-acm-bright">{index} /</span>
+          <span className="meta">{section.eyebrow}</span>
         </div>
-        <span className="flex items-center gap-2 font-mono text-micro uppercase text-ink-ghost">
-          <span className="h-1.5 w-1.5 animate-pulse-dot rounded-full bg-acm" />
-          Rotates weekly
-        </span>
+        {section.subtitle ? (
+          <span className="flex items-center gap-2 font-mono text-micro uppercase text-ink-ghost">
+            <span className="h-1.5 w-1.5 animate-pulse-dot rounded-full bg-acm" />
+            {section.subtitle}
+          </span>
+        ) : null}
       </Reveal>
 
       <div className="grid gap-px bg-line lg:grid-cols-[1.5fr_1fr]">
@@ -37,7 +40,7 @@ export function ProblemOfTheWeek({ problem }: { problem: Problem }) {
             href={`/problems/${problem.slug}`}
             className="group mt-10 inline-flex h-12 items-center gap-3 border border-line-strong px-7 font-mono text-label uppercase transition-colors duration-200 hover:border-acm hover:text-acm-bright"
           >
-            Explore problem
+            {section.primary_label || "Explore problem"}
             <span aria-hidden className="transition-transform duration-300 ease-out group-hover:translate-x-1">
               →
             </span>

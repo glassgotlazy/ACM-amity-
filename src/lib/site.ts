@@ -23,7 +23,3 @@ function resolveSiteUrl(): string {
 }
 
 export const SITE_URL = resolveSiteUrl();
-
-export const SITE_NAME = "ACM BuildHub";
-
-export const SITE_TAGLINE = "Real problems. Real projects. Real technical experience.";

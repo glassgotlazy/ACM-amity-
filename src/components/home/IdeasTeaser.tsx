@@ -7,30 +7,34 @@ import { SectionHeading } from "@/components/ui/SectionHeading";
 import { ArrowLink } from "@/components/ui/ArrowLink";
 import { DifficultyMeter } from "@/components/ui/Badges";
 import { viewportOnce } from "@/lib/motion";
+import { Lines } from "@/components/ui/Lines";
+import type { Section } from "@/lib/cms/types";
 
 /**
  * A dense index rather than a card grid — the point of this section is that
  * there are many starting points, which a list conveys and tiles do not.
  */
-export function IdeasTeaser() {
+export function IdeasTeaser({ section, index }: { section: Section; index: string }) {
   const reduce = useReducedMotion();
   const shown = ideas.slice(0, 6);
 
   return (
     <section className="shell py-section" aria-labelledby="ideas">
       <SectionHeading
-        index="06"
-        eyebrow="Project ideas"
+        index={index}
+        eyebrow={section.eyebrow}
         title={
           <span id="ideas">
-            DON’T HAVE AN IDEA?
-            <br />
-            WE’VE GOT PROBLEMS.
+            <Lines text={section.title} />
           </span>
         }
-        lede="Unclaimed starting points, filtered by how much you already know. None of these has a team yet — the first person in decides what it becomes."
+        lede={section.body || undefined}
         align="wide"
-        action={<ArrowLink href="/ideas">All project ideas</ArrowLink>}
+        action={
+          section.primary_label && section.primary_href ? (
+            <ArrowLink href={section.primary_href}>{section.primary_label}</ArrowLink>
+          ) : undefined
+        }
       />
 
       <ul className="mt-2">

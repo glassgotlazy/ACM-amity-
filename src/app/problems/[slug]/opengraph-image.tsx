@@ -1,6 +1,7 @@
 import { renderOgImage, OG_SIZE, OG_CONTENT_TYPE } from "@/lib/og";
 import { problems, problemBySlug } from "@/data/problems";
 import { ORIGINS } from "@/data/taxonomy";
+import { ogBrand } from "@/lib/cms/read";
 
 export const alt = "An ACM @ Amity problem statement";
 export const size = OG_SIZE;
@@ -19,5 +20,5 @@ export default async function Image({ params }: { params: { slug: string } }) {
       : "Problem Lab",
     title: problem?.title ?? "Find a problem worth solving.",
     footnote: problem?.hook,
-  });
+  }, await ogBrand());
 }

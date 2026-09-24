@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { PageHeader } from "@/components/ui/SectionHeading";
 import { teams } from "@/data/teams";
-import { coreTeam, REGISTRATION_URL } from "@/data/chapter";
+import { getTeam } from "@/lib/cms/read";
+import type { PublicMember } from "@/lib/cms/types";
 import { Reveal } from "@/components/ui/Reveal";
 import { Tag } from "@/components/ui/Badges";
 import { cn } from "@/lib/utils";
@@ -13,7 +14,8 @@ export const metadata: Metadata = {
     "Six teams at ACM @ Amity — AI, Software, Research, Web, Design and Cybersecurity. What each one works on and where the open positions are.",
 };
 
-export default function TeamsPage() {
+export default async function TeamsPage() {
+  const coreTeam = await getTeam();
   const openCount = teams.reduce((n, t) => n + t.openPositions.length, 0);
 
   return (
@@ -37,6 +39,7 @@ export default function TeamsPage() {
         ]}
       />
 
+      {coreTeam.length ? (
       <section className="border-b border-line" aria-labelledby="core-team">
         <div className="shell py-20">
           <Reveal className="flex items-baseline gap-4">
@@ -57,16 +60,15 @@ export default function TeamsPage() {
 
             <div className="grid gap-px bg-line sm:grid-cols-2">
               {coreTeam.map((person, i) => (
-                <Reveal key={person.name} delay={0.06 * i} className="bg-void p-7">
-                  <div className="meta text-acm-bright">{person.role}</div>
-                  <h3 className="mt-4 text-xl font-semibold tracking-[-0.025em]">{person.name}</h3>
-                  <p className="mt-3 text-sm leading-relaxed text-ink-muted text-pretty">{person.remit}</p>
+                <Reveal key={person.id} delay={0.06 * i} className="bg-void p-7">
+                  <Officer person={person} />
                 </Reveal>
               ))}
             </div>
           </div>
         </div>
       </section>
+      ) : null}
 
       {/*
         Alternating editorial spreads rather than six identical cards: each team
@@ -203,5 +205,63 @@ export default function TeamsPage() {
         </Reveal>
       </section>
     </>
+  );
+}
+
+const LINKS: { key: "linkedin_url" | "github_url" | "website_url"; label: string }[] = [
+  { key: "linkedin_url", label: "LinkedIn" },
+  { key: "github_url", label: "GitHub" },
+  { key: "website_url", label: "Website" },
+];
+
+/** One office bearer: photo when uploaded, role, name, remit and links. */
+function Officer({ person }: { person: PublicMember }) {
+  const links = LINKS.filter((l) => person[l.key]);
+  return (
+    <div className="flex gap-5">
+      {person.photo_url ? (
+        // eslint-disable-next-line @next/next/no-img-element -- CMS photo, size-checked on upload
+        <img
+          src={person.photo_url}
+          alt=""
+          loading="lazy"
+          decoding="async"
+          width={64}
+          height={64}
+          className="h-16 w-16 shrink-0 border border-line object-cover"
+        />
+      ) : null}
+      <div className="min-w-0">
+        <div className="meta text-acm-bright">{person.role}</div>
+        <h3 className="mt-4 text-xl font-semibold tracking-[-0.025em]">{person.name}</h3>
+        {person.bio ? <p className="mt-3 text-sm leading-relaxed text-ink-muted text-pretty">{person.bio}</p> : null}
+        {links.length || person.email ? (
+          <ul className="mt-4 flex flex-wrap gap-x-4 gap-y-1">
+            {links.map((l) => (
+              <li key={l.key}>
+                <a
+                  href={person[l.key]!}
+                  target="_blank"
+                  rel="noreferrer noopener"
+                  className="font-mono text-micro uppercase text-ink-faint transition-colors hover:text-acm-bright"
+                >
+                  {l.label} ↗<span className="sr-only"> — {person.name}</span>
+                </a>
+              </li>
+            ))}
+            {person.email ? (
+              <li>
+                <a
+                  href={`mailto:${person.email}`}
+                  className="font-mono text-micro uppercase text-ink-faint transition-colors hover:text-acm-bright"
+                >
+                  Email<span className="sr-only"> {person.name}</span>
+                </a>
+              </li>
+            ) : null}
+          </ul>
+        ) : null}
+      </div>
+    </div>
   );
 }
