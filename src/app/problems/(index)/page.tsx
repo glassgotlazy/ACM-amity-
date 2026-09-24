@@ -4,7 +4,7 @@ import { PageHeader } from "@/components/ui/SectionHeading";
 import { CmsTitle } from "@/components/ui/Lines";
 import { ProblemIndex } from "@/components/problems/ProblemIndex";
 import { DifficultySystem } from "@/components/home/DifficultySystem";
-import { getPage, getProblems, getSection } from "@/lib/cms/read";
+import { getIdeas, getPage, getProblems, getSection } from "@/lib/cms/read";
 import { PROBLEM_CATEGORIES } from "@/data/taxonomy";
 import { Reveal } from "@/components/ui/Reveal";
 
@@ -15,7 +15,7 @@ export const metadata: Metadata = {
 };
 
 export default async function ProblemsPage() {
-  const [problems, page] = await Promise.all([getProblems(), getPage("page_problems")]);
+  const [problems, page, ideas] = await Promise.all([getProblems(), getPage("page_problems"), getIdeas()]);
   const difficulty = await getSection("difficulty");
   const roleCount = new Set(problems.flatMap((p) => p.openRoles)).size;
 
@@ -76,7 +76,7 @@ export default async function ProblemsPage() {
         </div>
       </section>
 
-      <DifficultySystem section={difficulty} index="" />
+      <DifficultySystem section={difficulty} index="" problems={problems} ideas={ideas} />
     </>
   );
 }

@@ -1,17 +1,17 @@
 "use client";
 
-import { motion, useScroll, useTransform } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { useReducedMotion } from "@/lib/use-reduced-motion";
 import { displayCase } from "@/lib/display-case";
-import { useRef } from "react";
+import { useMemo, useState } from "react";
 import Link from "next/link";
 import { PROBLEM_CATEGORIES } from "@/data/taxonomy";
+import { cn } from "@/lib/utils";
 import type { Problem } from "@/lib/cms/content-types";
 import { ProblemCard } from "@/components/problems/ProblemCard";
 import { Reveal } from "@/components/ui/Reveal";
 import { ArrowLink } from "@/components/ui/ArrowLink";
 import { MaskedHeadline } from "@/components/ui/MaskedHeadline";
-import { viewportOnce } from "@/lib/motion";
 import { lines, type Section } from "@/lib/cms/types";
 
 /**
@@ -21,12 +21,18 @@ import { lines, type Section } from "@/lib/cms/types";
  */
 export function ProblemLabIntro({ section, index, problems }: { section: Section; index: string; problems: Problem[] }) {
   const reduce = useReducedMotion();
-  const ref = useRef<HTMLElement>(null);
-  const { scrollYProgress } = useScroll({ target: ref, offset: ["start end", "end start"] });
-  const drift = useTransform(scrollYProgress, [0, 1], ["0%", reduce ? "0%" : "-14%"]);
+  const [category, setCategory] = useState<string | null>(null);
+  // Only categories that actually have a problem become filters.
+  const counts = useMemo(() => {
+    const m = new Map<string, number>();
+    problems.forEach((p) => m.set(p.category, (m.get(p.category) ?? 0) + 1));
+    return m;
+  }, [problems]);
+  const categories = PROBLEM_CATEGORIES.filter((c) => counts.has(c));
+  const shown = category ? problems.filter((p) => p.category === category) : problems.slice(0, 6);
 
   return (
-    <section ref={ref} className="relative overflow-hidden border-y border-line bg-surface/30" aria-labelledby="problem-lab">
+    <section className="relative overflow-hidden border-y border-line bg-surface/30" aria-labelledby="problem-lab">
       <div className="pointer-events-none absolute inset-0 grid-field opacity-50" aria-hidden />
 
       <div className="shell relative py-section">
@@ -56,39 +62,58 @@ export function ProblemLabIntro({ section, index, problems }: { section: Section
             ) : null}
           </div>
 
-          <motion.div style={{ y: drift }} className="lg:pt-4">
-            <div className="meta border-b border-line pb-3">Categories</div>
-            <ul className="mt-5 flex flex-wrap gap-x-5 gap-y-3">
-              {PROBLEM_CATEGORIES.map((category, i) => (
-                <motion.li
-                  key={category}
-                  initial={reduce ? undefined : { opacity: 0, y: 8 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={viewportOnce}
-                  transition={{ duration: 0.4, delay: i * 0.035 }}
-                >
-                  <Link
-                    href="/problems"
-                    className="label text-ink-faint transition-colors duration-200 hover:text-acm-bright"
+          <div className="lg:pt-4">
+            <p id="problem-filter" className="text-sm text-ink-faint">
+              Filter by category
+            </p>
+            <div className="mt-4 flex flex-wrap gap-2" role="group" aria-labelledby="problem-filter">
+              {[null, ...categories].map((c) => {
+                const on = category === c;
+                return (
+                  <button
+                    key={c ?? "all"}
+                    type="button"
+                    aria-pressed={on}
+                    onClick={() => setCategory(c)}
+                    className={cn(
+                      "relative inline-flex h-9 items-center gap-2 rounded-full px-3.5 text-sm font-medium transition-colors duration-150 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-acm",
+                      on ? "bg-acm-solid text-white" : "bg-surface-high/70 text-ink-muted hover:bg-surface-high hover:text-ink",
+                    )}
                   >
-                    {category}
-                  </Link>
-                </motion.li>
-              ))}
-            </ul>
+                    <span className="relative">{c ?? "All"}</span>
+                    <span className={cn("relative tnum text-xs", on ? "text-white" : "text-ink-faint")}>
+                      {c ? counts.get(c) : problems.length}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
 
             {section.note ? (
-              <div className="mt-12 border-t border-line pt-6">
+              <div className="mt-10 border-t border-line pt-6">
                 <p className="label-sm leading-relaxed text-ink-ghost">{section.note}</p>
               </div>
             ) : null}
-          </motion.div>
+          </div>
         </div>
 
-        <div className="mt-20 grid gap-px bg-line sm:grid-cols-2 lg:grid-cols-3">
-          {problems.slice(0, 6).map((problem, i) => (
-            <ProblemCard key={problem.slug} problem={problem} index={i} />
-          ))}
+        <motion.div layout={!reduce} className="mt-16 grid gap-4 sm:grid-cols-2 lg:grid-cols-3" aria-live="polite">
+          <AnimatePresence mode="popLayout" initial={false}>
+            {shown.map((problem, i) => (
+              <ProblemCard key={problem.slug} problem={problem} index={i} />
+            ))}
+          </AnimatePresence>
+        </motion.div>
+
+        <div className="mt-8 flex flex-wrap items-center justify-between gap-4 text-sm">
+          <span className="text-ink-faint">
+            {category
+              ? `${shown.length} ${shown.length === 1 ? "problem" : "problems"} in ${category}`
+              : `Showing ${shown.length} of ${problems.length} problems`}
+          </span>
+          <Link href="/problems" className="font-medium text-acm-bright underline-offset-4 hover:underline">
+            See every problem
+          </Link>
         </div>
       </div>
     </section>

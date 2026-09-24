@@ -4,7 +4,9 @@ import { motion } from "framer-motion";
 import { useReducedMotion } from "@/lib/use-reduced-motion";
 import { CmsImage } from "@/components/ui/CmsImage";
 import { ease } from "@/lib/motion";
-import { PipelineGraph } from "./PipelineGraph";
+import { ProblemExplorer } from "./ProblemExplorer";
+import type { Problem } from "@/lib/cms/content-types";
+import type { Project } from "@/lib/cms/types";
 import { MaskedHeadline } from "@/components/ui/MaskedHeadline";
 import { Button } from "@/components/ui/Button";
 import { displayCase } from "@/lib/display-case";
@@ -14,7 +16,7 @@ import { extraList, extraText, lines, type Section } from "@/lib/cms/types";
  * Every piece of text here comes from the Homepage → Hero section in the
  * admin. An empty field hides its element rather than leaving a gap.
  */
-export function Hero({ section }: { section: Section }) {
+export function Hero({ section, problems, projects }: { section: Section; problems: Problem[]; projects: Project[] }) {
   const reduce = useReducedMotion();
   const headline = lines(displayCase(section.title));
   const subtitle = lines(section.subtitle);
@@ -24,7 +26,7 @@ export function Hero({ section }: { section: Section }) {
 
   return (
     <section className="relative overflow-hidden rule-b">
-      <div className="shell relative pb-16 pt-32 sm:pt-40 lg:pb-20 lg:pt-44">
+      <div className="shell relative pb-14 pt-32 sm:pt-40 lg:pb-16 lg:pt-40">
         <motion.div
           className="flex items-center gap-4"
           initial={reduce ? undefined : { opacity: 0 }}
@@ -35,42 +37,35 @@ export function Hero({ section }: { section: Section }) {
           {badge ? <span className="rounded-full border border-line-strong px-2.5 py-0.5 label-sm text-ink-muted">{badge}</span> : null}
         </motion.div>
 
-        {/* The headline runs the full width of the shell. Nothing sits beside
-            it — the statement is the composition. */}
-        <MaskedHeadline as="h1" className="mt-6 max-w-5xl text-display-xl text-balance" trigger="mount" delay={0.12} lines={headline} />
+        <div className="mt-6 grid gap-10 lg:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)] lg:items-end lg:gap-16">
+          <MaskedHeadline as="h1" className="max-w-5xl text-display-xl text-balance" trigger="mount" delay={0.12} lines={headline} />
 
-        <div className="mt-14 grid gap-14 lg:grid-cols-[1fr_1.1fr] lg:items-center lg:gap-16">
-          <div>
+          <div className="lg:pb-3">
             <motion.div
-              className={
-                subtitle.length && section.body
-                  ? "grid gap-8 sm:grid-cols-[auto_1fr] sm:items-start sm:gap-12"
-                  : "grid gap-8"
-              }
               initial={reduce ? undefined : { opacity: 0, y: 14 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.7, delay: 0.55, ease }}
+              transition={{ duration: 0.7, delay: 0.5, ease }}
             >
+              {section.body ? (
+                <p className="max-w-prose text-[1.0625rem] leading-relaxed text-ink-muted text-pretty">{section.body}</p>
+              ) : null}
               {subtitle.length ? (
-                <ul className="space-y-1.5 text-[0.9375rem] font-medium text-ink">
+                <ul className="mt-5 flex flex-wrap gap-x-5 gap-y-1.5 text-[0.9375rem] font-medium text-ink">
                   {subtitle.map((line, i) => (
-                    <li key={i} className="flex items-center gap-2.5">
+                    <li key={i} className="flex items-center gap-2">
                       <span aria-hidden className="h-1.5 w-1.5 rounded-full bg-gold" />
                       {displayCase(line)}
                     </li>
                   ))}
                 </ul>
               ) : null}
-              {section.body ? (
-                <p className="max-w-prose text-[1.0625rem] leading-relaxed text-ink-muted text-pretty">{section.body}</p>
-              ) : null}
             </motion.div>
 
             <motion.div
-              className="mt-10 flex flex-wrap items-center gap-3"
+              className="mt-8 flex flex-wrap items-center gap-3"
               initial={reduce ? undefined : { opacity: 0, y: 14 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.7, delay: 0.68, ease }}
+              transition={{ duration: 0.7, delay: 0.62, ease }}
             >
               {section.primary_label && section.primary_href ? (
                 <Button href={section.primary_href} size="lg">
@@ -89,21 +84,22 @@ export function Hero({ section }: { section: Section }) {
               ) : null}
             </motion.div>
           </div>
-
-          <motion.div
-            initial={reduce ? undefined : { opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.8, delay: 0.3 }}
-          >
-            {section.image_url ? (
-              <div className="relative aspect-[4/3] w-full overflow-hidden border border-line">
-                <CmsImage src={section.image_url} alt="" sizes="(min-width: 1024px) 40vw, 100vw" priority />
-              </div>
-            ) : (
-              <PipelineGraph />
-            )}
-          </motion.div>
         </div>
+
+        <motion.div
+          className="mt-14 lg:mt-16"
+          initial={reduce ? undefined : { opacity: 0, y: 18 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.75, ease }}
+        >
+          {section.image_url ? (
+            <div className="relative aspect-[21/9] w-full overflow-hidden rounded-2xl border border-line">
+              <CmsImage src={section.image_url} alt="" sizes="100vw" priority />
+            </div>
+          ) : (
+            <ProblemExplorer problems={problems} projects={projects} />
+          )}
+        </motion.div>
       </div>
 
       {/* Focus areas: a quiet row, not numbered — they are not a sequence. */}

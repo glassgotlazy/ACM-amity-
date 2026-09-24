@@ -79,7 +79,7 @@ export default async function Home() {
         const index = numbered.get(section.key) ?? "";
         switch (section.key) {
           case "hero":
-            return <Hero key={section.key} section={section} />;
+            return <Hero key={section.key} section={section} problems={problems} projects={projects} />;
           case "announcements":
             return <Announcements key={section.key} section={section} items={announcements} />;
           case "what_we_build":
@@ -91,7 +91,7 @@ export default async function Home() {
           case "events":
             return <EventsSection key={section.key} section={section} index={index} events={nextEvents} />;
           case "difficulty":
-            return <DifficultySystem key={section.key} section={section} index={index} />;
+            return <DifficultySystem key={section.key} section={section} index={index} problems={problems} ideas={ideas} />;
           case "ideas":
             return <IdeasTeaser key={section.key} section={section} index={index} ideas={ideas} />;
           case "contribution":

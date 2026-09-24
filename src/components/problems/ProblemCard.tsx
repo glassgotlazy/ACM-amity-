@@ -12,11 +12,20 @@ import { pad } from "@/lib/utils";
  * the site with a mouse-reactive surface — the Problem Lab is meant to feel
  * like the most alive part of the platform.
  */
-export function ProblemCard({ problem, index }: { problem: Problem; index: number }) {
+export function ProblemCard({
+  problem,
+  index,
+  ref,
+}: {
+  problem: Problem;
+  index: number;
+  ref?: React.Ref<HTMLElement>;
+}) {
   const reduce = useReducedMotion();
 
   return (
     <motion.article
+      ref={ref}
       layout={!reduce}
       className="group relative isolate flex h-full flex-col rounded-xl border border-line bg-surface/60 transition-[border-color,background-color] duration-200 hover:border-line-strong hover:bg-surface"
       initial={reduce ? undefined : { opacity: 0, y: 10 }}
