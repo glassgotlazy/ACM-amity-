@@ -1,6 +1,7 @@
 "use client";
 
-import { motion, useReducedMotion } from "framer-motion";
+import { motion } from "framer-motion";
+import { useReducedMotion } from "@/lib/use-reduced-motion";
 import { cn } from "@/lib/utils";
 
 type Props = {
@@ -33,7 +34,7 @@ export function FilterBar({ options, value, onChange, label, counts, layoutId = 
             onClick={() => onChange(option)}
             aria-pressed={active}
             className={cn(
-              "relative px-3 py-2 font-mono text-label uppercase transition-colors duration-200",
+              "relative px-3 py-2 label transition-colors duration-200",
               active ? "text-ink" : "text-ink-faint hover:text-ink-muted",
             )}
           >

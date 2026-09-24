@@ -1,6 +1,7 @@
 "use client";
 
-import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
+import { useReducedMotion } from "@/lib/use-reduced-motion";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { KIND_LABEL, search, suggestions, type SearchEntry } from "@/lib/search";
@@ -150,7 +151,7 @@ export function CommandPalette({ index }: { index: SearchEntry[] }) {
                 autoComplete="off"
                 spellCheck={false}
               />
-              <kbd className="hidden shrink-0 border border-line px-1.5 py-0.5 font-mono text-micro uppercase text-ink-ghost sm:block">
+              <kbd className="hidden shrink-0 border border-line px-1.5 py-0.5 label-sm text-ink-ghost sm:block">
                 Esc
               </kbd>
             </div>
@@ -163,7 +164,7 @@ export function CommandPalette({ index }: { index: SearchEntry[] }) {
             >
               {results.length === 0 ? (
                 <li className="px-5 py-10 text-center">
-                  <p className="font-mono text-label uppercase text-ink-faint">Nothing matches “{query}”</p>
+                  <p className="label text-ink-faint">Nothing matches “{query}”</p>
                   <p className="mx-auto mt-3 max-w-xs text-sm leading-relaxed text-ink-muted">
                     Try a technology, a domain like “quantum”, or a role like “frontend”.
                   </p>
@@ -182,7 +183,7 @@ export function CommandPalette({ index }: { index: SearchEntry[] }) {
                       i === active ? "bg-surface-high" : "hover:bg-surface-raised",
                     )}
                   >
-                    <span className="w-16 shrink-0 font-mono text-micro uppercase text-ink-ghost">
+                    <span className="w-16 shrink-0 label-sm text-ink-ghost">
                       {KIND_LABEL[entry.kind]}
                     </span>
                     <span className="min-w-0 flex-1">
@@ -191,7 +192,7 @@ export function CommandPalette({ index }: { index: SearchEntry[] }) {
                       </span>
                       <span className="block truncate text-sm text-ink-muted">{entry.subtitle}</span>
                     </span>
-                    <span aria-hidden className={cn("shrink-0 font-mono text-micro text-ink-ghost", i === active && "text-acm-bright")}>
+                    <span aria-hidden className={cn("shrink-0 font-mono text-xs text-ink-ghost", i === active && "text-acm-bright")}>
                       ↵
                     </span>
                   </li>
@@ -199,7 +200,7 @@ export function CommandPalette({ index }: { index: SearchEntry[] }) {
               )}
             </ul>
 
-            <div className="flex items-center justify-between border-t border-line px-5 py-2.5 font-mono text-micro uppercase text-ink-ghost">
+            <div className="flex items-center justify-between border-t border-line px-5 py-2.5 label-sm text-ink-ghost">
               <span>{query.trim() ? `${results.length} result${results.length === 1 ? "" : "s"}` : "Suggestions"}</span>
               <span className="hidden sm:block">↑↓ navigate · ↵ open</span>
             </div>

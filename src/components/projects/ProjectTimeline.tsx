@@ -1,6 +1,7 @@
 "use client";
 
-import { motion, useReducedMotion } from "framer-motion";
+import { motion } from "framer-motion";
+import { useReducedMotion } from "@/lib/use-reduced-motion";
 import type { Milestone } from "@/lib/cms/types";
 import { cn } from "@/lib/utils";
 import { viewportOnce } from "@/lib/motion";
@@ -54,7 +55,7 @@ export function ProjectTimeline({ milestones }: { milestones: Milestone[] }) {
                 className={cn(
                   "block h-[15px] w-[15px] border",
                   m.state === "done" && "border-acm bg-acm",
-                  m.state === "active" && "animate-pulse-dot border-acm bg-void",
+                  m.state === "active" && "border-acm bg-void",
                   (m.state === "next" || m.state === "later") && "border-line-strong bg-void",
                 )}
                 aria-hidden
@@ -62,7 +63,7 @@ export function ProjectTimeline({ milestones }: { milestones: Milestone[] }) {
               <h3 className="mt-5 text-base font-semibold tracking-[-0.02em]">{m.phase}</h3>
               <p
                 className={cn(
-                  "mt-1.5 font-mono text-micro uppercase",
+                  "mt-1.5 label-sm",
                   m.state === "active" ? "text-acm-bright" : "text-ink-ghost",
                 )}
               >
@@ -97,7 +98,7 @@ export function ProjectTimeline({ milestones }: { milestones: Milestone[] }) {
             <h3 className="text-base font-semibold tracking-[-0.02em]">{m.phase}</h3>
             <p
               className={cn(
-                "mt-1 font-mono text-micro uppercase",
+                "mt-1 label-sm",
                 m.state === "active" ? "text-acm-bright" : "text-ink-ghost",
               )}
             >

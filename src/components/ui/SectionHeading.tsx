@@ -13,20 +13,22 @@ type Props = {
   className?: string;
 };
 
-export function SectionHeading({ index, eyebrow, title, lede, action, align = "left", className }: Props) {
+// `index` (01, 02…) is accepted but not shown: the sections are not a sequence.
+export function SectionHeading({ eyebrow, title, lede, action, align = "left", className }: Props) {
   return (
     <div className={cn("rule-b pb-10", className)}>
-      <Reveal className="flex items-baseline gap-4">
-        <span className="meta text-acm-bright">{index ? `${index} /` : null}</span>
-        <span className="meta">{eyebrow}</span>
-      </Reveal>
+      {eyebrow ? (
+        <Reveal>
+          <span className="label text-acm-bright">{eyebrow}</span>
+        </Reveal>
+      ) : null}
 
       {/*
         Title left, supporting column right. The lede and the action share that
         right column rather than competing for the same row — three items in one
         justify-between row squeezed the headline into an awkward wrap.
       */}
-      <div className="mt-7 flex flex-col gap-10 lg:flex-row lg:items-end lg:justify-between lg:gap-16">
+      <div className="mt-4 flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between lg:gap-16">
         <Reveal delay={0.05} className={align === "wide" ? "lg:max-w-4xl" : "lg:max-w-2xl"}>
           <h2 className="text-display-md text-balance">{title}</h2>
         </Reveal>
@@ -48,7 +50,6 @@ export function SectionHeading({ index, eyebrow, title, lede, action, align = "l
 
 /** Large page-level header used at the top of every route. */
 export function PageHeader({
-  index,
   eyebrow,
   title,
   lede,
@@ -56,7 +57,7 @@ export function PageHeader({
   children,
 }: {
   index?: string;
-  eyebrow: string;
+  eyebrow?: string;
   title: ReactNode;
   lede?: ReactNode;
   meta?: { label: string; value: string }[];
@@ -64,19 +65,19 @@ export function PageHeader({
 }) {
   return (
     <header className="rule-b relative overflow-hidden">
-      <div className="pointer-events-none absolute inset-0 grid-field grid-mask opacity-60" aria-hidden />
-      <div className="shell relative pb-16 pt-32 sm:pt-40">
-        <Reveal className="flex items-baseline gap-4">
-          <span className="meta text-acm-bright">{index ? `${index} /` : null}</span>
-          <span className="meta">{eyebrow}</span>
-        </Reveal>
+      <div className="shell relative pb-14 pt-32 sm:pt-40">
+        {eyebrow ? (
+          <Reveal>
+            <span className="label text-acm-bright">{eyebrow}</span>
+          </Reveal>
+        ) : null}
 
-        <Reveal delay={0.05} className="mt-8 max-w-5xl">
+        <Reveal delay={0.05} className="mt-4 max-w-4xl">
           <h1 className="text-display-page text-balance">{title}</h1>
         </Reveal>
 
         {lede ? (
-          <Reveal delay={0.1} className="mt-8 max-w-2xl">
+          <Reveal delay={0.1} className="mt-6 max-w-2xl">
             <p className="text-lg leading-relaxed text-ink-muted text-pretty">{lede}</p>
           </Reveal>
         ) : null}
@@ -88,11 +89,11 @@ export function PageHeader({
         ) : null}
 
         {meta?.length ? (
-          <Reveal delay={0.18} className="mt-14 grid grid-cols-2 gap-px border border-line bg-line sm:grid-cols-4">
+          <Reveal delay={0.18} className="mt-12 flex flex-wrap gap-x-10 gap-y-4">
             {meta.map((m) => (
-              <div key={m.label} className="bg-void px-5 py-5">
-                <div className="meta">{m.label}</div>
-                <div className="mt-2 text-lg tnum text-ink">{m.value}</div>
+              <div key={m.label}>
+                <div className="text-2xl font-semibold tnum tracking-[-0.02em] text-ink">{m.value}</div>
+                <div className="mt-0.5 text-sm text-ink-faint">{m.label}</div>
               </div>
             ))}
           </Reveal>

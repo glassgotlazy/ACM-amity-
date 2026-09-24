@@ -1,6 +1,7 @@
 "use client";
 
-import { motion, useReducedMotion } from "framer-motion";
+import { motion } from "framer-motion";
+import { useReducedMotion } from "@/lib/use-reduced-motion";
 import { LEVELS } from "@/data/taxonomy";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { viewportOnce } from "@/lib/motion";
@@ -43,14 +44,14 @@ export function DifficultySystem({ section, index }: { section: Section; index: 
               style={{ paddingLeft: reduce ? undefined : `${i * 0}px` }}
             >
               <div className="flex items-center gap-4">
-                <span className="meta tnum text-ink-ghost">LEVEL {String(lvl.ordinal).padStart(2, "0")}</span>
+                <span className="text-sm tnum text-ink-ghost">Level {lvl.ordinal}</span>
               </div>
 
               <div>
                 <h3 className="text-2xl font-semibold tracking-[-0.03em] transition-colors duration-300 group-hover:text-acm-bright">
                   {lvl.name}
                 </h3>
-                <p className="mt-2 font-mono text-micro uppercase leading-[1.6] text-ink-faint">{lvl.summary}</p>
+                <p className="mt-2 label-sm leading-[1.6] text-ink-faint">{lvl.summary}</p>
               </div>
 
               <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between lg:gap-10">

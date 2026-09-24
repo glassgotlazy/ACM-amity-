@@ -1,6 +1,8 @@
 "use client";
 
-import { motion, useReducedMotion, useScroll, useTransform } from "framer-motion";
+import { motion, useScroll, useTransform } from "framer-motion";
+import { useReducedMotion } from "@/lib/use-reduced-motion";
+import { displayCase } from "@/lib/display-case";
 import { useRef } from "react";
 import Link from "next/link";
 import { PROBLEM_CATEGORIES } from "@/data/taxonomy";
@@ -29,18 +31,13 @@ export function ProblemLabIntro({ section, index, problems }: { section: Section
 
       <div className="shell relative py-section">
         <div className="flex items-baseline gap-4">
-          <span className="meta text-acm-bright">{index} /</span>
-          <span className="meta">{section.eyebrow}</span>
+          <span className="label text-acm-bright">{section.eyebrow}</span>
         </div>
 
         <MaskedHeadline
           className="mt-10 text-display-md"
           id="problem-lab"
-          // The last line carries the accent, as the design has always done.
-          lines={lines(section.title).map((text, i, all) => ({
-            text,
-            className: all.length > 1 && i === all.length - 1 ? "text-acm-bright" : undefined,
-          }))}
+          lines={lines(displayCase(section.title))}
         />
 
         <div className="mt-14 grid gap-14 lg:grid-cols-[1.35fr_1fr] lg:gap-20">
@@ -72,7 +69,7 @@ export function ProblemLabIntro({ section, index, problems }: { section: Section
                 >
                   <Link
                     href="/problems"
-                    className="font-mono text-label uppercase text-ink-faint transition-colors duration-200 hover:text-acm-bright"
+                    className="label text-ink-faint transition-colors duration-200 hover:text-acm-bright"
                   >
                     {category}
                   </Link>
@@ -82,7 +79,7 @@ export function ProblemLabIntro({ section, index, problems }: { section: Section
 
             {section.note ? (
               <div className="mt-12 border-t border-line pt-6">
-                <p className="font-mono text-micro uppercase leading-relaxed text-ink-ghost">{section.note}</p>
+                <p className="label-sm leading-relaxed text-ink-ghost">{section.note}</p>
               </div>
             ) : null}
           </motion.div>

@@ -34,8 +34,8 @@ export default function ProfilePage() {
               <Reveal delay={0.08} className="mt-6 flex flex-wrap items-center gap-x-5 gap-y-2">
                 <span className="meta-accent">{p.standing}</span>
                 <span className="h-3 w-px bg-line-strong" aria-hidden />
-                <span className="font-mono text-micro uppercase text-ink-faint">{p.course}</span>
-                <span className="font-mono text-micro uppercase text-ink-faint">{p.year}</span>
+                <span className="label-sm text-ink-faint">{p.course}</span>
+                <span className="label-sm text-ink-faint">{p.year}</span>
               </Reveal>
               <Reveal delay={0.12} className="mt-9 max-w-prose border-l border-acm pl-6">
                 <p className="text-lg leading-relaxed text-ink-muted text-pretty">{p.statement}</p>
@@ -46,7 +46,7 @@ export default function ProfilePage() {
               <div className="meta border-b border-line pb-3">Interests</div>
               <div className="mt-5 flex flex-wrap gap-1.5">
                 {p.interests.map((i) => (
-                  <Tag key={i} className="px-4 py-2.5 text-label">
+                  <Tag key={i} className="px-3 py-1 text-sm">
                     {i}
                   </Tag>
                 ))}
@@ -71,7 +71,7 @@ export default function ProfilePage() {
                     ) : (
                       <span className="flex items-baseline justify-between gap-4 text-sm text-ink-faint">
                         {link.label}
-                        <span className="font-mono text-micro uppercase text-ink-ghost">Not linked</span>
+                        <span className="label-sm text-ink-ghost">Not linked</span>
                       </span>
                     )}
                   </li>
@@ -81,7 +81,7 @@ export default function ProfilePage() {
           </div>
 
           <Reveal delay={0.18} className="mt-14 border border-line px-6 py-4">
-            <p className="font-mono text-micro uppercase leading-relaxed text-ink-ghost">
+            <p className="label-sm leading-relaxed text-ink-ghost">
               <span className="text-acm-bright">What this counts ·</span> project output that can be checked against the
               public repositories — not commits or tasks attributed to one person. Work on these projects is shared and
               AI-assisted, so a personal commit total would overstate individual authorship.
@@ -100,7 +100,7 @@ export default function ProfilePage() {
             <Reveal as="li" key={project.slug} delay={i * 0.06} className="bg-void py-8">
               <div className="grid gap-5 lg:grid-cols-[1.2fr_1.6fr] lg:gap-14">
                 <div>
-                  <span className="font-mono text-micro uppercase text-ink-ghost">{project.status}</span>
+                  <span className="label-sm text-ink-ghost">{project.status}</span>
                   <h3 className="mt-3 text-2xl font-semibold tracking-[-0.03em]">
                     <Link
                       href={`/projects/${project.slug}`}
@@ -110,7 +110,7 @@ export default function ProfilePage() {
                     </Link>
                   </h3>
                   <p className="mt-2.5 meta-accent">{project.role}</p>
-                  <p className="mt-2 font-mono text-micro uppercase text-ink-ghost">{project.period}</p>
+                  <p className="mt-2 label-sm text-ink-ghost">{project.period}</p>
                 </div>
                 <ul className="space-y-3.5">
                   {project.did.map((d) => (
@@ -170,7 +170,6 @@ export default function ProfilePage() {
           <ul className="mt-5 grid gap-x-10 gap-y-2.5 sm:grid-cols-2">
             {TRACKED.map((t, i) => (
               <li key={t} className="flex items-baseline gap-3 border-b border-line-faint py-2 text-sm text-ink-muted">
-                <span className="meta tnum text-ink-ghost">{String(i + 1).padStart(2, "0")}</span>
                 {t}
               </li>
             ))}
@@ -185,12 +184,9 @@ export default function ProfilePage() {
           </h2>
           <Link
             href="/join"
-            className="group inline-flex h-14 shrink-0 items-center gap-3 bg-acm-solid px-8 font-mono text-label uppercase text-white transition-colors duration-200 hover:bg-acm-deep"
+            className="group inline-flex h-14 shrink-0 items-center gap-3 bg-acm-solid px-8 label text-white transition-colors duration-200 hover:bg-acm-deep"
           >
             Start your record
-            <span aria-hidden className="transition-transform duration-300 group-hover:translate-x-1">
-              →
-            </span>
           </Link>
         </div>
       </section>

@@ -19,8 +19,8 @@ const toneText: Record<string, string> = {
 export function StatusPill({ status, className }: { status: StatusId; className?: string }) {
   const s = STATUSES[status];
   return (
-    <span className={cn("inline-flex items-center gap-2 font-mono text-micro uppercase", toneText[s.tone], className)}>
-      <span className={cn("h-1.5 w-1.5 rounded-full", toneDot[s.tone], s.tone !== "idle" && "animate-pulse-dot")} />
+    <span className={cn("inline-flex items-center gap-1.5 label-sm", toneText[s.tone], className)}>
+      <span className={cn("h-1.5 w-1.5 rounded-full", toneDot[s.tone])} />
       {s.label}
     </span>
   );
@@ -34,7 +34,7 @@ export function OriginTag({ origin, className }: { origin: OriginId; className?:
   return (
     <span
       className={cn(
-        "inline-flex items-center border border-line px-2.5 py-1 font-mono text-micro uppercase text-ink-faint",
+        "inline-flex items-center rounded-full border border-line px-2.5 py-0.5 label-sm text-ink-faint",
         className,
       )}
     >
@@ -47,7 +47,7 @@ export function Tag({ children, className }: { children: React.ReactNode; classN
   return (
     <span
       className={cn(
-        "inline-flex items-center border border-line px-2.5 py-1 font-mono text-micro uppercase text-ink-muted transition-colors duration-200 hover:border-line-strong hover:text-ink",
+        "inline-flex items-center rounded-full bg-surface-high/70 px-2.5 py-0.5 text-[0.8125rem] text-ink-muted",
         className,
       )}
     >
@@ -77,13 +77,13 @@ export function DifficultyMeter({
           <span
             key={l.id}
             style={{ height: `${5 + l.ordinal * 3}px` }}
-            className={cn("w-[3px]", l.ordinal <= current.ordinal ? "bg-acm" : "bg-line-strong")}
+            className={cn("w-[3px] rounded-[1px]", l.ordinal <= current.ordinal ? "bg-acm" : "bg-line-strong")}
           />
         ))}
       </span>
       {showLabel ? (
-        <span className="font-mono text-micro uppercase text-ink-muted">
-          L{current.ordinal} {current.name}
+        <span className="text-xs text-ink-muted">
+          <span className="font-mono">L{current.ordinal}</span> {current.name}
         </span>
       ) : (
         <span className="sr-only">

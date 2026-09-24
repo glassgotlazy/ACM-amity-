@@ -10,12 +10,12 @@ import type { Domain, LevelId, OriginId, ProblemCategory, Role, StatusId } from 
 export type ActivityKind = "build" | "research" | "team" | "problem" | "role" | "review";
 
 export const ACTIVITY_KINDS: Record<ActivityKind, string> = {
-  build: "BUILD",
-  research: "RESEARCH",
-  team: "TEAM",
-  problem: "PROBLEM",
-  role: "ROLE",
-  review: "REVIEW",
+  build: "Build",
+  research: "Research",
+  team: "Team",
+  problem: "Problem",
+  role: "Role",
+  review: "Review",
 };
 
 export const BANDS = ["Beginner", "Intermediate", "Advanced", "Research"] as const;

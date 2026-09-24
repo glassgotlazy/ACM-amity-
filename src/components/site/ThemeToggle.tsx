@@ -38,7 +38,7 @@ export function ThemeToggle({ className }: { className?: string }) {
     // Keep the browser chrome in step with the page.
     document
       .querySelector('meta[name="theme-color"]')
-      ?.setAttribute("content", next === "light" ? "#FAFAF8" : "#08090B");
+      ?.setAttribute("content", next === "light" ? "#F6F8FB" : "#0D1422");
   }, []);
 
   return (
@@ -50,8 +50,8 @@ export function ThemeToggle({ className }: { className?: string }) {
       // Inert until hydrated, so it can never look interactive before it works.
       disabled={!mounted}
       className={cn(
-        "group inline-flex h-10 items-center gap-2.5 border border-line px-3.5 font-mono text-label uppercase text-ink-faint",
-        "transition-colors duration-200 hover:border-line-strong hover:text-ink disabled:opacity-60",
+        "group inline-flex h-10 items-center gap-2 rounded-lg border border-line px-3 text-sm text-ink-faint",
+        "transition-colors duration-150 hover:border-line-strong hover:text-ink disabled:opacity-60",
         className,
       )}
     >

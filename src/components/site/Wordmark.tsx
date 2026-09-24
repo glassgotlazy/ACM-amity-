@@ -27,7 +27,7 @@ export function Wordmark({ brand, size }: { brand: Brand; size: "sm" | "lg" }) {
     <>
       <span className="text-[1.0625rem] font-semibold leading-none tracking-[-0.03em]">{brand.short}</span>
       <span className="h-4 w-px bg-line-strong" aria-hidden />
-      <span className="max-w-[6.5rem] font-mono text-micro uppercase leading-[1.3] text-ink-faint transition-colors duration-200 group-hover:text-ink-muted">
+      <span className="max-w-[6.5rem] label-sm leading-[1.3] text-ink-faint transition-colors duration-200 group-hover:text-ink-muted">
         {brand.caption}
       </span>
     </>

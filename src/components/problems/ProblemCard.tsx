@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { motion, useReducedMotion } from "framer-motion";
-import { useRef, useState } from "react";
+import { motion } from "framer-motion";
+import { useReducedMotion } from "@/lib/use-reduced-motion";
 import type { Problem } from "@/lib/cms/content-types";
 import { DifficultyMeter, OriginTag, Tag } from "@/components/ui/Badges";
 import { pad } from "@/lib/utils";
@@ -14,83 +14,44 @@ import { pad } from "@/lib/utils";
  */
 export function ProblemCard({ problem, index }: { problem: Problem; index: number }) {
   const reduce = useReducedMotion();
-  const ref = useRef<HTMLDivElement>(null);
-  const [pos, setPos] = useState<{ x: number; y: number } | null>(null);
-
-  function onMove(event: React.MouseEvent<HTMLDivElement>) {
-    if (reduce) return;
-    const rect = ref.current?.getBoundingClientRect();
-    if (!rect) return;
-    setPos({ x: event.clientX - rect.left, y: event.clientY - rect.top });
-  }
 
   return (
     <motion.article
       layout={!reduce}
-      ref={ref}
-      onMouseMove={onMove}
-      onMouseLeave={() => setPos(null)}
-      className="group relative isolate flex h-full flex-col border border-line bg-surface/30 transition-colors duration-300 hover:border-line-strong"
-      initial={reduce ? undefined : { opacity: 0, y: 14 }}
+      className="group relative isolate flex h-full flex-col rounded-xl border border-line bg-surface/60 transition-[border-color,background-color] duration-200 hover:border-line-strong hover:bg-surface"
+      initial={reduce ? undefined : { opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       exit={reduce ? undefined : { opacity: 0, scale: 0.98 }}
-      transition={{ duration: 0.45, delay: Math.min(index * 0.05, 0.3) }}
+      transition={{ duration: 0.4, delay: Math.min(index * 0.04, 0.24) }}
     >
-      {pos ? (
-        <span
-          aria-hidden
-          className="pointer-events-none absolute inset-0 -z-10 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
-          style={{
-            background: `radial-gradient(340px circle at ${pos.x}px ${pos.y}px, rgba(229,52,43,0.07), transparent 65%)`,
-          }}
-        />
-      ) : null}
+      <div className="flex flex-1 flex-col p-6">
+        <div className="flex items-center justify-between gap-3">
+          <span className="label-sm tnum text-ink-faint">Problem {pad(problem.index)}</span>
+          <OriginTag origin={problem.origin} />
+        </div>
 
-      <div className="flex items-center justify-between border-b border-line px-6 py-4">
-        <span className="meta tnum text-acm-bright">PROBLEM {pad(problem.index)}</span>
-        <OriginTag origin={problem.origin} className="border-0 px-0 py-0" />
-      </div>
-
-      <div className="flex flex-1 flex-col px-6 py-7">
-        <h3 className="text-xl font-semibold leading-tight tracking-[-0.025em] text-balance">
-          <Link href={`/problems/${problem.slug}`} className="transition-colors duration-200 group-hover:text-acm-bright">
-            <span className="absolute inset-0" aria-hidden />
+        <h3 className="mt-4 text-xl font-semibold leading-snug tracking-[-0.02em] text-balance">
+          <Link href={`/problems/${problem.slug}`} className="transition-colors duration-150 group-hover:text-acm-bright">
+            <span className="absolute inset-0 rounded-xl" aria-hidden />
             {problem.title}
           </Link>
         </h3>
 
-        <p className="mt-3 text-sm leading-relaxed text-ink-faint">{problem.hook}</p>
+        <p className="mt-2 text-sm leading-relaxed text-ink-faint">{problem.hook}</p>
 
-        <blockquote className="mt-6 border-l border-acm/50 pl-4 text-[0.9375rem] leading-relaxed text-ink-muted text-pretty">
-          {problem.question}
-        </blockquote>
+        <p className="mt-5 text-[0.9375rem] leading-relaxed text-ink-muted text-pretty">{problem.question}</p>
 
-        <div className="mt-6 flex flex-wrap gap-1.5">
+        <div className="mt-5 flex flex-wrap gap-1.5">
           {problem.technologies.slice(0, 4).map((t) => (
             <Tag key={t}>{t}</Tag>
           ))}
         </div>
 
-        <div className="mt-auto space-y-4 pt-8">
-          <div className="flex items-center justify-between border-t border-line pt-5">
-            <DifficultyMeter level={problem.level} />
-            <span className="font-mono text-micro uppercase text-ink-ghost">
-              {problem.openRoles.length} roles
-            </span>
-          </div>
-
-          <div className="flex items-center justify-between">
-            <span className="font-mono text-micro uppercase text-ink-faint">→ {problem.potentialProject.name}</span>
-            <span className="meta inline-flex items-center gap-2 text-ink-faint transition-colors duration-200 group-hover:text-acm-bright">
-              Explore
-              <span
-                aria-hidden
-                className="transition-transform duration-300 ease-out group-hover:translate-x-1 group-hover:-translate-y-0.5"
-              >
-                ↗
-              </span>
-            </span>
-          </div>
+        <div className="mt-auto flex flex-wrap items-center justify-between gap-x-4 gap-y-2 border-t border-line pt-4 [margin-top:max(1.75rem,auto)]">
+          <DifficultyMeter level={problem.level} />
+          <span className="text-xs text-ink-faint">
+            {problem.openRoles.length} open roles · could become <span className="text-ink-muted">{problem.potentialProject.name}</span>
+          </span>
         </div>
       </div>
     </motion.article>

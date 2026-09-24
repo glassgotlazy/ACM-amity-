@@ -40,7 +40,7 @@ export default async function ResearchPage() {
           <Reveal className="flex flex-wrap items-center gap-5">
             <span className="meta text-acm-bright">Featured</span>
             <StatusPill status={featured.status} />
-            <span className="font-mono text-micro uppercase text-ink-faint">{featured.field}</span>
+            <span className="label-sm text-ink-faint">{featured.field}</span>
           </Reveal>
 
           <Reveal delay={0.05} className="mt-8">
@@ -72,12 +72,9 @@ export default async function ResearchPage() {
               <Reveal delay={0.16} className="mt-12">
                 <Link
                   href={`/research/${featured.slug}`}
-                  className="group inline-flex h-12 items-center gap-3 border border-line-strong px-7 font-mono text-label uppercase transition-colors duration-200 hover:border-acm hover:text-acm-bright"
+                  className="group inline-flex h-12 items-center gap-3 border border-line-strong px-7 label transition-colors duration-200 hover:border-acm hover:text-acm-bright"
                 >
                   Open research record
-                  <span aria-hidden className="transition-transform duration-300 group-hover:translate-x-1">
-                    →
-                  </span>
                 </Link>
               </Reveal>
             </div>
@@ -87,7 +84,7 @@ export default async function ResearchPage() {
               <div className="mt-2">
                 <ResearchTimeline stages={featured.stages} variant="compact" />
               </div>
-              <p className="mt-7 font-mono text-micro uppercase leading-relaxed text-ink-ghost">
+              <p className="mt-7 label-sm leading-relaxed text-ink-ghost">
                 An ongoing research initiative. Not a proven result, not a breakthrough, and not something to cite.
               </p>
             </Reveal>
@@ -112,7 +109,7 @@ export default async function ResearchPage() {
                   <h3 className="mt-4 text-2xl font-semibold tracking-[-0.03em] transition-colors duration-200 group-hover:text-acm-bright">
                     {project.title}
                   </h3>
-                  <p className="mt-2 font-mono text-micro uppercase text-ink-ghost">{project.field}</p>
+                  <p className="mt-2 label-sm text-ink-ghost">{project.field}</p>
                 </div>
                 <p className="max-w-prose text-[0.9375rem] leading-relaxed text-ink-muted text-pretty">
                   {project.question}
@@ -135,8 +132,8 @@ export default async function ResearchPage() {
               Everything else — the methodology, the simulation work, the writing — is learned by doing it badly first,
               which is what the group is for.
             </p>
-            <Link href="/join" className="inline-flex items-center gap-2 font-mono text-label uppercase text-acm-bright hover:text-ink">
-              Join the reading group →
+            <Link href="/join" className="inline-flex items-center gap-2 label text-acm-bright hover:text-ink">
+              Join the reading group
             </Link>
           </div>
         </Reveal>

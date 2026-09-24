@@ -21,7 +21,7 @@ export function WhatWeBuild({ section, index, projects }: { section: Section; in
             <>
               {section.body ? <p>{section.body}</p> : null}
               {section.subtitle ? (
-                <p className="mt-5 font-mono text-micro uppercase leading-relaxed text-ink-ghost">{section.subtitle}</p>
+                <p className="mt-5 label-sm leading-relaxed text-ink-ghost">{section.subtitle}</p>
               ) : null}
             </>
           ) : undefined
@@ -43,7 +43,7 @@ export function WhatWeBuild({ section, index, projects }: { section: Section; in
 
       {section.note ? (
         <Reveal className="mt-8 border border-line px-6 py-5" delay={0.1}>
-          <p className="font-mono text-micro uppercase leading-relaxed text-ink-faint">
+          <p className="label-sm leading-relaxed text-ink-faint">
             <span className="text-acm-bright">Note ·</span> {section.note}
           </p>
         </Reveal>

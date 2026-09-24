@@ -81,7 +81,7 @@ export function Footer({ brand, settings, nav, social, team }: Props) {
                       href={link.url}
                       target={link.url.startsWith("mailto:") ? undefined : "_blank"}
                       rel="noreferrer noopener"
-                      className="font-mono text-label uppercase text-acm-bright transition-colors hover:text-ink"
+                      className="label text-acm-bright transition-colors hover:text-ink"
                     >
                       {SOCIAL_LABEL[link.platform]} ↗
                     </a>
@@ -163,7 +163,7 @@ export function Footer({ brand, settings, nav, social, team }: Props) {
                     href={registration}
                     target="_blank"
                     rel="noreferrer noopener"
-                    className="group mt-4 inline-flex items-center gap-2 font-mono text-label uppercase text-acm-bright transition-colors hover:text-ink"
+                    className="group mt-4 inline-flex items-center gap-2 label text-acm-bright transition-colors hover:text-ink"
                   >
                     Registration form
                     <span aria-hidden className="transition-transform duration-300 group-hover:translate-x-1">
@@ -184,7 +184,7 @@ export function Footer({ brand, settings, nav, social, team }: Props) {
                       className="flex items-baseline justify-between gap-4 border-b border-line-faint pb-2.5"
                     >
                       <span className="text-sm text-ink">{person.name}</span>
-                      <span className="shrink-0 font-mono text-micro uppercase text-ink-ghost">{person.role}</span>
+                      <span className="shrink-0 label-sm text-ink-ghost">{person.role}</span>
                     </li>
                   ))}
                 </ul>
@@ -194,11 +194,11 @@ export function Footer({ brand, settings, nav, social, team }: Props) {
         ) : null}
 
         <div className="mt-16 flex flex-col gap-4 border-t border-line pt-8 sm:flex-row sm:items-center sm:justify-between">
-          <p className="font-mono text-micro uppercase text-ink-ghost">
+          <p className="label-sm text-ink-ghost">
             © {new Date().getFullYear()} {settings.copyright_text}
           </p>
           {settings.disclaimer_text ? (
-            <p className="max-w-xl font-mono text-micro uppercase leading-relaxed text-ink-ghost">
+            <p className="max-w-xl label-sm leading-relaxed text-ink-ghost">
               {settings.disclaimer_text}
             </p>
           ) : null}

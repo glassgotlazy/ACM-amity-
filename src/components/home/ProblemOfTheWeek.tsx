@@ -13,12 +13,11 @@ export function ProblemOfTheWeek({ problem, section, index }: { problem: Problem
     <section className="shell py-section" aria-labelledby="potw">
       <Reveal className="flex flex-wrap items-baseline justify-between gap-4 border-b border-line pb-4">
         <div className="flex items-baseline gap-4">
-          <span className="meta text-acm-bright">{index} /</span>
-          <span className="meta">{section.eyebrow}</span>
+          <span className="label text-acm-bright">{section.eyebrow}</span>
         </div>
         {section.subtitle ? (
-          <span className="flex items-center gap-2 font-mono text-micro uppercase text-ink-ghost">
-            <span className="h-1.5 w-1.5 animate-pulse-dot rounded-full bg-acm" />
+          <span className="flex items-center gap-2 label-sm text-ink-ghost">
+            <span className="h-1.5 w-1.5 rounded-full bg-acm" />
             {section.subtitle}
           </span>
         ) : null}
@@ -38,12 +37,9 @@ export function ProblemOfTheWeek({ problem, section, index }: { problem: Problem
 
           <Link
             href={`/problems/${problem.slug}`}
-            className="group mt-10 inline-flex h-12 items-center gap-3 border border-line-strong px-7 font-mono text-label uppercase transition-colors duration-200 hover:border-acm hover:text-acm-bright"
+            className="group mt-10 inline-flex h-12 items-center gap-3 border border-line-strong px-7 label transition-colors duration-200 hover:border-acm hover:text-acm-bright"
           >
             {section.primary_label || "Explore problem"}
-            <span aria-hidden className="transition-transform duration-300 ease-out group-hover:translate-x-1">
-              →
-            </span>
           </Link>
         </Reveal>
 

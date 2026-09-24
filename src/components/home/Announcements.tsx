@@ -14,7 +14,7 @@ export function Announcements({ section, items }: { section: Section; items: Ann
               <span className="flex shrink-0 items-center gap-3">
                 <span className="h-1.5 w-1.5 rounded-full bg-acm" aria-hidden />
                 <span className="meta-accent">{section.eyebrow || "Notice"}</span>
-                <span className="font-mono text-micro uppercase text-ink-ghost">{noticeDate(item.date)}</span>
+                <span className="label-sm text-ink-ghost">{noticeDate(item.date)}</span>
               </span>
               <p className="flex-1 text-[0.9375rem] leading-relaxed text-ink-muted">
                 <span className="font-medium text-ink">{item.title}</span>
@@ -26,16 +26,16 @@ export function Announcements({ section, items }: { section: Section; items: Ann
                     href={item.link_url}
                     target={item.link_url.startsWith("http") ? "_blank" : undefined}
                     rel="noreferrer noopener"
-                    className="shrink-0 font-mono text-label uppercase text-acm-bright transition-colors hover:text-ink"
+                    className="shrink-0 label text-acm-bright transition-colors hover:text-ink"
                   >
                     Details ↗<span className="sr-only">: {item.title}</span>
                   </a>
                 ) : (
                   <Link
                     href={item.link_url}
-                    className="shrink-0 font-mono text-label uppercase text-acm-bright transition-colors hover:text-ink"
+                    className="shrink-0 label text-acm-bright transition-colors hover:text-ink"
                   >
-                    Details →<span className="sr-only">: {item.title}</span>
+                    Details<span className="sr-only">: {item.title}</span>
                   </Link>
                 )
               ) : null}

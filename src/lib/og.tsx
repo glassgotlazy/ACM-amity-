@@ -23,10 +23,10 @@ async function interSemiBold(): Promise<Buffer> {
   return fontCache;
 }
 
-const VOID = "#08090B";
-const INK = "#F4F5F7";
-const MUTED = "#8F96A4";
-const ACCENT = "#E5342B";
+const VOID = "#0D1422";
+const INK = "#ECF1F8";
+const MUTED = "#94A2B8";
+const ACCENT = "#2E9BE6";
 
 type Props = {
   /** Small uppercase label above the headline, e.g. "PROBLEM 01". */

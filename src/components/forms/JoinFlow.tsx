@@ -1,6 +1,7 @@
 "use client";
 
-import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
+import { useReducedMotion } from "@/lib/use-reduced-motion";
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { TextField, TextArea, ChipGroup } from "./Field";
@@ -203,7 +204,7 @@ export function JoinFlow({ registrationUrl }: { registrationUrl: string | null }
               This form told us what you want to build. The chapter registration form makes your membership official.
             </span>
           </span>
-          <span className="inline-flex shrink-0 items-center gap-2 font-mono text-label uppercase text-acm-bright">
+          <span className="inline-flex shrink-0 items-center gap-2 label text-acm-bright">
             Open form
             <span aria-hidden className="transition-transform duration-300 group-hover:translate-x-1">
               ↗
@@ -246,7 +247,7 @@ export function JoinFlow({ registrationUrl }: { registrationUrl: string | null }
       <div className="border-b border-line pb-5">
         <div className="flex items-center justify-between gap-4">
           <span className="meta tnum text-acm-bright">
-            Step {String(step + 1).padStart(2, "0")} / {String(STEPS.length).padStart(2, "0")}
+            Step {step + 1} of {STEPS.length}
           </span>
           <span className="meta text-ink-ghost">{current.label}</span>
         </div>
@@ -406,7 +407,7 @@ export function JoinFlow({ registrationUrl }: { registrationUrl: string | null }
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0 }}
                   role="alert"
-                  className="mt-5 font-mono text-micro uppercase text-acm-bright"
+                  className="mt-5 label-sm text-acm-bright"
                 >
                   {error}
                 </motion.p>
@@ -425,8 +426,8 @@ export function JoinFlow({ registrationUrl }: { registrationUrl: string | null }
         <Button variant="ghost" onClick={back} className={cn(step === 0 && "pointer-events-none opacity-0")}>
           ← Back
         </Button>
-        <span className="ml-auto font-mono text-micro uppercase text-ink-ghost">
-          Step {String(step + 1).padStart(2, "0")} of {String(STEPS.length).padStart(2, "0")}
+        <span className="ml-auto label-sm text-ink-ghost">
+          Step {step + 1} of {STEPS.length}
         </span>
       </div>
     </div>

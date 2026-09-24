@@ -26,7 +26,7 @@ export default async function ActivityPage() {
         ]}
       >
         {page.note ? (
-          <p className="max-w-xl font-mono text-micro uppercase leading-relaxed text-ink-ghost">{page.note}</p>
+          <p className="max-w-xl label-sm leading-relaxed text-ink-ghost">{page.note}</p>
         ) : null}
       </PageHeader>
 

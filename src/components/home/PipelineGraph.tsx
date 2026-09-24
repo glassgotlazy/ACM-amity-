@@ -1,6 +1,7 @@
 "use client";
 
-import { motion, useReducedMotion } from "framer-motion";
+import { motion } from "framer-motion";
+import { useReducedMotion } from "@/lib/use-reduced-motion";
 import { useState } from "react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
@@ -80,13 +81,12 @@ export function PipelineGraph() {
   const dim = (id: string) => hover !== null && !connected.has(id);
 
   return (
-    <div className="w-full">
-      <div className="mb-5 flex items-center justify-between border-b border-line pb-3">
-        <span className="meta">Problem → Project → People</span>
-        <span className="flex items-center gap-2 font-mono text-micro uppercase text-ink-ghost">
-          <span className="h-1.5 w-1.5 animate-pulse-dot rounded-full bg-acm" />
-          Live map
+    <div className="w-full rounded-2xl border border-line bg-surface/70 p-5 shadow-[0_30px_80px_-40px_rgba(0,0,0,0.6)] sm:p-7">
+      <div className="mb-6 flex items-baseline justify-between gap-4">
+        <span className="text-sm font-medium text-ink">
+          Problem <span className="text-ink-ghost">→</span> project <span className="text-ink-ghost">→</span> people
         </span>
+        <span className="hidden text-xs text-ink-ghost md:inline">Hover a step to trace it</span>
       </div>
 
       <MobileChain />
@@ -116,7 +116,7 @@ export function PipelineGraph() {
               )}
               style={{ opacity: faded ? 0.15 : 1 }}
               initial={reduce ? undefined : { pathLength: 0 }}
-              animate={reduce ? undefined : { pathLength: 1 }}
+              animate={{ pathLength: 1 }}
               transition={{ duration: 1.1, delay: 0.5 + i * 0.09, ease: [0.22, 1, 0.36, 1] }}
             />
           );
@@ -151,7 +151,7 @@ export function PipelineGraph() {
             <motion.g
               key={node.id}
               initial={reduce ? undefined : { opacity: 0, scale: 0.6 }}
-              animate={reduce ? undefined : { opacity: 1, scale: 1 }}
+              animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.5, delay: 0.25 + i * 0.06, ease: [0.22, 1, 0.36, 1] }}
               style={{ opacity: faded ? 0.25 : 1, transformOrigin: `${node.x}px ${node.y}px` }}
               className="transition-opacity duration-300"
@@ -164,7 +164,7 @@ export function PipelineGraph() {
                   "transition-all duration-300",
                   node.column === 0 && "fill-void stroke-acm",
                   node.column === 1 && "fill-acm stroke-acm",
-                  node.column === 2 && "fill-void stroke-ink/45",
+                  node.column === 2 && "fill-gold/20 stroke-gold",
                 )}
                 strokeWidth="0.5"
               />
@@ -193,7 +193,7 @@ export function PipelineGraph() {
           >
             <motion.div
               initial={reduce ? undefined : { opacity: 0, y: 6 }}
-              animate={reduce ? undefined : { opacity: 1, y: 0 }}
+              animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.45 + i * 0.06 }}
             >
               <Link
@@ -215,7 +215,7 @@ export function PipelineGraph() {
                 >
                   {node.label}
                 </span>
-                <span className="block font-mono text-[0.5625rem] uppercase tracking-[0.14em] text-ink-ghost">
+                <span className={cn("block text-[0.6875rem] leading-tight", node.column === 2 ? "text-gold" : "text-ink-ghost")}>
                   {node.sub}
                 </span>
               </Link>
@@ -249,25 +249,23 @@ function MobileChain() {
             aria-hidden
             className={cn(
               "absolute -left-[4.5px] top-1.5 block h-2 w-2 rounded-full",
-              si === 1 ? "bg-acm" : "border border-acm bg-void",
+              si === 1 ? "bg-acm" : si === 2 ? "border border-gold bg-void" : "border border-acm bg-void",
             )}
           />
-          <span className="meta text-ink-ghost">{stage.label}</span>
+          <span className="text-sm font-medium text-ink-faint">{stage.label}</span>
           <ul className="mt-3 space-y-2.5">
             {stage.nodes.map((node, i) => (
               <motion.li
                 key={node.id}
                 initial={reduce ? undefined : { opacity: 0, x: -6 }}
-                animate={reduce ? undefined : { opacity: 1, x: 0 }}
+                animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.4, delay: 0.3 + si * 0.1 + i * 0.05 }}
               >
                 <Link href={node.href} className="group flex items-baseline justify-between gap-4">
                   <span className="text-[0.9375rem] font-medium tracking-[-0.01em] transition-colors duration-200 group-hover:text-acm-bright">
                     {node.label}
                   </span>
-                  <span className="font-mono text-[0.5625rem] uppercase tracking-[0.14em] text-ink-ghost">
-                    {node.sub}
-                  </span>
+                  <span className={cn("text-xs", si === 2 ? "text-gold" : "text-ink-ghost")}>{node.sub}</span>
                 </Link>
               </motion.li>
             ))}

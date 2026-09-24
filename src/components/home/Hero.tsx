@@ -1,12 +1,13 @@
 "use client";
 
-import { motion, useReducedMotion } from "framer-motion";
+import { motion } from "framer-motion";
+import { useReducedMotion } from "@/lib/use-reduced-motion";
 import { CmsImage } from "@/components/ui/CmsImage";
-import Link from "next/link";
-import type { CSSProperties } from "react";
 import { ease } from "@/lib/motion";
 import { PipelineGraph } from "./PipelineGraph";
 import { MaskedHeadline } from "@/components/ui/MaskedHeadline";
+import { Button } from "@/components/ui/Button";
+import { displayCase } from "@/lib/display-case";
 import { extraList, extraText, lines, type Section } from "@/lib/cms/types";
 
 /**
@@ -15,7 +16,7 @@ import { extraList, extraText, lines, type Section } from "@/lib/cms/types";
  */
 export function Hero({ section }: { section: Section }) {
   const reduce = useReducedMotion();
-  const headline = lines(section.title);
+  const headline = lines(displayCase(section.title));
   const subtitle = lines(section.subtitle);
   const focus = extraList(section, "focus");
   const badge = extraText(section, "badge");
@@ -23,8 +24,6 @@ export function Hero({ section }: { section: Section }) {
 
   return (
     <section className="relative overflow-hidden rule-b">
-      <div className="pointer-events-none absolute inset-0 grid-field grid-mask opacity-70" aria-hidden />
-
       <div className="shell relative pb-16 pt-32 sm:pt-40 lg:pb-20 lg:pt-44">
         <motion.div
           className="flex items-center gap-4"
@@ -32,16 +31,15 @@ export function Hero({ section }: { section: Section }) {
           animate={{ opacity: 1 }}
           transition={{ duration: 0.6 }}
         >
-          {section.eyebrow ? <span className="meta-accent">{section.eyebrow}</span> : null}
-          {section.eyebrow && badge ? <span className="h-px w-10 bg-line-strong" aria-hidden /> : null}
-          {badge ? <span className="meta">{badge}</span> : null}
+          {section.eyebrow ? <span className="label text-acm-bright">{section.eyebrow}</span> : null}
+          {badge ? <span className="rounded-full border border-line-strong px-2.5 py-0.5 label-sm text-ink-muted">{badge}</span> : null}
         </motion.div>
 
         {/* The headline runs the full width of the shell. Nothing sits beside
             it — the statement is the composition. */}
-        <MaskedHeadline as="h1" className="mt-10 text-display-xl" trigger="mount" delay={0.12} lines={headline} />
+        <MaskedHeadline as="h1" className="mt-6 max-w-5xl text-display-xl text-balance" trigger="mount" delay={0.12} lines={headline} />
 
-        <div className="mt-16 grid gap-14 border-t border-line pt-12 lg:grid-cols-[1.25fr_1fr] lg:gap-20">
+        <div className="mt-14 grid gap-14 lg:grid-cols-[1fr_1.1fr] lg:items-center lg:gap-16">
           <div>
             <motion.div
               className={
@@ -54,13 +52,14 @@ export function Hero({ section }: { section: Section }) {
               transition={{ duration: 0.7, delay: 0.55, ease }}
             >
               {subtitle.length ? (
-                <p className="max-w-[16rem] border-l border-acm pl-5 font-mono text-label uppercase leading-[1.9] text-ink">
+                <ul className="space-y-1.5 text-[0.9375rem] font-medium text-ink">
                   {subtitle.map((line, i) => (
-                    <span key={i} className="block">
-                      {line}
-                    </span>
+                    <li key={i} className="flex items-center gap-2.5">
+                      <span aria-hidden className="h-1.5 w-1.5 rounded-full bg-gold" />
+                      {displayCase(line)}
+                    </li>
                   ))}
-                </p>
+                </ul>
               ) : null}
               {section.body ? (
                 <p className="max-w-prose text-[1.0625rem] leading-relaxed text-ink-muted text-pretty">{section.body}</p>
@@ -68,40 +67,25 @@ export function Hero({ section }: { section: Section }) {
             </motion.div>
 
             <motion.div
-              className="mt-12 flex flex-wrap items-center gap-3"
+              className="mt-10 flex flex-wrap items-center gap-3"
               initial={reduce ? undefined : { opacity: 0, y: 14 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.7, delay: 0.68, ease }}
             >
               {section.primary_label && section.primary_href ? (
-              <Link
-                href={section.primary_href}
-                className="group inline-flex h-14 items-center gap-3 bg-acm-solid px-8 font-mono text-[0.75rem] uppercase tracking-[0.16em] text-white transition-colors duration-200 hover:bg-acm-deep"
-              >
-                {section.primary_label}
-                <span aria-hidden className="transition-transform duration-300 ease-out group-hover:translate-x-1">
-                  →
-                </span>
-              </Link>
+                <Button href={section.primary_href} size="lg">
+                  {displayCase(section.primary_label)}
+                </Button>
               ) : null}
               {section.secondary_label && section.secondary_href ? (
-              <Link
-                href={section.secondary_href}
-                className="group inline-flex h-14 items-center gap-3 border border-line-strong px-8 font-mono text-[0.75rem] uppercase tracking-[0.16em] text-ink transition-colors duration-200 hover:border-acm hover:text-acm-bright"
-              >
-                {section.secondary_label}
-                <span aria-hidden className="transition-transform duration-300 ease-out group-hover:translate-x-1">
-                  →
-                </span>
-              </Link>
+                <Button href={section.secondary_href} size="lg" variant="outline">
+                  {displayCase(section.secondary_label)}
+                </Button>
               ) : null}
               {tertiary.label && tertiary.href ? (
-              <Link
-                href={tertiary.href}
-                className="inline-flex h-14 items-center px-4 font-mono text-[0.75rem] uppercase tracking-[0.16em] text-ink-muted underline decoration-line-strong underline-offset-8 transition-colors duration-200 hover:text-ink hover:decoration-acm"
-              >
-                {tertiary.label}
-              </Link>
+                <Button href={tertiary.href} size="lg" variant="ghost">
+                  {displayCase(tertiary.label)}
+                </Button>
               ) : null}
             </motion.div>
           </div>
@@ -122,29 +106,24 @@ export function Hero({ section }: { section: Section }) {
         </div>
       </div>
 
-      {/* Focus areas as a hairline strip rather than a row of chips. */}
+      {/* Focus areas: a quiet row, not numbered — they are not a sequence. */}
       {focus.length ? (
-      <div className="relative border-t border-line">
-        <div className="shell">
-          <ul
-            className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-[repeat(var(--focus-cols),minmax(0,1fr))]"
-            style={{ "--focus-cols": Math.min(focus.length, 8) } as CSSProperties}
-          >
+        <div className="relative border-t border-line">
+          <div className="shell flex flex-wrap items-center gap-x-2 gap-y-2 py-6">
+            <span className="mr-3 text-sm text-ink-faint">Areas we work in</span>
             {focus.map((item, i) => (
-              <motion.li
+              <motion.span
                 key={item}
-                className="border-b border-line px-1 py-5 sm:border-b-0 sm:border-r sm:last:border-r-0 sm:px-4 lg:py-6 [&:nth-child(2n)]:border-l sm:[&:nth-child(2n)]:border-l-0"
-                initial={reduce ? undefined : { opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.8 + i * 0.04 }}
+                className="rounded-full bg-surface-high/70 px-3 py-1 text-sm text-ink-muted"
+                initial={reduce ? undefined : { opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.4, delay: 0.8 + i * 0.03 }}
               >
-                <span className="block font-mono text-micro uppercase text-ink-ghost">{String(i + 1).padStart(2, "0")}</span>
-                <span className="mt-2 block font-mono text-label uppercase text-ink-muted">{item}</span>
-              </motion.li>
+                {displayCase(item)}
+              </motion.span>
             ))}
-          </ul>
+          </div>
         </div>
-      </div>
       ) : null}
     </section>
   );

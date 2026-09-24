@@ -40,9 +40,9 @@ export default async function ProblemPage({ params }: { params: Promise<{ slug: 
           </Reveal>
 
           <Reveal delay={0.05} className="mt-10 flex flex-wrap items-center gap-4">
-            <span className="meta tnum text-acm-bright">PROBLEM {String(problem.index).padStart(2, "0")}</span>
+            <span className="label tnum text-acm-bright">Problem {String(problem.index).padStart(2, "0")}</span>
             <OriginTag origin={problem.origin} />
-            <span className="font-mono text-micro uppercase text-ink-faint">{problem.category}</span>
+            <span className="label-sm text-ink-faint">{problem.category}</span>
           </Reveal>
 
           <Reveal delay={0.08} className="mt-7 max-w-5xl">
@@ -65,7 +65,7 @@ export default async function ProblemPage({ params }: { params: Promise<{ slug: 
         </Prose>
         <Reveal className="mt-9 flex flex-wrap gap-2" delay={0.05}>
           {problem.context.map((c) => (
-            <Tag key={c} className="px-4 py-2.5 text-label">
+            <Tag key={c} className="px-3 py-1 text-sm">
               {c}
             </Tag>
           ))}
@@ -76,7 +76,6 @@ export default async function ProblemPage({ params }: { params: Promise<{ slug: 
         <ul className="space-y-8">
           {problem.whyItMatters.map((point, i) => (
             <Reveal as="li" key={point} delay={i * 0.06} className="flex gap-7 border-b border-line pb-8 last:border-0">
-              <span className="meta tnum shrink-0 pt-1.5 text-ink-ghost">{String(i + 1).padStart(2, "0")}</span>
               <p className="max-w-prose text-[1.0625rem] leading-relaxed text-ink-muted text-pretty">{point}</p>
             </Reveal>
           ))}
@@ -102,7 +101,7 @@ export default async function ProblemPage({ params }: { params: Promise<{ slug: 
       <Section index="04" title="Technologies & difficulty">
         <Reveal className="flex flex-wrap gap-2">
           {problem.technologies.map((t) => (
-            <Tag key={t} className="px-4 py-2.5 text-label">
+            <Tag key={t} className="px-3 py-1 text-sm">
               {t}
             </Tag>
           ))}
@@ -111,10 +110,10 @@ export default async function ProblemPage({ params }: { params: Promise<{ slug: 
         <Reveal delay={0.08} className="mt-10 border border-line p-7 lg:p-9">
           <div className="flex flex-wrap items-center justify-between gap-6">
             <DifficultyMeter level={problem.level} />
-            <span className="meta text-ink-ghost">Level {String(lvl.ordinal).padStart(2, "0")} of 04</span>
+            <span className="meta text-ink-ghost">Level {lvl.ordinal} of 4</span>
           </div>
           <p className="mt-6 max-w-prose text-[0.9375rem] leading-relaxed text-ink-muted">{lvl.description}</p>
-          <p className="mt-5 font-mono text-micro uppercase leading-relaxed text-ink-ghost">
+          <p className="mt-5 label-sm leading-relaxed text-ink-ghost">
             Difficulty describes the work, not the person. A level 04 problem is not closed to a first-year — it just
             needs a team and a longer runway.
           </p>
@@ -135,7 +134,7 @@ export default async function ProblemPage({ params }: { params: Promise<{ slug: 
               </ArrowLink>
             </div>
           ) : (
-            <p className="mt-8 border-t border-line pt-7 font-mono text-micro uppercase text-ink-ghost">
+            <p className="mt-8 border-t border-line pt-7 label-sm text-ink-ghost">
               No team has taken this on yet.
             </p>
           )}
@@ -145,7 +144,7 @@ export default async function ProblemPage({ params }: { params: Promise<{ slug: 
       <Section index="06" title="Skills needed">
         <Reveal className="flex flex-wrap gap-2">
           {problem.skills.map((s) => (
-            <Tag key={s} className="px-4 py-2.5 text-label">
+            <Tag key={s} className="px-3 py-1 text-sm">
               {s}
             </Tag>
           ))}
@@ -167,7 +166,7 @@ export default async function ProblemPage({ params }: { params: Promise<{ slug: 
 
         <Reveal className="mt-8 flex flex-wrap gap-2" delay={0.1}>
           {problem.openRoles.map((r) => (
-            <Tag key={r} className="border-acm/30 px-4 py-2.5 text-label text-ink">
+            <Tag key={r} className="border-acm/30 px-3 py-1 text-sm text-ink">
               {r}
             </Tag>
           ))}
@@ -196,7 +195,7 @@ export default async function ProblemPage({ params }: { params: Promise<{ slug: 
         <ol className="space-y-1">
           {problem.nextSteps.map((step, i) => (
             <Reveal as="li" key={step} delay={i * 0.05} className="flex gap-6 border-b border-line py-6 last:border-0">
-              <span className="meta tnum shrink-0 pt-1 text-ink-ghost">{String(i + 1).padStart(2, "0")}</span>
+              <span className="w-5 shrink-0 pt-0.5 text-sm font-semibold tnum text-acm-bright">{i + 1}</span>
               <p className="max-w-prose text-[0.9375rem] leading-relaxed text-ink-muted text-pretty">{step}</p>
             </Reveal>
           ))}
@@ -212,7 +211,7 @@ export default async function ProblemPage({ params }: { params: Promise<{ slug: 
           <div className="mt-12 flex flex-wrap items-center gap-8">
             <TurnIntoProject problemTitle={problem.title} suggestedName={problem.potentialProject.name} />
             <Link href="/problems" className="meta text-ink-muted transition-colors hover:text-ink">
-              Back to the Problem Lab →
+              Back to the Problem Lab
             </Link>
           </div>
         </div>

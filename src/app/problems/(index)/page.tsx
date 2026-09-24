@@ -36,14 +36,11 @@ export default async function ProblemsPage() {
         <div className="flex flex-wrap items-center gap-x-8 gap-y-4">
           <Link
             href="/problems/submit"
-            className="group inline-flex h-12 items-center gap-3 border border-line-strong px-7 font-mono text-label uppercase transition-colors duration-200 hover:border-acm hover:text-acm-bright"
+            className="group inline-flex h-12 items-center gap-3 border border-line-strong px-7 label transition-colors duration-200 hover:border-acm hover:text-acm-bright"
           >
             Submit a problem
-            <span aria-hidden className="transition-transform duration-300 ease-out group-hover:translate-x-1">
-              →
-            </span>
           </Link>
-          <p className="max-w-md font-mono text-micro uppercase leading-relaxed text-ink-ghost">
+          <p className="max-w-md label-sm leading-relaxed text-ink-ghost">
             Every statement below was written by students. None has been commissioned, confirmed or endorsed by the
             university.
           </p>
@@ -70,7 +67,7 @@ export default async function ProblemsPage() {
                 "Build. Document what broke. The failures are the part nobody else can copy from you.",
               ].map((step, i) => (
                 <li key={step} className="flex gap-6 border-b border-line pb-5">
-                  <span className="meta tnum shrink-0 text-acm-bright">{String(i + 1).padStart(2, "0")}</span>
+                  <span className="w-5 shrink-0 text-sm font-semibold tnum text-acm-bright">{i + 1}</span>
                   <span className="text-[0.9375rem] leading-relaxed text-ink-muted text-pretty">{step}</span>
                 </li>
               ))}

@@ -1,6 +1,7 @@
 "use client";
 
-import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
+import { useReducedMotion } from "@/lib/use-reduced-motion";
 import { useState } from "react";
 import { TextField, TextArea, SelectField } from "./Field";
 import { Button } from "@/components/ui/Button";
@@ -194,7 +195,7 @@ export function ApplyForm({ projectName, roles }: { projectName: string; roles: 
             initial={{ opacity: 0, y: -6 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0 }}
-            className="font-mono text-micro uppercase text-acm-bright"
+            className="label-sm text-acm-bright"
             role="alert"
           >
             Some fields need attention.

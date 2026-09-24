@@ -1,6 +1,7 @@
 "use client";
 
-import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
+import { useReducedMotion } from "@/lib/use-reduced-motion";
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { DOMAINS, COMFORT, type ComfortId } from "@/data/taxonomy";
@@ -115,7 +116,7 @@ export function DiscoverFlow({ projects, ideas, problems }: { projects: Project[
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.35, delay: i * 0.03 }}
                       className={cn(
-                        "border px-5 py-3.5 font-mono text-label uppercase transition-colors duration-200",
+                        "border px-5 py-3.5 label transition-colors duration-200",
                         active
                           ? "border-acm bg-acm-wash text-ink"
                           : "border-line text-ink-faint hover:border-line-strong hover:text-ink-muted",
@@ -131,7 +132,7 @@ export function DiscoverFlow({ projects, ideas, problems }: { projects: Project[
                 <Button size="lg" onClick={() => setStep(1)} arrow>
                   Continue
                 </Button>
-                <span className="font-mono text-micro uppercase text-ink-ghost">
+                <span className="label-sm text-ink-ghost">
                   {interests.length === 0 ? "Or continue to see everything" : `${interests.length} selected`}
                 </span>
               </div>
@@ -192,7 +193,7 @@ export function DiscoverFlow({ projects, ideas, problems }: { projects: Project[
             <motion.div key="s2" {...slide}>
               <div className="flex flex-wrap items-baseline justify-between gap-5 border-b border-line pb-5">
                 <h2 className="text-display-sm">Projects for you</h2>
-                <span className="font-mono text-micro uppercase text-ink-ghost">
+                <span className="label-sm text-ink-ghost">
                   {total} match{total === 1 ? "" : "es"}
                 </span>
               </div>
@@ -250,7 +251,7 @@ export function DiscoverFlow({ projects, ideas, problems }: { projects: Project[
 
               {total === 0 ? (
                 <div className="border border-line px-8 py-20 text-center">
-                  <p className="font-mono text-label uppercase text-ink-faint">
+                  <p className="label text-ink-faint">
                     Nothing matches that combination yet.
                   </p>
                   <p className="mx-auto mt-4 max-w-sm text-sm leading-relaxed text-ink-muted">
@@ -258,9 +259,9 @@ export function DiscoverFlow({ projects, ideas, problems }: { projects: Project[
                   </p>
                   <Link
                     href="/problems/submit"
-                    className="mt-7 inline-flex font-mono text-label uppercase text-acm-bright hover:text-ink"
+                    className="mt-7 inline-flex label text-acm-bright hover:text-ink"
                   >
-                    Submit a problem →
+                    Submit a problem
                   </Link>
                 </div>
               ) : null}

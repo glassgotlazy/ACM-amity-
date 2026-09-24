@@ -42,7 +42,7 @@ export function EventRow({
           <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
             <span
               className={cn(
-                "font-mono text-micro uppercase",
+                "label-sm",
                 event.status === "ongoing"
                   ? "text-acm-bright"
                   : event.status === "cancelled"
@@ -53,7 +53,7 @@ export function EventRow({
               {STATUS_LABEL[event.status]}
             </span>
             <span className="h-3 w-px bg-line-strong" aria-hidden />
-            <span className="font-mono text-micro uppercase text-ink-faint">
+            <span className="label-sm text-ink-faint">
               {eventWhen(event.starts_at, event.ends_at)}
             </span>
           </div>
@@ -84,7 +84,7 @@ export function EventRow({
                   href={event.registration_url}
                   target="_blank"
                   rel="noreferrer noopener"
-                  className="group inline-flex h-11 items-center gap-3 bg-acm-solid px-6 font-mono text-label uppercase text-white transition-colors duration-200 hover:bg-acm-deep"
+                  className="group inline-flex h-11 items-center gap-3 bg-acm-solid px-6 label text-white transition-colors duration-200 hover:bg-acm-deep"
                 >
                   Register
                   <span className="sr-only"> for {event.title}</span>
@@ -96,7 +96,7 @@ export function EventRow({
                   </span>
                 </a>
               ) : null}
-              <span className="flex flex-wrap items-center gap-x-4 gap-y-2 font-mono text-micro uppercase">
+              <span className="flex flex-wrap items-center gap-x-4 gap-y-2 label-sm">
                 <span className="text-ink-faint">Add to calendar:</span>
                 <a
                   href={googleCalendarUrl(

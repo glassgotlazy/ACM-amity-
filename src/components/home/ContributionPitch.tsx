@@ -1,6 +1,7 @@
 "use client";
 
-import { motion, useReducedMotion } from "framer-motion";
+import { motion } from "framer-motion";
+import { useReducedMotion } from "@/lib/use-reduced-motion";
 import Link from "next/link";
 import { CONTRIBUTION_MODEL, TRACKED } from "@/data/profile";
 import { SectionHeading } from "@/components/ui/SectionHeading";
@@ -71,12 +72,11 @@ export function ContributionPitch({ section, index }: { section: Section; index:
                 viewport={viewportOnce}
                 transition={{ duration: 0.4, delay: i * 0.04 }}
               >
-                <span className="meta tnum text-ink-ghost">{String(i + 1).padStart(2, "0")}</span>
                 {item}
               </motion.li>
             ))}
           </ul>
-          {section.note ? <p className="mt-6 font-mono text-micro uppercase text-ink-ghost">{section.note}</p> : null}
+          {section.note ? <p className="mt-6 label-sm text-ink-ghost">{section.note}</p> : null}
         </Reveal>
       </div>
     </section>

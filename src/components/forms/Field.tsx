@@ -27,11 +27,11 @@ function Shell({
           {label}
           {required ? <span className="ml-1.5 text-acm-bright">*</span> : null}
         </span>
-        {hint ? <span className="font-mono text-micro uppercase text-ink-ghost">{hint}</span> : null}
+        {hint ? <span className="label-sm text-ink-ghost">{hint}</span> : null}
       </label>
       <div className="mt-3">{children}</div>
       {error ? (
-        <p id={`${id}-error`} role="alert" className="mt-2 font-mono text-micro uppercase text-acm-bright">
+        <p id={`${id}-error`} role="alert" className="mt-2 label-sm text-acm-bright">
           {error}
         </p>
       ) : null}
@@ -139,7 +139,7 @@ export function ChipGroup({
           {label}
           {required ? <span className="ml-1.5 text-acm-bright">*</span> : null}
         </span>
-        {hint ? <span className="font-mono text-micro uppercase text-ink-ghost">{hint}</span> : null}
+        {hint ? <span className="label-sm text-ink-ghost">{hint}</span> : null}
       </legend>
       <div className="mt-4 flex flex-wrap gap-2">
         {options.map((option) => {
@@ -151,7 +151,7 @@ export function ChipGroup({
               aria-pressed={active}
               onClick={() => onToggle(option)}
               className={cn(
-                "border px-4 py-2.5 font-mono text-label uppercase transition-colors duration-200",
+                "border px-4 py-2.5 label transition-colors duration-200",
                 active
                   ? "border-acm bg-acm-wash text-ink"
                   : "border-line text-ink-faint hover:border-line-strong hover:text-ink-muted",
@@ -163,7 +163,7 @@ export function ChipGroup({
         })}
       </div>
       {error ? (
-        <p id={`${id}-error`} role="alert" className="mt-3 font-mono text-micro uppercase text-acm-bright">
+        <p id={`${id}-error`} role="alert" className="mt-3 label-sm text-acm-bright">
           {error}
         </p>
       ) : null}
@@ -205,7 +205,7 @@ export function Checkbox({
       </button>
       <label htmlFor={id} className="cursor-pointer text-sm leading-snug text-ink-muted">
         {label}
-        {hint ? <span className="mt-1 block font-mono text-micro uppercase text-ink-ghost">{hint}</span> : null}
+        {hint ? <span className="mt-1 block label-sm text-ink-ghost">{hint}</span> : null}
       </label>
     </div>
   );

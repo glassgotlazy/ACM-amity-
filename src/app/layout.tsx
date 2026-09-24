@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Inter, JetBrains_Mono } from "next/font/google";
+import { IBM_Plex_Mono, IBM_Plex_Sans } from "next/font/google";
 import "./globals.css";
 import { Navbar } from "@/components/site/Navbar";
 import { Footer } from "@/components/site/Footer";
@@ -26,14 +26,16 @@ import {
 import { buildIndex } from "@/lib/search";
 import { brandCaption } from "@/lib/cms/types";
 
-const inter = Inter({
+// IBM Plex: a grotesque drawn for engineering documentation, with a mono
+// companion for the few places that show data (levels, counts, code).
+const sans = IBM_Plex_Sans({
   subsets: ["latin"],
   variable: "--font-sans",
   display: "swap",
   weight: ["400", "500", "600", "700"],
 });
 
-const mono = JetBrains_Mono({
+const mono = IBM_Plex_Mono({
   subsets: ["latin"],
   variable: "--font-mono",
   display: "swap",
@@ -64,8 +66,8 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export const viewport: Viewport = {
   themeColor: [
-    { media: "(prefers-color-scheme: dark)", color: "#08090B" },
-    { media: "(prefers-color-scheme: light)", color: "#FAFAF8" },
+    { media: "(prefers-color-scheme: dark)", color: "#0D1422" },
+    { media: "(prefers-color-scheme: light)", color: "#F6F8FB" },
   ],
   colorScheme: "dark light",
 };
@@ -107,7 +109,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const mobileExtra = nav.filter((n) => !n.in_header && (n.footer_group === "platform" || n.footer_group === "community"));
 
   return (
-    <html lang="en" className={`${inter.variable} ${mono.variable}`} suppressHydrationWarning>
+    <html lang="en" className={`${sans.variable} ${mono.variable}`} suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
       </head>

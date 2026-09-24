@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { motion, useReducedMotion } from "framer-motion";
+import { motion } from "framer-motion";
+import { useReducedMotion } from "@/lib/use-reduced-motion";
 import type { Idea } from "@/lib/cms/content-types";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { ArrowLink } from "@/components/ui/ArrowLink";
@@ -58,10 +59,10 @@ export function IdeasTeaser({ section, index, ideas }: { section: Section; index
                 </span>
                 <span className="mt-1 block text-sm text-ink-faint">{idea.tagline}</span>
               </span>
-              <span className="font-mono text-micro uppercase text-ink-faint">{idea.teamSize} people</span>
+              <span className="label-sm text-ink-faint">{idea.teamSize} people</span>
               <span className="flex items-center justify-between gap-4">
                 <DifficultyMeter level={idea.level} showLabel={false} />
-                <span className="font-mono text-micro uppercase text-ink-ghost">{idea.domains.join(" · ")}</span>
+                <span className="label-sm text-ink-ghost">{idea.domains.join(" · ")}</span>
               </span>
             </Link>
           </motion.li>

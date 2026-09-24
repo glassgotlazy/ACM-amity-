@@ -1,6 +1,7 @@
 "use client";
 
-import { motion, useReducedMotion } from "framer-motion";
+import { motion } from "framer-motion";
+import { useReducedMotion } from "@/lib/use-reduced-motion";
 import { cn } from "@/lib/utils";
 import { viewportOnce } from "@/lib/motion";
 
@@ -41,13 +42,13 @@ export function SkillBars({ skills }: { skills: { name: string; level: number }[
               ))}
             </span>
 
-            <span className="font-mono text-micro uppercase text-ink-ghost sm:text-right">
+            <span className="label-sm text-ink-ghost sm:text-right">
               {LEVEL_WORD[skill.level]}
             </span>
           </motion.li>
         ))}
       </ul>
-      <p className="mt-6 font-mono text-micro uppercase text-ink-ghost">
+      <p className="mt-6 label-sm text-ink-ghost">
         Self-assessed. Useful for matching people to work, not for ranking them.
       </p>
     </div>

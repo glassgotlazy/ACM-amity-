@@ -1,8 +1,10 @@
 "use client";
 
-import { motion, useReducedMotion } from "framer-motion";
+import { motion } from "framer-motion";
+import { useReducedMotion } from "@/lib/use-reduced-motion";
 import { ease } from "@/lib/motion";
 import { cn } from "@/lib/utils";
+import { displayCase } from "@/lib/display-case";
 
 type Props = {
   lines: (string | { text: string; className?: string })[];
@@ -37,7 +39,11 @@ export function MaskedHeadline({
   const reduce = useReducedMotion();
   const MotionTag = motion[Tag];
 
-  const normalised = lines.map((line) => (typeof line === "string" ? { text: line, className: undefined } : line));
+  const raw = lines.map((line) => (typeof line === "string" ? { text: line, className: undefined } : line));
+  // Headlines stored in capitals read in sentence case (see displayCase);
+  // cased as one text so a line break is not taken for a new sentence.
+  const cased = displayCase(raw.map((l) => l.text).join("\n")).split("\n");
+  const normalised = raw.map((l, i) => ({ ...l, text: cased[i] ?? l.text }));
 
   if (reduce) {
     return (

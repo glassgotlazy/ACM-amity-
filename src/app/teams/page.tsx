@@ -87,8 +87,7 @@ export default async function TeamsPage() {
               >
                 <div className={cn(flipped && "lg:order-2")}>
                   <Reveal className="flex items-baseline gap-4">
-                    <span className="meta tnum text-acm-bright">{String(i + 1).padStart(2, "0")}</span>
-                    <span className="meta">{team.domains.join(" · ")}</span>
+                    <span className="label text-acm-bright">{team.domains.join(", ")}</span>
                   </Reveal>
 
                   <Reveal delay={0.05}>
@@ -124,9 +123,6 @@ export default async function TeamsPage() {
                             className="group inline-flex items-center gap-2 text-[0.9375rem] text-ink-muted transition-colors duration-200 hover:text-acm-bright"
                           >
                             {p.name}
-                            <span aria-hidden className="transition-transform duration-300 group-hover:translate-x-1">
-                              →
-                            </span>
                           </Link>
                         </li>
                       ))}
@@ -140,7 +136,7 @@ export default async function TeamsPage() {
                         <li key={pos.role}>
                           <div className="flex items-baseline justify-between gap-4">
                             <span className="text-[0.9375rem] font-medium">{pos.role}</span>
-                            <span className="font-mono text-micro uppercase text-ink-ghost">{pos.level}</span>
+                            <span className="label-sm text-ink-ghost">{pos.level}</span>
                           </div>
                           <p className="mt-1.5 text-sm text-ink-faint">{pos.note}</p>
                         </li>
@@ -164,12 +160,9 @@ export default async function TeamsPage() {
                   <Reveal delay={0.2} className="mt-9">
                     <Link
                       href="/join"
-                      className="group inline-flex h-12 items-center gap-3 border border-line-strong px-6 font-mono text-label uppercase transition-colors duration-200 hover:border-acm hover:text-acm-bright"
+                      className="group inline-flex h-12 items-center gap-3 border border-line-strong px-6 label transition-colors duration-200 hover:border-acm hover:text-acm-bright"
                     >
                       Join {team.name.replace(" Team", "")}
-                      <span aria-hidden className="transition-transform duration-300 group-hover:translate-x-1">
-                        →
-                      </span>
                     </Link>
                   </Reveal>
                 </div>
@@ -188,11 +181,11 @@ export default async function TeamsPage() {
               follows from what that problem needs.
             </p>
             <div className="flex flex-wrap gap-6 pt-3">
-              <Link href="/discover" className="font-mono text-label uppercase text-acm-bright hover:text-ink">
-                Find your project →
+              <Link href="/discover" className="label text-acm-bright hover:text-ink">
+                Find your project
               </Link>
-              <Link href="/problems" className="font-mono text-label uppercase text-ink-muted hover:text-ink">
-                Browse problems →
+              <Link href="/problems" className="label text-ink-muted hover:text-ink">
+                Browse problems
               </Link>
             </div>
           </div>
@@ -230,7 +223,7 @@ function Officer({ person }: { person: PublicMember }) {
                   href={person[l.key]!}
                   target="_blank"
                   rel="noreferrer noopener"
-                  className="font-mono text-micro uppercase text-ink-faint transition-colors hover:text-acm-bright"
+                  className="label-sm text-ink-faint transition-colors hover:text-acm-bright"
                 >
                   {l.label} ↗<span className="sr-only"> — {person.name}</span>
                 </a>
@@ -240,7 +233,7 @@ function Officer({ person }: { person: PublicMember }) {
               <li>
                 <a
                   href={`mailto:${person.email}`}
-                  className="font-mono text-micro uppercase text-ink-faint transition-colors hover:text-acm-bright"
+                  className="label-sm text-ink-faint transition-colors hover:text-acm-bright"
                 >
                   Email<span className="sr-only"> {person.name}</span>
                 </a>

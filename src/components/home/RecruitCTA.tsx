@@ -1,7 +1,9 @@
 "use client";
 
-import { motion, useReducedMotion } from "framer-motion";
-import Link from "next/link";
+import { motion } from "framer-motion";
+import { useReducedMotion } from "@/lib/use-reduced-motion";
+import { Button } from "@/components/ui/Button";
+import { displayCase } from "@/lib/display-case";
 import { MaskedHeadline } from "@/components/ui/MaskedHeadline";
 import { viewportOnce } from "@/lib/motion";
 import { lines, type Section } from "@/lib/cms/types";
@@ -15,11 +17,7 @@ export function RecruitCTA({ section }: { section: Section }) {
         <MaskedHeadline
           id="recruit"
           className="text-display-md"
-          // The last line is set back in a fainter ink, as designed.
-          lines={lines(section.title).map((text, i, all) => ({
-            text,
-            className: all.length > 1 && i === all.length - 1 ? "text-ink-faint" : undefined,
-          }))}
+          lines={lines(displayCase(section.title))}
         />
 
         <motion.div
@@ -33,26 +31,12 @@ export function RecruitCTA({ section }: { section: Section }) {
           ) : null}
           <div className="mt-8 flex flex-wrap gap-3">
             {section.primary_label && section.primary_href ? (
-            <Link
-              href={section.primary_href}
-              className="group inline-flex items-center gap-3 bg-acm-solid px-7 py-4 font-mono text-label uppercase text-white transition-colors duration-200 hover:bg-acm-deep"
-            >
-              {section.primary_label}
-              <span aria-hidden className="transition-transform duration-300 ease-out group-hover:translate-x-1">
-                →
-              </span>
-            </Link>
+              <Button href={section.primary_href}>{displayCase(section.primary_label)}</Button>
             ) : null}
             {section.secondary_label && section.secondary_href ? (
-            <Link
-              href={section.secondary_href}
-              className="group inline-flex items-center gap-3 border border-line-strong px-7 py-4 font-mono text-label uppercase transition-colors duration-200 hover:border-acm hover:text-acm-bright"
-            >
-              {section.secondary_label}
-              <span aria-hidden className="transition-transform duration-300 ease-out group-hover:translate-x-1">
-                →
-              </span>
-            </Link>
+              <Button href={section.secondary_href} variant="outline">
+                {displayCase(section.secondary_label)}
+              </Button>
             ) : null}
           </div>
         </motion.div>

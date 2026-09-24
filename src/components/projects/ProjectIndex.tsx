@@ -53,7 +53,7 @@ export function ProjectIndex({ projects }: { projects: Project[] }) {
       </LayoutGroup>
 
       {shown.length === 0 ? (
-        <p className="py-20 text-center font-mono text-label uppercase text-ink-faint">
+        <p className="py-20 text-center label text-ink-faint">
           No projects in this domain yet — which is an opening, not a dead end.
         </p>
       ) : null}

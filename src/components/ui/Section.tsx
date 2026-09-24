@@ -2,12 +2,11 @@ import { Reveal } from "./Reveal";
 import { cn } from "@/lib/utils";
 
 /**
- * The standard content band used by every detail page: a numbered label in a
+ * The standard content band used by every detail page: the heading in a
  * narrow left rail, content in the wide right column. The consistent rail is
- * what makes long documents scannable.
+ * what makes long documents scannable. (`index` is accepted but not shown.)
  */
 export function Section({
-  index,
   title,
   lede,
   children,
@@ -23,14 +22,11 @@ export function Section({
 }) {
   return (
     <section id={id} className={cn("border-b border-line", className)}>
-      <div className="shell grid gap-10 py-16 lg:grid-cols-[14rem_1fr] lg:gap-16 lg:py-20">
+      <div className="shell grid gap-8 py-14 lg:grid-cols-[14rem_1fr] lg:gap-16 lg:py-16">
         <div className="lg:sticky lg:top-28 lg:self-start">
           <Reveal>
-            <div className="flex items-baseline gap-3">
-              {index ? <span className="meta tnum text-acm-bright">{index}</span> : null}
-              <h2 className="meta text-ink">{title}</h2>
-            </div>
-            {lede ? <p className="mt-5 text-sm leading-relaxed text-ink-faint">{lede}</p> : null}
+            <h2 className="text-lg font-semibold tracking-[-0.015em] text-ink">{title}</h2>
+            {lede ? <p className="mt-2 text-sm leading-relaxed text-ink-faint">{lede}</p> : null}
           </Reveal>
         </div>
         <div>{children}</div>

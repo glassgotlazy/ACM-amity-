@@ -62,7 +62,7 @@ export const contributorProfile: Profile = {
       name: "AI Admissions Assistant",
       slug: "admissions-ai",
       role: "Technical lead",
-      status: "IN DEVELOPMENT",
+      status: "In development",
       period: "Current",
       did: [
         "Knowledge base grown to 310 topics that answer offline, with no API key and no network connection.",

@@ -1,16 +1,16 @@
 "use client";
 
 import Link from "next/link";
-import { motion, useReducedMotion } from "framer-motion";
+import { motion } from "framer-motion";
+import { useReducedMotion } from "@/lib/use-reduced-motion";
 import type { Project } from "@/lib/cms/types";
 import { StatusPill, Tag } from "@/components/ui/Badges";
 import { viewportOnce } from "@/lib/motion";
 import { cn } from "@/lib/utils";
-import { pad } from "@/lib/utils";
 
 /**
- * Project row. Deliberately a row and not a card — projects belong in an
- * index, and a list of rules reads as a catalogue rather than a grid of tiles.
+ * Project row. A row, not a card: projects belong in an index. The whole row
+ * is the link; hovering lifts its background, nothing else moves.
  */
 export function ProjectRow({ project, index }: { project: Project; index: number }) {
   const reduce = useReducedMotion();
@@ -19,32 +19,27 @@ export function ProjectRow({ project, index }: { project: Project; index: number
     <motion.article
       layout={!reduce}
       className="group relative border-b border-line"
-      initial={reduce ? undefined : { opacity: 0, y: 12 }}
+      initial={reduce ? undefined : { opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       exit={reduce ? undefined : { opacity: 0 }}
       transition={{ duration: 0.4, delay: Math.min(index * 0.04, 0.24) }}
     >
-      <Link href={`/projects/${project.slug}`} className="block py-8 lg:py-10">
-        {/* The accent rail grows on hover — the only motion the row needs. */}
-        <span
-          aria-hidden
-          className="absolute left-0 top-0 h-full w-px origin-top scale-y-0 bg-acm transition-transform duration-500 ease-out group-hover:scale-y-100"
-        />
-
-        <div className="grid gap-6 pl-0 transition-[padding] duration-500 ease-out group-hover:pl-6 lg:grid-cols-[auto_1fr_auto] lg:items-start lg:gap-10">
-          <span className="meta pt-1 tnum text-ink-ghost lg:w-12">{pad(index + 1)}</span>
-
+      <Link
+        href={`/projects/${project.slug}`}
+        className="-mx-4 block rounded-xl px-4 py-8 transition-colors duration-200 hover:bg-surface/70 lg:-mx-6 lg:px-6"
+      >
+        <div className="grid gap-6 lg:grid-cols-[1fr_auto] lg:items-start lg:gap-12">
           <div className="lg:max-w-3xl">
-            <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
               <StatusPill status={project.status} />
-              <span className="font-mono text-micro uppercase text-ink-ghost">{project.category}</span>
+              <span className="text-xs text-ink-ghost">{project.category}</span>
             </div>
 
-            <h3 className="mt-3 text-2xl font-semibold tracking-[-0.03em] transition-colors duration-200 group-hover:text-acm-bright sm:text-3xl">
+            <h3 className="mt-3 text-2xl font-semibold tracking-[-0.025em] transition-colors duration-150 group-hover:text-acm-bright sm:text-[1.75rem]">
               {project.name}
             </h3>
 
-            <p className="mt-3 max-w-prose text-sm leading-relaxed text-ink-muted text-pretty">{project.summary}</p>
+            <p className="mt-2.5 max-w-prose text-[0.9375rem] leading-relaxed text-ink-muted text-pretty">{project.summary}</p>
 
             <div className="mt-5 flex flex-wrap gap-1.5">
               {project.technologies.slice(0, 5).map((tech) => (
@@ -53,20 +48,9 @@ export function ProjectRow({ project, index }: { project: Project; index: number
             </div>
           </div>
 
-          <div className="flex items-center gap-8 lg:flex-col lg:items-end lg:gap-4 lg:pt-1">
-            <div className="lg:text-right">
-              <div className="meta">Open roles</div>
-              <div className="mt-1.5 text-2xl tnum text-ink">{project.openRoles.length}</div>
-            </div>
-            <span className="meta inline-flex items-center gap-2 text-ink-faint transition-colors duration-200 group-hover:text-acm-bright">
-              View
-              <span
-                aria-hidden
-                className="transition-transform duration-300 ease-out group-hover:translate-x-1 group-hover:-translate-y-0.5"
-              >
-                ↗
-              </span>
-            </span>
+          <div className="flex items-baseline gap-2 lg:flex-col lg:items-end lg:gap-0 lg:pt-1 lg:text-right">
+            <div className="text-3xl font-semibold tnum tracking-[-0.03em] text-gold">{project.openRoles.length}</div>
+            <div className="text-sm text-ink-faint">open {project.openRoles.length === 1 ? "role" : "roles"}</div>
           </div>
         </div>
       </Link>
@@ -80,78 +64,62 @@ export function FeatureProject({ project, index }: { project: Project; index: nu
 
   return (
     <motion.article
-      className="group relative flex h-full flex-col border border-line bg-surface/40 transition-colors duration-300 hover:border-line-strong"
-      initial={reduce ? undefined : { opacity: 0, y: 18 }}
+      className="group relative flex h-full flex-col rounded-2xl border border-line bg-surface/60 p-7 transition-[border-color,background-color] duration-200 hover:border-line-strong hover:bg-surface lg:p-9"
+      initial={reduce ? undefined : { opacity: 0, y: 14 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={viewportOnce}
-      transition={{ duration: 0.6, delay: index * 0.08 }}
+      transition={{ duration: 0.5, delay: index * 0.06 }}
     >
-      <div className="flex items-center justify-between border-b border-line px-7 py-4">
+      <div className="flex items-center justify-between gap-4">
         <StatusPill status={project.status} />
-        <span className="font-mono text-micro uppercase text-ink-ghost">{project.category}</span>
+        <span className="text-xs text-ink-ghost">{project.category}</span>
       </div>
 
-      <div className="flex flex-1 flex-col p-7 lg:p-9">
-        <h3 className="text-display-sm">
-          <Link href={`/projects/${project.slug}`} className="transition-colors duration-200 hover:text-acm-bright">
-            <span className="absolute inset-0" aria-hidden />
-            {project.name}
-          </Link>
-        </h3>
+      <h3 className="mt-5 text-display-sm">
+        <Link href={`/projects/${project.slug}`} className="transition-colors duration-150 group-hover:text-acm-bright">
+          <span className="absolute inset-0 rounded-2xl" aria-hidden />
+          {project.name}
+        </Link>
+      </h3>
 
-        <p className="mt-5 max-w-prose text-[0.9375rem] leading-relaxed text-ink-muted text-pretty">
-          {project.summary}
-        </p>
+      <p className="mt-4 max-w-prose text-[0.9375rem] leading-relaxed text-ink-muted text-pretty">{project.summary}</p>
 
-        <dl className="mt-8 space-y-5 border-t border-line pt-7">
-          <div>
-            <dt className="meta">Technology</dt>
-            <dd className="mt-2.5 flex flex-wrap gap-1.5">
-              {project.technologies.slice(0, 6).map((t) => (
-                <Tag key={t}>{t}</Tag>
-              ))}
-            </dd>
-          </div>
-          <div>
-            <dt className="meta">Open roles</dt>
-            <dd className="mt-2.5 flex flex-wrap gap-1.5">
-              {project.openRoles.map((r) => (
-                <Tag key={r.role} className="border-acm/30 text-ink">
-                  {r.role}
-                </Tag>
-              ))}
-            </dd>
-          </div>
-        </dl>
-
-        <div className="mt-auto flex items-center justify-between pt-9">
-          <span className="meta inline-flex items-center gap-2 text-acm-bright">
-            Explore project
-            <span
-              aria-hidden
-              className="transition-transform duration-300 ease-out group-hover:translate-x-1 group-hover:-translate-y-0.5"
-            >
-              ↗
-            </span>
-          </span>
-          <ProgressTicks value={project.progress} />
+      <dl className="mt-7 space-y-5">
+        <div>
+          <dt className="text-sm text-ink-faint">Built with</dt>
+          <dd className="mt-2 flex flex-wrap gap-1.5">
+            {project.technologies.slice(0, 6).map((t) => (
+              <Tag key={t}>{t}</Tag>
+            ))}
+          </dd>
         </div>
+        <div>
+          <dt className="text-sm text-ink-faint">Looking for</dt>
+          <dd className="mt-2 flex flex-wrap gap-1.5">
+            {project.openRoles.map((r) => (
+              <Tag key={r.role} className="bg-gold/10 text-gold">
+                {r.role}
+              </Tag>
+            ))}
+          </dd>
+        </div>
+      </dl>
+
+      <div className="mt-auto pt-8">
+        <ProgressTicks value={project.progress} />
       </div>
     </motion.article>
   );
 }
 
-/** Twelve ticks, filled proportionally. Reads as an instrument, not a bar. */
-export function ProgressTicks({ value, count = 12 }: { value: number; count?: number }) {
-  const filled = Math.round((value / 100) * count);
+/** How far the current phase has come: a plain bar with its number. */
+export function ProgressTicks({ value }: { value: number; count?: number }) {
   return (
-    <span className="flex items-center gap-2" title={`${value}% of the current phase plan`}>
-      <span className="flex gap-[3px]" aria-hidden>
-        {Array.from({ length: count }, (_, i) => (
-          <span key={i} className={cn("h-3 w-[2px]", i < filled ? "bg-acm" : "bg-line-strong")} />
-        ))}
+    <span className="flex items-center gap-3" title={`${value}% of the current phase plan`}>
+      <span className="relative h-1.5 w-full max-w-[12rem] overflow-hidden rounded-full bg-line-strong" aria-hidden>
+        <span className="absolute inset-y-0 left-0 rounded-full bg-acm" style={{ width: `${value}%` }} />
       </span>
-      <span className="font-mono text-micro tnum text-ink-faint">{value}%</span>
+      <span className="shrink-0 text-xs tnum text-ink-faint">{value}% of this phase</span>
     </span>
   );
 }

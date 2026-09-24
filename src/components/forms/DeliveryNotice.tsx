@@ -8,7 +8,7 @@ import type { SubmissionResult } from "@/lib/submissions";
 export function DeliveryNotice({ result }: { result: SubmissionResult }) {
   if (result.status === "delivered") {
     return (
-      <p className="mt-6 border-t border-line pt-5 font-mono text-micro uppercase leading-relaxed text-ink-ghost">
+      <p className="mt-6 border-t border-line pt-5 label-sm leading-relaxed text-ink-ghost">
         <span className="text-signal-live">Received ·</span> Your submission has been recorded and will be read by the
         team. You will not get an automated email.
       </p>
@@ -16,7 +16,7 @@ export function DeliveryNotice({ result }: { result: SubmissionResult }) {
   }
 
   return (
-    <p className="mt-6 border-t border-line pt-5 font-mono text-micro uppercase leading-relaxed text-ink-ghost">
+    <p className="mt-6 border-t border-line pt-5 label-sm leading-relaxed text-ink-ghost">
       <span className="text-acm-bright">Demo notice ·</span> No submission destination is configured for this deployment, so
       nothing was transmitted or stored. Set FORM_ENDPOINT to start collecting.
     </p>
@@ -26,7 +26,7 @@ export function DeliveryNotice({ result }: { result: SubmissionResult }) {
 /** Inline error shown when a destination exists but delivery failed. */
 export function DeliveryError({ message }: { message: string }) {
   return (
-    <p role="alert" className="font-mono text-micro uppercase leading-relaxed text-acm-bright">
+    <p role="alert" className="label-sm leading-relaxed text-acm-bright">
       {message}
     </p>
   );

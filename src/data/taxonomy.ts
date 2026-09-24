@@ -26,7 +26,7 @@ export const LEVELS = [
   {
     id: "build",
     ordinal: 1,
-    name: "BUILD",
+    name: "Build",
     summary: "Basic implementation",
     description:
       "One clear surface, one technology, a well-understood path from start to finish. You learn by shipping the whole thing yourself.",
@@ -34,7 +34,7 @@ export const LEVELS = [
   {
     id: "integrate",
     ordinal: 2,
-    name: "INTEGRATE",
+    name: "Integrate",
     summary: "Multiple technologies",
     description:
       "Several moving parts that have to agree with each other — an API, a store, a frontend. The difficulty lives in the seams.",
@@ -42,7 +42,7 @@ export const LEVELS = [
   {
     id: "research",
     ordinal: 3,
-    name: "RESEARCH",
+    name: "Research",
     summary: "Requires experimentation and investigation",
     description:
       "The approach is not known in advance. Expect a literature pass, prototypes that get thrown away, and results you have to argue for.",
@@ -50,7 +50,7 @@ export const LEVELS = [
   {
     id: "deploy",
     ordinal: 4,
-    name: "DEPLOY",
+    name: "Deploy",
     summary: "Production quality implementation",
     description:
       "Real users, real failure modes. Reliability, privacy, access control, monitoring and the discipline to keep it running.",
@@ -78,12 +78,12 @@ export type ComfortId = (typeof COMFORT)[number]["id"];
  * claims to be finished, launched or adopted unless it actually is.
  */
 export const STATUSES = {
-  current: { label: "CURRENT", tone: "live" },
-  development: { label: "IN DEVELOPMENT", tone: "work" },
-  ongoing: { label: "ONGOING RESEARCH", tone: "work" },
-  exploring: { label: "EXPLORING", tone: "idea" },
-  proposed: { label: "PROPOSED", tone: "idea" },
-  soon: { label: "COMING SOON", tone: "idle" },
+  current: { label: "Current", tone: "live" },
+  development: { label: "In development", tone: "work" },
+  ongoing: { label: "Ongoing research", tone: "work" },
+  exploring: { label: "Exploring", tone: "idea" },
+  proposed: { label: "Proposed", tone: "idea" },
+  soon: { label: "Coming soon", tone: "idle" },
 } as const;
 
 export type StatusId = keyof typeof STATUSES;
@@ -95,10 +95,10 @@ export type Tone = (typeof STATUSES)[StatusId]["tone"];
  * and at the moment none of them are.
  */
 export const ORIGINS = {
-  potential: "POTENTIAL PROBLEM",
-  example: "EXAMPLE PROBLEM STATEMENT",
-  exploration: "STUDENT EXPLORATION",
-  challenge: "STUDENT CHALLENGE",
+  potential: "Potential problem",
+  example: "Example problem statement",
+  exploration: "Student exploration",
+  challenge: "Student challenge",
 } as const;
 
 export type OriginId = keyof typeof ORIGINS;

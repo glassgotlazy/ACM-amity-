@@ -1,26 +1,17 @@
-"use client";
-
-import { motion, useReducedMotion, useScroll, useTransform } from "framer-motion";
-import { useRef } from "react";
 import { MaskedHeadline } from "@/components/ui/MaskedHeadline";
 import { lines, type Section } from "@/lib/cms/types";
+import { displayCase } from "@/lib/display-case";
 
 export function FinalCTA({ section, pillars }: { section: Section; pillars: string[] }) {
-  const reduce = useReducedMotion();
-  const ref = useRef<HTMLElement>(null);
-  const { scrollYProgress } = useScroll({ target: ref, offset: ["start end", "end start"] });
-  const shift = useTransform(scrollYProgress, [0, 1], ["6%", reduce ? "6%" : "-6%"]);
-
   return (
-    <section ref={ref} className="relative overflow-hidden border-t border-line bg-surface/40" aria-labelledby="final">
-      <div className="pointer-events-none absolute inset-0 grid-field opacity-40" aria-hidden />
-
+    <section className="relative overflow-hidden border-t border-line bg-surface/40" aria-labelledby="final">
       <div className="shell relative py-section">
         <MaskedHeadline
           id="final"
           as="h2"
           className="text-display-lg"
-          lines={lines(section.title).map((text) => ({ text, className: "text-ink-faint" }))}
+          // Two statements: the one to stop saying (quiet), the one to say instead.
+          lines={lines(displayCase(section.title)).map((text) => ({ text, className: "text-ink-faint" }))}
         />
 
         {section.subtitle ? (
@@ -28,27 +19,20 @@ export function FinalCTA({ section, pillars }: { section: Section; pillars: stri
             as="h3"
             className="mt-8 text-display-lg"
             delay={0.12}
-            // The answer line lands on the accent.
-            lines={lines(section.subtitle).map((text, i, all) => ({
-              text,
-              className: all.length > 1 && i === all.length - 1 ? "text-acm-bright" : undefined,
-            }))}
+            lines={lines(displayCase(section.subtitle))}
           />
         ) : null}
 
-        <motion.div
-          style={{ x: shift }}
-          className="mt-20 flex flex-wrap items-baseline gap-x-10 gap-y-4 border-t border-line pt-10"
-        >
+        <div className="mt-14 flex flex-wrap items-center gap-2 border-t border-line pt-8">
           {pillars.map((word) => (
-            <span key={word} className="font-mono text-label uppercase text-ink-ghost">
-              {word}
+            <span key={word} className="rounded-full bg-surface-high/70 px-3 py-1 text-sm text-ink-muted">
+              {displayCase(word)}
             </span>
           ))}
-        </motion.div>
+        </div>
 
         {section.body ? (
-          <p className="mt-10 max-w-xl text-[1.0625rem] leading-relaxed text-ink-muted text-pretty">{section.body}</p>
+          <p className="mt-6 max-w-xl text-[1.0625rem] leading-relaxed text-ink-muted text-pretty">{section.body}</p>
         ) : null}
       </div>
     </section>

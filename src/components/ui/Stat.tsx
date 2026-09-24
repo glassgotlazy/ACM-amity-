@@ -21,8 +21,8 @@ export function Stat({
   return (
     <div className={cn("", className)}>
       <div className="meta">{label}</div>
-      <div className={cn("mt-3 text-4xl tnum tracking-[-0.03em]", accent ? "text-acm-bright" : "text-ink")}>{value}</div>
-      {note ? <div className="mt-2 font-mono text-micro uppercase text-ink-ghost">{note}</div> : null}
+      <div className={cn("mt-2 text-4xl font-semibold tnum tracking-[-0.03em]", accent ? "text-acm-bright" : "text-ink")}>{value}</div>
+      {note ? <div className="mt-2 text-xs text-ink-ghost">{note}</div> : null}
     </div>
   );
 }

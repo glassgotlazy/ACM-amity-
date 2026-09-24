@@ -1,6 +1,7 @@
 "use client";
 
-import { motion, useReducedMotion } from "framer-motion";
+import { motion } from "framer-motion";
+import { useReducedMotion } from "@/lib/use-reduced-motion";
 import type { ResearchStage } from "@/lib/cms/content-types";
 import { viewportOnce } from "@/lib/motion";
 import { cn } from "@/lib/utils";
@@ -51,7 +52,7 @@ export function ResearchTimeline({
               className={cn(
                 "block h-2.5 w-2.5",
                 stage.state === "done" && "bg-acm",
-                stage.state === "active" && "animate-pulse-dot bg-acm",
+                stage.state === "active" && "bg-acm",
                 stage.state === "open" && "border border-line-strong",
               )}
               aria-hidden
@@ -60,12 +61,12 @@ export function ResearchTimeline({
 
           {compact ? (
             <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
-              <h3 className={cn("font-mono text-label uppercase", stage.state === "open" ? "text-ink-ghost" : "text-ink")}>
+              <h3 className={cn("label", stage.state === "open" ? "text-ink-ghost" : "text-ink")}>
                 {stage.name}
               </h3>
               <span
                 className={cn(
-                  "font-mono text-micro uppercase",
+                  "label-sm",
                   stage.state === "active" ? "text-acm-bright" : "text-ink-ghost",
                 )}
               >
@@ -74,12 +75,12 @@ export function ResearchTimeline({
             </div>
           ) : (
             <>
-              <h3 className={cn("font-mono text-label uppercase", stage.state === "open" ? "text-ink-ghost" : "text-ink")}>
+              <h3 className={cn("label", stage.state === "open" ? "text-ink-ghost" : "text-ink")}>
                 {stage.name}
               </h3>
               <span
                 className={cn(
-                  "font-mono text-micro uppercase",
+                  "label-sm",
                   stage.state === "active" ? "text-acm-bright" : "text-ink-ghost",
                 )}
               >

@@ -15,16 +15,13 @@ export default function NotFound() {
         <div className="mt-12 flex flex-wrap gap-3">
           <Link
             href="/problems"
-            className="group inline-flex h-14 items-center gap-3 bg-acm-solid px-8 font-mono text-label uppercase text-white transition-colors duration-200 hover:bg-acm-deep"
+            className="group inline-flex h-14 items-center gap-3 bg-acm-solid px-8 label text-white transition-colors duration-200 hover:bg-acm-deep"
           >
             Explore problems
-            <span aria-hidden className="transition-transform duration-300 group-hover:translate-x-1">
-              →
-            </span>
           </Link>
           <Link
             href="/"
-            className="inline-flex h-14 items-center border border-line-strong px-8 font-mono text-label uppercase transition-colors duration-200 hover:border-acm hover:text-acm-bright"
+            className="inline-flex h-14 items-center border border-line-strong px-8 label transition-colors duration-200 hover:border-acm hover:text-acm-bright"
           >
             Back home
           </Link>

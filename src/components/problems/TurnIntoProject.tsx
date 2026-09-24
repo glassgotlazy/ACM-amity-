@@ -1,6 +1,7 @@
 "use client";
 
-import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
+import { useReducedMotion } from "@/lib/use-reduced-motion";
 import { useEffect, useState } from "react";
 import { Modal } from "@/components/ui/Modal";
 import { Button } from "@/components/ui/Button";
@@ -11,7 +12,7 @@ import { submitForm, trapProps, type SubmissionResult } from "@/lib/submissions"
 import { useTurnstile } from "@/components/forms/Turnstile";
 import { DeliveryNotice, DeliveryError } from "@/components/forms/DeliveryNotice";
 
-const STAGES = ["PROBLEM", "DEFINE", "RESEARCH", "DESIGN", "BUILD", "TEST", "DEPLOY"] as const;
+const STAGES = ["Problem", "Define", "Research", "Design", "Build", "Test", "Deploy"] as const;
 
 /**
  * The conversion moment: a problem becomes a project. The stage sequence plays
@@ -54,7 +55,7 @@ function Flow({ suggestedName, problemTitle }: { suggestedName: string; problemT
           return (
             <li key={name} className="flex items-center gap-3">
               <motion.span
-                className={`font-mono text-micro uppercase ${
+                className={`label-sm ${
                   i === 0 ? "text-acm-bright" : reached ? "text-ink" : "text-ink-ghost"
                 }`}
                 initial={reduce ? undefined : { opacity: 0.25, y: 4 }}
@@ -92,7 +93,7 @@ function Flow({ suggestedName, problemTitle }: { suggestedName: string; problemT
           <motion.p
             key="waiting"
             exit={{ opacity: 0 }}
-            className="py-10 font-mono text-label uppercase text-ink-faint"
+            className="py-10 label text-ink-faint"
           >
             Mapping the route from problem to shipped work…
           </motion.p>

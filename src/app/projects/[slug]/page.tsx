@@ -41,7 +41,7 @@ export default async function ProjectPage({ params }: { params: Promise<{ slug: 
           <Reveal delay={0.05} className="mt-10 flex flex-wrap items-center gap-x-5 gap-y-3">
             <StatusPill status={project.status} />
             <span className="h-3 w-px bg-line-strong" aria-hidden />
-            <span className="font-mono text-micro uppercase text-ink-faint">{project.category}</span>
+            <span className="label-sm text-ink-faint">{project.category}</span>
           </Reveal>
 
           <Reveal delay={0.08} className="mt-6 max-w-4xl">
@@ -62,7 +62,7 @@ export default async function ProjectPage({ params }: { params: Promise<{ slug: 
                     href={project.liveUrl}
                     target="_blank"
                     rel="noreferrer noopener"
-                    className="font-mono text-label uppercase text-acm-bright transition-colors hover:text-ink"
+                    className="label text-acm-bright transition-colors hover:text-ink"
                   >
                     Live project ↗
                   </a>
@@ -72,7 +72,7 @@ export default async function ProjectPage({ params }: { params: Promise<{ slug: 
                     href={project.repo}
                     target="_blank"
                     rel="noreferrer noopener"
-                    className="font-mono text-label uppercase text-acm-bright transition-colors hover:text-ink"
+                    className="label text-acm-bright transition-colors hover:text-ink"
                   >
                     Source code ↗
                   </a>
@@ -108,8 +108,7 @@ export default async function ProjectPage({ params }: { params: Promise<{ slug: 
         <ol className="grid gap-px bg-line sm:grid-cols-2">
           {project.building.map((item, i) => (
             <Reveal as="li" key={item} delay={i * 0.05} className="bg-void p-7">
-              <span className="meta tnum text-acm-bright">{String(i + 1).padStart(2, "0")}</span>
-              <p className="mt-4 text-[0.9375rem] leading-relaxed text-ink-muted text-pretty">{item}</p>
+              <p className="text-[0.9375rem] leading-relaxed text-ink-muted text-pretty">{item}</p>
             </Reveal>
           ))}
         </ol>
@@ -156,7 +155,7 @@ export default async function ProjectPage({ params }: { params: Promise<{ slug: 
       <Section index="04" title="Technology">
         <Reveal className="flex flex-wrap gap-2">
           {project.technologies.map((tech) => (
-            <Tag key={tech} className="px-4 py-2.5 text-label">
+            <Tag key={tech} className="px-3 py-1 text-sm">
               {tech}
             </Tag>
           ))}
@@ -222,7 +221,7 @@ export default async function ProjectPage({ params }: { params: Promise<{ slug: 
           <div className="flex flex-wrap items-center gap-6">
             <ApplyPanel projectName={project.name} roles={project.openRoles.map((r) => r.role)} />
             <Link href="/problems" className="meta text-ink-muted transition-colors hover:text-ink">
-              Browse problems →
+              Browse problems
             </Link>
           </div>
         </div>

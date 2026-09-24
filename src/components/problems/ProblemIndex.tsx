@@ -43,7 +43,7 @@ export function ProblemIndex({ problems }: { problems: Problem[] }) {
           layoutId="problem-category"
         />
         <div className="flex flex-wrap items-center gap-4 border-t border-line-faint pt-3">
-          <span className="font-mono text-micro uppercase text-ink-ghost">Difficulty</span>
+          <span className="label-sm text-ink-ghost">Difficulty</span>
           <FilterBar
             label="Filter problems by difficulty"
             options={LEVEL_FILTERS}
@@ -66,15 +66,15 @@ export function ProblemIndex({ problems }: { problems: Problem[] }) {
 
       {shown.length === 0 ? (
         <div className="border border-line px-8 py-20 text-center">
-          <p className="font-mono text-label uppercase text-ink-faint">Nothing matches that combination yet.</p>
+          <p className="label text-ink-faint">Nothing matches that combination yet.</p>
           <p className="mx-auto mt-4 max-w-sm text-sm leading-relaxed text-ink-muted">
             That is a gap, not an error. If you have noticed a problem that belongs here, write it up.
           </p>
           <a
             href="/problems/submit"
-            className="mt-7 inline-flex items-center gap-2 font-mono text-label uppercase text-acm-bright hover:text-ink"
+            className="mt-7 inline-flex items-center gap-2 label text-acm-bright hover:text-ink"
           >
-            Submit a problem →
+            Submit a problem
           </a>
         </div>
       ) : null}

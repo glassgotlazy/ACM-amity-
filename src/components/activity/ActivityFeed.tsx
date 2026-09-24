@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { AnimatePresence, LayoutGroup, motion, useReducedMotion } from "framer-motion";
+import { AnimatePresence, LayoutGroup, motion } from "framer-motion";
+import { useReducedMotion } from "@/lib/use-reduced-motion";
 import { useMemo, useState } from "react";
 import { ACTIVITY_KINDS, type ActivityItem, type ActivityKind } from "@/lib/cms/content-types";
 import { FilterBar } from "@/components/ui/FilterBar";
@@ -67,7 +68,7 @@ export function ActivityFeed({ activity }: { activity: ActivityItem[] }) {
               <div className="flex items-center gap-5">
                 <span className="meta text-ink-faint">{day}</span>
                 <span className="h-px flex-1 bg-line" aria-hidden />
-                <span className="font-mono text-micro tnum uppercase text-ink-ghost">{items.length}</span>
+                <span className="font-mono text-xs tnum uppercase text-ink-ghost">{items.length}</span>
               </div>
 
               <ol className="mt-2">
@@ -87,19 +88,19 @@ export function ActivityFeed({ activity }: { activity: ActivityItem[] }) {
                       <div>
                         <p className="text-[0.9375rem] leading-relaxed text-ink text-pretty">{item.text}</p>
                         <div className="mt-2.5 flex flex-wrap items-center gap-x-5 gap-y-1">
-                          <span className="font-mono text-micro uppercase text-ink-ghost">{item.actor}</span>
+                          <span className="label-sm text-ink-ghost">{item.actor}</span>
                           {item.target ? (
                             <Link
                               href={item.target.href}
-                              className="font-mono text-micro uppercase text-ink-faint transition-colors duration-200 hover:text-acm-bright"
+                              className="label-sm text-ink-faint transition-colors duration-200 hover:text-acm-bright"
                             >
-                              {item.target.label} →
+                              {item.target.label}
                             </Link>
                           ) : null}
                         </div>
                       </div>
 
-                      <span className="font-mono text-micro uppercase text-ink-ghost lg:text-right">{item.when}</span>
+                      <span className="label-sm text-ink-ghost lg:text-right">{item.when}</span>
                     </motion.li>
                   ))}
                 </AnimatePresence>
@@ -110,7 +111,7 @@ export function ActivityFeed({ activity }: { activity: ActivityItem[] }) {
       </LayoutGroup>
 
       {shown.length === 0 ? (
-        <p className="border border-line px-8 py-20 text-center font-mono text-label uppercase text-ink-faint">
+        <p className="border border-line px-8 py-20 text-center label text-ink-faint">
           Nothing of that kind in the window shown.
         </p>
       ) : null}

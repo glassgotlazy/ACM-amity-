@@ -55,7 +55,7 @@ export default async function ResearchDetailPage({ params }: { params: Promise<{
           <Reveal delay={0.05} className="mt-10 flex flex-wrap items-center gap-5">
             <StatusPill status={project.status} />
             <span className="h-3 w-px bg-line-strong" aria-hidden />
-            <span className="font-mono text-micro uppercase text-ink-faint">{project.field}</span>
+            <span className="label-sm text-ink-faint">{project.field}</span>
           </Reveal>
 
           <Reveal delay={0.08} className="mt-7 max-w-4xl">
@@ -81,8 +81,7 @@ export default async function ResearchDetailPage({ params }: { params: Promise<{
         <ul className="grid gap-px bg-line sm:grid-cols-2">
           {project.literature.map((entry, i) => (
             <Reveal as="li" key={entry.theme} delay={i * 0.05} className="bg-void p-7">
-              <span className="meta tnum text-acm-bright">{String(i + 1).padStart(2, "0")}</span>
-              <h3 className="mt-4 text-lg font-medium tracking-[-0.02em]">{entry.theme}</h3>
+              <h3 className="text-lg font-medium tracking-[-0.02em]">{entry.theme}</h3>
               <p className="mt-3 text-sm leading-relaxed text-ink-muted">{entry.note}</p>
             </Reveal>
           ))}
@@ -93,7 +92,6 @@ export default async function ResearchDetailPage({ params }: { params: Promise<{
         <ol className="space-y-1">
           {project.exploration.map((item, i) => (
             <Reveal as="li" key={item} delay={i * 0.05} className="flex gap-6 border-b border-line py-6 last:border-0">
-              <span className="meta tnum shrink-0 pt-1 text-ink-ghost">{String(i + 1).padStart(2, "0")}</span>
               <p className="max-w-prose text-[1.0625rem] leading-relaxed text-ink-muted text-pretty">{item}</p>
             </Reveal>
           ))}
@@ -110,7 +108,7 @@ export default async function ResearchDetailPage({ params }: { params: Promise<{
               className="grid gap-3 border-b border-line py-7 lg:grid-cols-[1fr_8rem_1.2fr] lg:items-baseline lg:gap-10"
             >
               <span className="text-lg font-medium tracking-[-0.02em]">{exp.title}</span>
-              <span className={cn("font-mono text-micro uppercase", EXPERIMENT_TONE[exp.state])}>{exp.state}</span>
+              <span className={cn("label-sm", EXPERIMENT_TONE[exp.state])}>{exp.state}</span>
               <span className="text-sm leading-relaxed text-ink-muted">{exp.note}</span>
             </Reveal>
           ))}
@@ -152,19 +150,16 @@ export default async function ResearchDetailPage({ params }: { params: Promise<{
         <Reveal className="mt-9" delay={0.12}>
           <Link
             href="/join"
-            className="group inline-flex h-14 items-center gap-3 bg-acm-solid px-8 font-mono text-label uppercase text-white transition-colors duration-200 hover:bg-acm-deep"
+            className="group inline-flex h-14 items-center gap-3 bg-acm-solid px-8 label text-white transition-colors duration-200 hover:bg-acm-deep"
           >
             Join the research team
-            <span aria-hidden className="transition-transform duration-300 group-hover:translate-x-1">
-              →
-            </span>
           </Link>
         </Reveal>
       </Section>
 
       <section className="border-t border-line bg-surface/30">
         <div className="shell py-16">
-          <p className="max-w-3xl font-mono text-micro uppercase leading-relaxed text-ink-ghost">
+          <p className="max-w-3xl label-sm leading-relaxed text-ink-ghost">
             Accuracy note · This is an ongoing student research initiative. Nothing on this page is a proven result, a
             peer-reviewed finding or an established contribution to the field, and none of it should be cited as one.
           </p>

@@ -1,6 +1,7 @@
 "use client";
 
-import { motion, useReducedMotion } from "framer-motion";
+import { motion } from "framer-motion";
+import { useReducedMotion } from "@/lib/use-reduced-motion";
 import { useState } from "react";
 import { TextField, TextArea, SelectField, Checkbox } from "./Field";
 import { Button } from "@/components/ui/Button";
@@ -223,7 +224,7 @@ export function ProblemForm() {
         <Button type="submit" size="lg" arrow disabled={sending || !turnstile.ready}>
           {sending ? "Sending…" : "Submit problem"}
         </Button>
-        <p className="max-w-sm font-mono text-micro uppercase leading-relaxed text-ink-ghost">
+        <p className="max-w-sm label-sm leading-relaxed text-ink-ghost">
           Reviewed before publication · never published automatically
         </p>
       </div>

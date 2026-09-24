@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { AnimatePresence, motion, useReducedMotion, useScroll, useMotionValueEvent } from "framer-motion";
+import { AnimatePresence, motion, useScroll, useMotionValueEvent } from "framer-motion";
+import { useReducedMotion } from "@/lib/use-reduced-motion";
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import { ease } from "@/lib/motion";
@@ -39,7 +40,7 @@ export function Navbar({ brand, items, extra }: { brand: Brand; items: NavItem[]
     <>
       <a
         href="#main"
-        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[200] focus:bg-acm-solid focus:px-4 focus:py-3 focus:font-mono focus:text-label focus:uppercase focus:text-white"
+        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[200] focus:bg-acm-solid focus:px-4 focus:py-3 focus:font-mono focus:text-[0.8125rem] focus:uppercase focus:text-white"
       >
         Skip to content
       </a>
@@ -66,16 +67,16 @@ export function Navbar({ brand, items, extra }: { brand: Brand; items: NavItem[]
                   href={item.href}
                   aria-current={active ? "page" : undefined}
                   className={cn(
-                    "relative px-3.5 py-2 font-mono text-label uppercase transition-colors duration-200",
-                    active ? "text-ink" : "text-ink-faint hover:text-ink",
+                    "relative rounded-lg px-3 py-2 text-[0.9375rem] font-medium transition-colors duration-150",
+                    active ? "text-ink" : "text-ink-faint hover:bg-surface/70 hover:text-ink",
                   )}
                 >
                   {item.label}
                   {active ? (
                     reduce ? (
-                      <span className="absolute inset-x-3.5 -bottom-px h-px bg-acm" />
+                      <span className="absolute inset-x-3 -bottom-[3px] h-0.5 rounded-full bg-acm" />
                     ) : (
-                      <motion.span layoutId="nav-active" className="absolute inset-x-3.5 -bottom-px h-px bg-acm" />
+                      <motion.span layoutId="nav-active" className="absolute inset-x-3 -bottom-[3px] h-0.5 rounded-full bg-acm" />
                     )
                   ) : null}
                 </Link>
@@ -88,14 +89,14 @@ export function Navbar({ brand, items, extra }: { brand: Brand; items: NavItem[]
               type="button"
               onClick={openSearch}
               aria-label="Search the site"
-              className="inline-flex h-10 items-center gap-2.5 border border-line px-3.5 font-mono text-label uppercase text-ink-faint transition-colors duration-200 hover:border-line-strong hover:text-ink"
+              className="inline-flex h-10 items-center gap-2.5 rounded-lg border border-line px-3 text-sm text-ink-faint transition-colors duration-150 hover:border-line-strong hover:text-ink"
             >
               <svg viewBox="0 0 16 16" className="h-[13px] w-[13px] shrink-0" aria-hidden focusable="false">
                 <circle cx="7" cy="7" r="4.6" fill="none" stroke="currentColor" strokeWidth="1.4" />
                 <path d="M10.5 10.5 14 14" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
               </svg>
               <span className="hidden lg:inline">Search</span>
-              <kbd className="hidden border border-line px-1 py-px font-mono text-[0.5625rem] text-ink-ghost lg:inline">
+              <kbd className="hidden rounded border border-line px-1 py-px font-mono text-[0.625rem] text-ink-ghost lg:inline">
                 ⌘K
               </kbd>
             </button>
@@ -103,12 +104,9 @@ export function Navbar({ brand, items, extra }: { brand: Brand; items: NavItem[]
 
             <Link
               href="/join"
-              className="group hidden h-10 items-center gap-2.5 bg-acm-solid px-5 font-mono text-label uppercase text-white transition-colors duration-200 hover:bg-acm-deep sm:inline-flex"
+              className="hidden h-10 items-center rounded-lg bg-acm-solid px-4 text-sm font-medium text-white transition-colors duration-150 hover:bg-acm-deep sm:inline-flex"
             >
               Join ACM
-              <span aria-hidden className="transition-transform duration-300 ease-out group-hover:translate-x-1">
-                →
-              </span>
             </Link>
 
             <button
@@ -157,9 +155,8 @@ export function Navbar({ brand, items, extra }: { brand: Brand; items: NavItem[]
                       transition={{ duration: 0.4, delay: 0.04 * i, ease }}
                       className="border-b border-line"
                     >
-                      <Link href={item.href} className="flex items-baseline justify-between py-5">
+                      <Link href={item.href} className="block py-5">
                         <span className="text-3xl font-semibold tracking-[-0.03em]">{item.label}</span>
-                        <span className="meta text-acm-bright">{String(i + 1).padStart(2, "0")}</span>
                       </Link>
                     </motion.li>
                   ))}
@@ -173,8 +170,8 @@ export function Navbar({ brand, items, extra }: { brand: Brand; items: NavItem[]
                       animate={{ opacity: 1 }}
                       transition={{ duration: 0.4, delay: 0.24 + 0.04 * i }}
                     >
-                      <Link href={item.href} className="meta hover:text-ink">
-                        {item.label} →
+                      <Link href={item.href} className="text-base text-ink-faint hover:text-ink">
+                        {item.label}
                       </Link>
                     </motion.li>
                   ))}
@@ -185,9 +182,9 @@ export function Navbar({ brand, items, extra }: { brand: Brand; items: NavItem[]
                   the menu, so it is not repeated here. */}
               <Link
                 href="/join"
-                className="mt-10 flex h-14 items-center justify-center gap-2 bg-acm-solid font-mono text-label uppercase text-white"
+                className="mt-10 flex h-12 items-center justify-center rounded-lg bg-acm-solid text-base font-medium text-white"
               >
-                Join ACM →
+                Join ACM
               </Link>
             </div>
           </motion.div>

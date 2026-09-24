@@ -72,9 +72,9 @@ export default async function EventsPage() {
             </p>
             <Link
               href="/join"
-              className="mt-6 inline-flex font-mono text-label uppercase text-acm-bright transition-colors hover:text-ink"
+              className="mt-6 inline-flex label text-acm-bright transition-colors hover:text-ink"
             >
-              Join ACM →
+              Join ACM
             </Link>
           </div>
         )}

@@ -25,20 +25,19 @@ export default function Error({ error, reset }: { error: Error & { digest?: stri
           Retrying usually clears it. If it keeps happening, the rest of the site still works.
         </p>
         {error.digest ? (
-          <p className="mt-4 font-mono text-micro uppercase text-ink-ghost">Reference {error.digest}</p>
+          <p className="mt-4 label-sm text-ink-ghost">Reference {error.digest}</p>
         ) : null}
         <div className="mt-12 flex flex-wrap gap-3">
           <button
             type="button"
             onClick={reset}
-            className="group inline-flex h-14 items-center gap-3 bg-acm-solid px-8 font-mono text-label uppercase text-white transition-colors duration-200 hover:bg-acm-deep"
+            className="group inline-flex h-14 items-center gap-3 bg-acm-solid px-8 label text-white transition-colors duration-200 hover:bg-acm-deep"
           >
             Try again
-            <span aria-hidden className="transition-transform duration-300 group-hover:translate-x-1">→</span>
           </button>
           <Link
             href="/"
-            className="inline-flex h-14 items-center border border-line-strong px-8 font-mono text-label uppercase transition-colors duration-200 hover:border-acm hover:text-acm-bright"
+            className="inline-flex h-14 items-center border border-line-strong px-8 label transition-colors duration-200 hover:border-acm hover:text-acm-bright"
           >
             Back home
           </Link>

@@ -1,6 +1,7 @@
 "use client";
 
-import { AnimatePresence, LayoutGroup, motion, useReducedMotion } from "framer-motion";
+import { AnimatePresence, LayoutGroup, motion } from "framer-motion";
+import { useReducedMotion } from "@/lib/use-reduced-motion";
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { BANDS, type Idea } from "@/lib/cms/content-types";
@@ -86,14 +87,14 @@ export function IdeaIndex({ ideas }: { ideas: Idea[] }) {
                       {idea.tagline}
                     </p>
                     <div className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-2">
-                      <span className="font-mono text-micro uppercase text-ink-ghost">Team of {idea.teamSize}</span>
-                      <span className="font-mono text-micro uppercase text-ink-ghost">{idea.domains.join(" · ")}</span>
+                      <span className="label-sm text-ink-ghost">Team of {idea.teamSize}</span>
+                      <span className="label-sm text-ink-ghost">{idea.domains.join(" · ")}</span>
                       {idea.problemSlug ? (
                         <Link
                           href={`/problems/${idea.problemSlug}`}
-                          className="font-mono text-micro uppercase text-acm-bright hover:text-ink"
+                          className="label-sm text-acm-bright hover:text-ink"
                         >
-                          Linked problem →
+                          Linked problem
                         </Link>
                       ) : null}
                     </div>
@@ -122,12 +123,9 @@ export function IdeaIndex({ ideas }: { ideas: Idea[] }) {
                     </div>
                     <Link
                       href="/join"
-                      className="inline-flex items-center gap-2 self-start font-mono text-label uppercase text-ink-faint transition-colors duration-200 hover:text-acm-bright"
+                      className="inline-flex items-center gap-2 self-start label text-ink-faint transition-colors duration-200 hover:text-acm-bright"
                     >
                       Start building
-                      <span aria-hidden className="transition-transform duration-300 group-hover:translate-x-1">
-                        →
-                      </span>
                     </Link>
                   </div>
                 </div>
@@ -138,7 +136,7 @@ export function IdeaIndex({ ideas }: { ideas: Idea[] }) {
       </LayoutGroup>
 
       {shown.length === 0 ? (
-        <p className="border border-line px-8 py-20 text-center font-mono text-label uppercase text-ink-faint">
+        <p className="border border-line px-8 py-20 text-center label text-ink-faint">
           Nothing at that level in that domain yet.
         </p>
       ) : null}

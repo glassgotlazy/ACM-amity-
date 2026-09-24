@@ -1,6 +1,7 @@
 "use client";
 
-import { animate, motion, useInView, useReducedMotion } from "framer-motion";
+import { animate, motion, useInView } from "framer-motion";
+import { useReducedMotion } from "@/lib/use-reduced-motion";
 import { useEffect, useRef, useState } from "react";
 import type { Contribution } from "@/data/profile";
 import { viewportOnce } from "@/lib/motion";
@@ -48,9 +49,9 @@ export function ContributionCounters({ contributions }: { contributions: Contrib
             <span className="text-5xl tracking-[-0.04em] text-ink">
               <Counter to={c.value} />
             </span>
-            <span className="font-mono text-micro uppercase text-acm-bright">{c.unit}</span>
+            <span className="label-sm text-acm-bright">{c.unit}</span>
           </div>
-          <p className="mt-4 font-mono text-micro uppercase text-ink-ghost">{c.note}</p>
+          <p className="mt-4 label-sm text-ink-ghost">{c.note}</p>
         </motion.div>
       ))}
     </div>
