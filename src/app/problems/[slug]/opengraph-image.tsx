@@ -14,11 +14,14 @@ export function generateStaticParams() {
 export default async function Image({ params }: { params: { slug: string } }) {
   const problem = problemBySlug(params.slug);
 
-  return renderOgImage({
-    eyebrow: problem
-      ? `Problem ${String(problem.index).padStart(2, "0")} · ${ORIGINS[problem.origin]}`
-      : "Problem Lab",
-    title: problem?.title ?? "Find a problem worth solving.",
-    footnote: problem?.hook,
-  }, await ogBrand());
+  return renderOgImage(
+    {
+      eyebrow: problem
+        ? `Problem ${String(problem.index).padStart(2, "0")} · ${ORIGINS[problem.origin]}`
+        : "Problem Lab",
+      title: problem?.title ?? "Find a problem worth solving.",
+      footnote: problem?.hook,
+    },
+    await ogBrand(),
+  );
 }
