@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { PageHeader } from "@/components/ui/SectionHeading";
+import { CmsTitle } from "@/components/ui/Lines";
 import { Reveal } from "@/components/ui/Reveal";
 import { EventRow } from "@/components/events/EventRow";
-import { getEvents, getSettings, upcoming } from "@/lib/cms/read";
+import { getEvents, getPage, getSettings, upcoming } from "@/lib/cms/read";
 
 export const metadata: Metadata = {
   title: "Events",
@@ -14,7 +15,7 @@ export const metadata: Metadata = {
 export const revalidate = 3600;
 
 export default async function EventsPage() {
-  const [events, settings] = await Promise.all([getEvents(), getSettings()]);
+  const [events, settings, page] = await Promise.all([getEvents(), getSettings(), getPage("page_events")]);
   const next = upcoming(events);
   const nextIds = new Set(next.map((e) => e.id));
   const past = events.filter((e) => !nextIds.has(e.id)).reverse();
@@ -22,15 +23,9 @@ export default async function EventsPage() {
   return (
     <>
       <PageHeader
-        eyebrow="Events"
-        title={
-          <>
-            WHERE THE CHAPTER
-            <br />
-            MEETS IN PERSON.
-          </>
-        }
-        lede="Sessions, workshops and build nights. Open to every member — and most of them to anyone curious enough to turn up."
+        eyebrow={page.eyebrow}
+        title={<CmsTitle text={page.title} />}
+        lede={page.body || undefined}
         meta={[
           { label: "Coming up", value: String(next.length) },
           { label: "Past events", value: String(past.length) },

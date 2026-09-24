@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { PageHeader } from "@/components/ui/SectionHeading";
-import { researchProjects } from "@/data/research";
+import { CmsTitle } from "@/components/ui/Lines";
+import { getPage, getResearch } from "@/lib/cms/read";
 import { StatusPill } from "@/components/ui/Badges";
 import { Reveal } from "@/components/ui/Reveal";
 import { ResearchTimeline } from "@/components/research/ResearchTimeline";
@@ -12,22 +13,17 @@ export const metadata: Metadata = {
     "We don’t just build. We ask why. Ongoing research at ACM @ Amity — what we are reading, what we are testing, and what we have not found yet.",
 };
 
-export default function ResearchPage() {
+export default async function ResearchPage() {
+  const [researchProjects, page] = await Promise.all([getResearch(), getPage("page_research")]);
   const [featured, ...rest] = researchProjects;
 
   return (
     <>
       <PageHeader
         index="03"
-        eyebrow="Research"
-        title={
-          <>
-            WE DON’T JUST BUILD.
-            <br />
-            WE ASK WHY.
-          </>
-        }
-        lede="Research here means reading carefully, testing honestly and writing down what we actually found — including when the answer is that we were wrong. No result below is published, peer-reviewed or established."
+        eyebrow={page.eyebrow}
+        title={<CmsTitle text={page.title} />}
+        lede={page.body || undefined}
         meta={[
           { label: "Research projects", value: String(researchProjects.length) },
           { label: "Published papers", value: "0" },
@@ -36,6 +32,8 @@ export default function ResearchPage() {
         ]}
       />
 
+      {featured ? (
+        <>
       {/* Featured research gets a full editorial spread rather than a card. */}
       <section className="border-b border-line">
         <div className="shell py-20">
@@ -96,7 +94,10 @@ export default function ResearchPage() {
           </div>
         </div>
       </section>
+        </>
+      ) : null}
 
+      {rest.length ? (
       <section className="shell py-20">
         <div className="meta border-b border-line pb-4">Also running</div>
         <div className="mt-2">
@@ -140,6 +141,7 @@ export default function ResearchPage() {
           </div>
         </Reveal>
       </section>
+      ) : null}
     </>
   );
 }

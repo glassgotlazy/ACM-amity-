@@ -1,24 +1,15 @@
-import type { Domain, LevelId } from "./taxonomy";
+import type { Idea } from "../content-types";
 
-export type Idea = {
-  slug: string;
-  name: string;
-  tagline: string;
-  level: LevelId;
-  band: "Beginner" | "Intermediate" | "Advanced" | "Research";
-  domains: Domain[];
-  teamSize: string;
-  technologies: string[];
-  skills: string[];
-  learn: string[];
-  problemSlug?: string;
-};
-
+/**
+ * Built-in content, used only until "Load remaining content" copies it into
+ * the database (see supabase/admin.sql). After that the database is the only
+ * source and this file is never read by the public site.
+ */
 /**
  * Starting points for students who want to build but have not found a problem
  * yet. These are unclaimed — none of them has a team.
  */
-export const ideas: Idea[] = [
+export const defaultIdeas: Idea[] = [
   {
     slug: "campus-event-aggregator",
     name: "Campus Event Aggregator",
@@ -182,9 +173,3 @@ export const ideas: Idea[] = [
     ],
   },
 ];
-
-export const BANDS = ["Beginner", "Intermediate", "Advanced", "Research"] as const;
-
-export function ideaBySlug(slug: string) {
-  return ideas.find((i) => i.slug === slug);
-}

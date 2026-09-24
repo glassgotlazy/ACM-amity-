@@ -171,6 +171,80 @@ export const defaultSections: Section[] = [
   }),
 ];
 
+const page = (key: Section["key"], eyebrow: string, title: string, body: string, note = ""): Section =>
+  section(key, 0, { eyebrow, title, body, note });
+
+/** Page headers: eyebrow, headline (one line per line break) and lede. */
+export const defaultPages: Section[] = [
+  page(
+    "page_projects",
+    "Projects",
+    "FIND SOMETHING\nWORTH BUILDING.",
+    "Each project below states its current status honestly — what is working, what is not built yet, and which roles are open. Nothing here is finished, which is the point.",
+  ),
+  page(
+    "page_problems",
+    "Problem Lab",
+    "DON’T START WITH AN IDEA.\nSTART WITH A PROBLEM.",
+    "Universities are rapidly adopting AI, automation, digital platforms and data-driven systems. That creates new challenges that still need better solutions. Find a problem worth solving.",
+  ),
+  page(
+    "page_submit",
+    "Problem Lab / Submit",
+    "YOU NOTICED\nSOMETHING.",
+    "The people who see a problem clearly are usually the people living with it. You do not need a solution, a team or a technical background to write one down — a precise description is the hard part.",
+  ),
+  page(
+    "page_ideas",
+    "Project ideas",
+    "DON’T HAVE AN IDEA?\nWE’VE GOT PROBLEMS.",
+    "Not knowing what to build is the most common reason people never start. Every idea below is unclaimed and has no team — which means the first person in gets to decide what it becomes.",
+  ),
+  page(
+    "page_research",
+    "Research",
+    "WE DON’T JUST BUILD.\nWE ASK WHY.",
+    "Research here means reading carefully, testing honestly and writing down what we actually found — including when the answer is that we were wrong. No result below is published, peer-reviewed or established.",
+  ),
+  page(
+    "page_teams",
+    "Teams",
+    "FIND PEOPLE WHOSE SKILLS\nCOVER WHAT YOURS DON’T.",
+    "Teams are how a problem becomes work that actually ships. You join one because of what it works on, not because of what it is called — and most projects need more than one.",
+  ),
+  page(
+    "page_teams_core",
+    "Chapter leadership",
+    "The core team.",
+    "Office bearers for the current term. They set direction and unblock work — the building itself happens in the teams below.",
+  ),
+  page(
+    "page_activity",
+    "Activity",
+    "WHAT ACTUALLY\nHAPPENED THIS WEEK.",
+    "A community is easiest to judge by what it did recently. This is the log — work shipped, papers read, reviews completed, roles opened.",
+    "These are real project milestones, taken from the two ACM repositories. The feed is not yet wired to repository events, so it is updated manually. Entries describe work on projects rather than output by individuals.",
+  ),
+  page(
+    "page_events",
+    "Events",
+    "WHERE THE CHAPTER\nMEETS IN PERSON.",
+    "Sessions, workshops and build nights. Open to every member — and most of them to anyone curious enough to turn up.",
+  ),
+  page(
+    "page_join",
+    "Join ACM @ Amity",
+    "YOU DON’T NEED\nTO KNOW EVERYTHING.",
+    "Seven short questions. There is no test, no minimum skill level and no wrong answer — the only thing that matters is that there is something you want to work on.",
+  ),
+  page(
+    "page_discover",
+    "Discover",
+    "WHAT DO YOU\nWANT TO BUILD?",
+    "Two questions. Then a shortlist of problems to explore, projects with open roles, and unclaimed ideas — ranked by how closely they match what you picked.",
+  ),
+];
+
 export const defaultRoles: TeamRole[] = ["Chair", "Vice Chair", "Treasurer", "Technical Head"].map((name, sort) => ({
   id: `default-role-${sort}`,
   name,

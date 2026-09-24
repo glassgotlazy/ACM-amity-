@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { PageHeader } from "@/components/ui/SectionHeading";
+import { CmsTitle } from "@/components/ui/Lines";
 import { ProblemIndex } from "@/components/problems/ProblemIndex";
 import { DifficultySystem } from "@/components/home/DifficultySystem";
-import { getSection } from "@/lib/cms/read";
-import { problems } from "@/data/problems";
+import { getPage, getProblems, getSection } from "@/lib/cms/read";
 import { PROBLEM_CATEGORIES } from "@/data/taxonomy";
 import { Reveal } from "@/components/ui/Reveal";
 
@@ -15,6 +15,7 @@ export const metadata: Metadata = {
 };
 
 export default async function ProblemsPage() {
+  const [problems, page] = await Promise.all([getProblems(), getPage("page_problems")]);
   const difficulty = await getSection("difficulty");
   const roleCount = new Set(problems.flatMap((p) => p.openRoles)).size;
 
@@ -22,15 +23,9 @@ export default async function ProblemsPage() {
     <>
       <PageHeader
         index="02"
-        eyebrow="Problem Lab"
-        title={
-          <>
-            DON’T START WITH AN IDEA.
-            <br />
-            <span className="text-acm-bright">START WITH A PROBLEM.</span>
-          </>
-        }
-        lede="Universities are rapidly adopting AI, automation, digital platforms and data-driven systems. That creates new challenges that still need better solutions. Find a problem worth solving."
+        eyebrow={page.eyebrow}
+        title={<CmsTitle text={page.title} accentLast />}
+        lede={page.body || undefined}
         meta={[
           { label: "Problem statements", value: String(problems.length) },
           { label: "Categories", value: String(PROBLEM_CATEGORIES.length) },
@@ -55,7 +50,7 @@ export default async function ProblemsPage() {
         </div>
       </PageHeader>
 
-      <ProblemIndex />
+      <ProblemIndex problems={problems} />
 
       <section className="border-y border-line bg-surface/30">
         <div className="shell py-16">

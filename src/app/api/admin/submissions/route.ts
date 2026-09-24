@@ -1,27 +1,17 @@
-import { NextResponse } from "next/server";
-import { requireAdmin } from "./_auth";
-import { listSubmissions, SUBMISSION_STATES, type SubmissionKind, type SubmissionState } from "@/lib/supabase";
+import { handle } from "../cms/_handle";
+import { listSubmissions, parseQuery } from "@/lib/submissions-store";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-const KINDS = new Set(["join", "project-application", "problem-submission", "project-proposal"]);
-
+/**
+ * GET ?kind&state&category&q&from&to&sort&page&per — one page of the queue,
+ * filtered and sorted in the database, with the total for paging.
+ */
 export async function GET(request: Request) {
-  const denied = await requireAdmin();
-  if (denied) return denied;
-
-  const url = new URL(request.url);
-  const kind = url.searchParams.get("kind");
-  const state = url.searchParams.get("state");
-  const filter: { kind?: SubmissionKind; state?: SubmissionState } = {};
-  if (kind && KINDS.has(kind)) filter.kind = kind as SubmissionKind;
-  if (state && (SUBMISSION_STATES as readonly string[]).includes(state)) filter.state = state as SubmissionState;
-
-  try {
-    return NextResponse.json({ rows: await listSubmissions(filter) });
-  } catch (error) {
-    console.error("[admin] list failed:", error);
-    return NextResponse.json({ error: "storage_failed" }, { status: 502 });
-  }
+  return handle(request, "submissions:read", async () => {
+    const query = parseQuery(new URL(request.url).searchParams);
+    const { rows, total } = await listSubmissions(query);
+    return { rows, total, page: query.page, per: query.per };
+  });
 }

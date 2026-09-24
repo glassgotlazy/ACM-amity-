@@ -93,8 +93,27 @@ export const SECTION_KEYS = [
 ] as const;
 export type SectionKey = (typeof SECTION_KEYS)[number];
 
+/**
+ * Headers of the other public pages. Stored in the same table as the
+ * homepage sections (same fields), but never shown on the homepage.
+ */
+export const PAGE_KEYS = [
+  "page_projects",
+  "page_problems",
+  "page_submit",
+  "page_ideas",
+  "page_research",
+  "page_teams",
+  "page_teams_core",
+  "page_activity",
+  "page_events",
+  "page_join",
+  "page_discover",
+] as const;
+export type PageKey = (typeof PAGE_KEYS)[number];
+
 export type Section = {
-  key: SectionKey;
+  key: SectionKey | PageKey;
   enabled: boolean;
   sort: number;
   eyebrow: string;

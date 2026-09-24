@@ -2,7 +2,7 @@
 
 import { AnimatePresence, LayoutGroup } from "framer-motion";
 import { useMemo, useState } from "react";
-import { problems } from "@/data/problems";
+import type { Problem } from "@/lib/cms/content-types";
 import { LEVELS, PROBLEM_CATEGORIES } from "@/data/taxonomy";
 import { FilterBar } from "@/components/ui/FilterBar";
 import { ProblemCard } from "./ProblemCard";
@@ -10,7 +10,7 @@ import { ProblemCard } from "./ProblemCard";
 const CATEGORY_FILTERS = ["All", ...PROBLEM_CATEGORIES] as const;
 const LEVEL_FILTERS = ["Any level", ...LEVELS.map((l) => l.name)] as const;
 
-export function ProblemIndex() {
+export function ProblemIndex({ problems }: { problems: Problem[] }) {
   const [category, setCategory] = useState<string>("All");
   const [levelName, setLevelName] = useState<string>("Any level");
 
@@ -18,14 +18,14 @@ export function ProblemIndex() {
     const map: Record<string, number> = { All: problems.length };
     for (const c of PROBLEM_CATEGORIES) map[c] = problems.filter((p) => p.category === c).length;
     return map;
-  }, []);
+  }, [problems]);
 
   const shown = useMemo(() => {
     const levelId = LEVELS.find((l) => l.name === levelName)?.id;
     return problems.filter(
       (p) => (category === "All" || p.category === category) && (!levelId || p.level === levelId),
     );
-  }, [category, levelName]);
+  }, [problems, category, levelName]);
 
   return (
     <section className="shell py-14" aria-labelledby="problem-list">

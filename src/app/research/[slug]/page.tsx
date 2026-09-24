@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { researchProjects, researchBySlug } from "@/data/research";
+import { getResearch, getResearchProject } from "@/lib/cms/read";
 import { StatusPill } from "@/components/ui/Badges";
 import { Reveal } from "@/components/ui/Reveal";
 import { ArrowLink } from "@/components/ui/ArrowLink";
@@ -9,13 +9,13 @@ import { Section, Prose } from "@/components/ui/Section";
 import { ResearchTimeline } from "@/components/research/ResearchTimeline";
 import { cn } from "@/lib/utils";
 
-export function generateStaticParams() {
-  return researchProjects.map((r) => ({ slug: r.slug }));
+export async function generateStaticParams() {
+  return (await getResearch()).map((r) => ({ slug: r.slug }));
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
-  const project = researchBySlug(slug);
+  const project = await getResearchProject(slug);
   if (!project) return { title: "Research not found" };
   return { title: project.title, description: project.question };
 }
@@ -38,7 +38,7 @@ const EXPERIMENT_TONE = {
 
 export default async function ResearchDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const project = researchBySlug(slug);
+  const project = await getResearchProject(slug);
   if (!project) notFound();
 
   return (

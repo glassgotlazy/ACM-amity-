@@ -2,18 +2,15 @@
 
 import { useEffect, useState, type ReactNode } from "react";
 import { DOMAINS, ROLES, STATUSES } from "@/data/taxonomy";
-import { problems } from "@/data/problems";
 import { MILESTONE_STATES } from "@/lib/cms/types";
 import { api } from "./api";
-import { Btn, ListField, MoveButtons, Select, TextArea, TextInput, Toggle } from "./kit";
+import { Checkboxes, Part, ListField, RowsEditor, Select, TextArea, TextInput, Toggle, firstError, rowControl } from "./kit";
 import { ImageField } from "./media";
 import { Collection, b, list, s, type FormProps } from "./Collection";
 
 type Member = { id: string; name: string };
-type Obj = Record<string, unknown>;
+type ProblemOption = { slug: string; title: string };
 
-const control =
-  "w-full border border-line bg-surface px-3 text-sm text-ink placeholder:text-ink-ghost focus:border-acm focus:outline-none";
 
 const slugify = (text: string) =>
   text
@@ -25,86 +22,16 @@ const slugify = (text: string) =>
     .replace(/-+/g, "-")
     .slice(0, 80);
 
-function Part({ title, children }: { title: string; children: ReactNode }) {
-  return (
-    <section className="space-y-5 border-t border-line pt-6 first:border-t-0 first:pt-0">
-      <h3 className="font-mono text-label uppercase text-ink">{title}</h3>
-      {children}
-    </section>
-  );
-}
-
-/** An ordered list of small records (timeline, open roles, team) with add/move/remove. */
-function RowsEditor({
-  label,
-  rows,
-  onChange,
-  blank,
-  render,
-  error,
-  max = 20,
-}: {
-  label: string;
-  rows: Obj[];
-  onChange: (rows: Obj[]) => void;
-  blank: () => Obj;
-  render: (row: Obj, set: (p: Obj) => void, i: number) => ReactNode;
-  error?: string;
-  max?: number;
-}) {
-  const move = (i: number, d: -1 | 1) => {
-    const next = [...rows];
-    [next[i], next[i + d]] = [next[i + d], next[i]];
-    onChange(next);
-  };
-  return (
-    <fieldset>
-      <legend className="sr-only">{label}</legend>
-      <ul className="space-y-2">
-        {rows.map((row, i) => (
-          <li key={i} className="flex items-start gap-1 border border-line bg-surface/50 p-2">
-            <div className="grid flex-1 gap-2 sm:grid-cols-[repeat(auto-fit,minmax(8rem,1fr))]">
-              {render(row, (p) => onChange(rows.map((r, j) => (j === i ? { ...r, ...p } : r))), i)}
-            </div>
-            <MoveButtons
-              label={`${label} ${i + 1}`}
-              onUp={i > 0 ? () => move(i, -1) : undefined}
-              onDown={i < rows.length - 1 ? () => move(i, 1) : undefined}
-            />
-            <button
-              type="button"
-              onClick={() => onChange(rows.filter((_, j) => j !== i))}
-              aria-label={`Remove ${label} ${i + 1}`}
-              className="flex h-8 w-8 shrink-0 items-center justify-center text-ink-faint hover:text-acm-bright"
-            >
-              ✕
-            </button>
-          </li>
-        ))}
-      </ul>
-      {rows.length < max ? (
-        <Btn size="sm" className="mt-2" onClick={() => onChange([...rows, blank()])}>
-          + Add
-        </Btn>
-      ) : null}
-      {error ? <p className="mt-1.5 text-xs font-medium text-acm-bright">{error}</p> : null}
-    </fieldset>
-  );
-}
-
-/** Nested errors come back keyed like "timeline.2.phase"; show the first per list. */
-function firstError(errors: Record<string, string>, prefix: string) {
-  const key = Object.keys(errors).find((k) => k === prefix || k.startsWith(`${prefix}.`));
-  if (!key) return undefined;
-  const m = key.match(/\.(\d+)\.(\w+)$/);
-  return m ? `Row ${Number(m[1]) + 1}, ${m[2].replace("_", " ")}: ${errors[key]}` : errors[key];
-}
 
 export function ProjectsEditor() {
   const [members, setMembers] = useState<Member[]>([]);
+  const [problems, setProblems] = useState<ProblemOption[]>([]);
   useEffect(() => {
     api<{ rows: Member[] }>("/api/admin/cms/team")
       .then((b) => setMembers(b.rows))
+      .catch(() => {});
+    api<{ rows: ProblemOption[] }>("/api/admin/cms/problem-options")
+      .then((b) => setProblems(b.rows))
       .catch(() => {});
   }, []);
 
@@ -160,26 +87,7 @@ export function ProjectsEditor() {
         </Part>
 
         <Part title="Domains & technologies">
-          <fieldset>
-            <legend className="font-mono text-label uppercase text-ink-muted">Domains</legend>
-            <div className="mt-2 flex flex-wrap gap-2">
-              {DOMAINS.map((d) => {
-                const on = domains.includes(d);
-                return (
-                  <label key={d} className={`flex cursor-pointer items-center gap-2 border px-3 py-1.5 text-sm ${on ? "border-acm text-ink" : "border-line text-ink-muted"}`}>
-                    <input
-                      type="checkbox"
-                      checked={on}
-                      onChange={() => set({ domains: on ? domains.filter((x) => x !== d) : [...domains, d] })}
-                      className="accent-[rgb(var(--acm))]"
-                    />
-                    {d}
-                  </label>
-                );
-              })}
-            </div>
-            {errors.domains ? <p className="mt-1.5 text-xs font-medium text-acm-bright">{errors.domains}</p> : null}
-          </fieldset>
+          <Checkboxes label="Domains" options={DOMAINS} value={domains} onChange={(v) => set({ domains: v })} error={errors.domains} />
           <ListField label="Technologies" items={list(value.technologies)} onChange={(v) => set({ technologies: v })} error={errors.technologies} placeholder="e.g. Next.js" />
         </Part>
 
@@ -193,22 +101,22 @@ export function ProjectsEditor() {
         <Part title="Timeline">
           <RowsEditor
             label="Milestone"
-            rows={(value.timeline as Obj[]) ?? []}
+            rows={(value.timeline as Record<string, unknown>[]) ?? []}
             onChange={(v) => set({ timeline: v })}
             blank={() => ({ phase: "", state: "next", detail: "" })}
             error={firstError(errors, "timeline")}
             max={12}
             render={(row, setRow, i) => (
               <>
-                <input aria-label={`Milestone ${i + 1} phase`} placeholder="Phase" value={s(row.phase)} onChange={(e) => setRow({ phase: e.target.value })} className={`${control} h-9`} />
-                <select aria-label={`Milestone ${i + 1} state`} value={s(row.state)} onChange={(e) => setRow({ state: e.target.value })} className={`${control} h-9`}>
+                <input aria-label={`Milestone ${i + 1} phase`} placeholder="Phase" value={s(row.phase)} onChange={(e) => setRow({ phase: e.target.value })} className={rowControl} />
+                <select aria-label={`Milestone ${i + 1} state`} value={s(row.state)} onChange={(e) => setRow({ state: e.target.value })} className={rowControl}>
                   {MILESTONE_STATES.map((st) => (
                     <option key={st} value={st}>
                       {st}
                     </option>
                   ))}
                 </select>
-                <input aria-label={`Milestone ${i + 1} detail`} placeholder="Detail" value={s(row.detail)} onChange={(e) => setRow({ detail: e.target.value })} className={`${control} h-9 sm:col-span-full`} />
+                <input aria-label={`Milestone ${i + 1} detail`} placeholder="Detail" value={s(row.detail)} onChange={(e) => setRow({ detail: e.target.value })} className={`${rowControl} sm:col-span-full`} />
               </>
             )}
           />
@@ -217,21 +125,21 @@ export function ProjectsEditor() {
         <Part title="Open roles">
           <RowsEditor
             label="Open role"
-            rows={(value.open_roles as Obj[]) ?? []}
+            rows={(value.open_roles as Record<string, unknown>[]) ?? []}
             onChange={(v) => set({ open_roles: v })}
             blank={() => ({ role: "Frontend", level: "Beginner", what: "" })}
             error={firstError(errors, "open_roles")}
             render={(row, setRow, i) => (
               <>
-                <select aria-label={`Open role ${i + 1} skill`} value={s(row.role)} onChange={(e) => setRow({ role: e.target.value })} className={`${control} h-9`}>
+                <select aria-label={`Open role ${i + 1} skill`} value={s(row.role)} onChange={(e) => setRow({ role: e.target.value })} className={rowControl}>
                   {ROLES.map((r) => (
                     <option key={r} value={r}>
                       {r}
                     </option>
                   ))}
                 </select>
-                <input aria-label={`Open role ${i + 1} level`} placeholder="Level" value={s(row.level)} onChange={(e) => setRow({ level: e.target.value })} className={`${control} h-9`} />
-                <input aria-label={`Open role ${i + 1} description`} placeholder="What the work is" value={s(row.what)} onChange={(e) => setRow({ what: e.target.value })} className={`${control} h-9 sm:col-span-full`} />
+                <input aria-label={`Open role ${i + 1} level`} placeholder="Level" value={s(row.level)} onChange={(e) => setRow({ level: e.target.value })} className={rowControl} />
+                <input aria-label={`Open role ${i + 1} description`} placeholder="What the work is" value={s(row.what)} onChange={(e) => setRow({ what: e.target.value })} className={`${rowControl} sm:col-span-full`} />
               </>
             )}
           />
@@ -241,7 +149,7 @@ export function ProjectsEditor() {
           <p className="-mt-2 text-xs text-ink-faint">Pick a listed team member, or type any name. Use “Open” for a role that still needs someone.</p>
           <RowsEditor
             label="Team member"
-            rows={(value.members as Obj[]) ?? []}
+            rows={(value.members as Record<string, unknown>[]) ?? []}
             onChange={(v) => set({ members: v })}
             blank={() => ({ member_id: null, name: "", role: "" })}
             error={firstError(errors, "members")}
@@ -255,7 +163,7 @@ export function ProjectsEditor() {
                     const m = members.find((x) => x.id === e.target.value);
                     setRow({ member_id: m?.id ?? null, ...(m ? { name: m.name } : {}) });
                   }}
-                  className={`${control} h-9`}
+                  className={rowControl}
                 >
                   <option value="">Not a listed member</option>
                   {members.map((m) => (
@@ -264,8 +172,8 @@ export function ProjectsEditor() {
                     </option>
                   ))}
                 </select>
-                <input aria-label={`Team member ${i + 1} name`} placeholder="Name" value={s(row.name)} onChange={(e) => setRow({ name: e.target.value })} className={`${control} h-9`} />
-                <input aria-label={`Team member ${i + 1} role`} placeholder="Role on this project" value={s(row.role)} onChange={(e) => setRow({ role: e.target.value })} className={`${control} h-9`} />
+                <input aria-label={`Team member ${i + 1} name`} placeholder="Name" value={s(row.name)} onChange={(e) => setRow({ name: e.target.value })} className={rowControl} />
+                <input aria-label={`Team member ${i + 1} role`} placeholder="Role on this project" value={s(row.role)} onChange={(e) => setRow({ role: e.target.value })} className={rowControl} />
               </>
             )}
           />

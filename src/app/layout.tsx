@@ -9,7 +9,18 @@ import { PageTransition } from "@/components/site/PageTransition";
 import { CommandPalette } from "@/components/site/CommandPalette";
 import { HideOnAdmin } from "@/components/site/HideOnAdmin";
 import { SITE_URL } from "@/lib/site";
-import { getNav, getProjects, getSettings, getSocial, getTeam } from "@/lib/cms/read";
+import {
+  getIdeas,
+  getNav,
+  getProblems,
+  getProjects,
+  getResearch,
+  getSettings,
+  getSocial,
+  getTeam,
+  getWorkingTeams,
+} from "@/lib/cms/read";
+import { buildIndex } from "@/lib/search";
 import { brandCaption } from "@/lib/cms/types";
 
 const inter = Inter({
@@ -70,12 +81,16 @@ if(light)document.documentElement.setAttribute("data-theme","light");
 }catch(e){}})();`;
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  const [settings, nav, social, team, projects] = await Promise.all([
+  const [settings, nav, social, team, projects, problems, ideas, teams, research] = await Promise.all([
     getSettings(),
     getNav(),
     getSocial(),
     getTeam(),
     getProjects(),
+    getProblems(),
+    getIdeas(),
+    getWorkingTeams(),
+    getResearch(),
   ]);
   const brand = {
     short: settings.short_name,
@@ -98,15 +113,21 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <Cursor />
         <Navbar brand={brand} items={header} extra={mobileExtra} />
         <CommandPalette
-          projects={projects.map((p) => ({
-            slug: p.slug,
-            name: p.name,
-            summary: p.summary,
-            category: p.category,
-            domains: p.domains,
-            technologies: p.technologies,
-            roles: p.openRoles.map((r) => r.role),
-          }))}
+          index={buildIndex({
+            problems,
+            ideas,
+            teams,
+            research,
+            projects: projects.map((p) => ({
+              slug: p.slug,
+              name: p.name,
+              summary: p.summary,
+              category: p.category,
+              domains: p.domains,
+              technologies: p.technologies,
+              roles: p.openRoles.map((r) => r.role),
+            })),
+          })}
         />
         <main id="main">
           <PageTransition>{children}</PageTransition>

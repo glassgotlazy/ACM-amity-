@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, useReducedMotion } from "framer-motion";
-import type { ResearchStage } from "@/data/research";
+import type { ResearchStage } from "@/lib/cms/content-types";
 import { viewportOnce } from "@/lib/motion";
 import { cn } from "@/lib/utils";
 

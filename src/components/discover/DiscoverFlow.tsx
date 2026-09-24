@@ -4,9 +4,8 @@ import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { DOMAINS, COMFORT, type ComfortId } from "@/data/taxonomy";
-import { ideas } from "@/data/ideas";
 import type { Project } from "@/lib/cms/types";
-import { problems } from "@/data/problems";
+import type { Idea, Problem } from "@/lib/cms/content-types";
 import { DifficultyMeter, StatusPill, Tag } from "@/components/ui/Badges";
 import { Button } from "@/components/ui/Button";
 import { ease } from "@/lib/motion";
@@ -24,7 +23,7 @@ const COMFORT_LEVELS: Record<ComfortId, string[]> = {
 
 type Step = 0 | 1 | 2;
 
-export function DiscoverFlow({ projects }: { projects: Project[] }) {
+export function DiscoverFlow({ projects, ideas, problems }: { projects: Project[]; ideas: Idea[]; problems: Problem[] }) {
   const reduce = useReducedMotion();
   const [step, setStep] = useState<Step>(0);
   const [interests, setInterests] = useState<string[]>([]);
@@ -54,7 +53,7 @@ export function DiscoverFlow({ projects }: { projects: Project[] }) {
         .sort((a, b) => score(b.domains) - score(a.domains))
         .slice(0, 3),
     };
-  }, [interests, comfort]);
+  }, [ideas, projects, problems, interests, comfort]);
 
   const total = results.ideas.length + results.projects.length + results.problems.length;
 

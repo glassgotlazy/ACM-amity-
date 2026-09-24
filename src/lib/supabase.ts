@@ -7,20 +7,14 @@
  * prefix on the key would publish write access to the queue.
  */
 
-export const SUBMISSION_STATES = ["new", "reviewing", "accepted", "declined", "published"] as const;
-export type SubmissionState = (typeof SUBMISSION_STATES)[number];
+import type { StoredSubmission, SubmissionKind } from "./submission-types";
 
-export type SubmissionKind = "join" | "project-application" | "problem-submission" | "project-proposal";
-
-export type StoredSubmission = {
-  id: string;
-  created_at: string;
-  kind: SubmissionKind;
-  payload: Record<string, unknown>;
-  anonymous: boolean;
-  state: SubmissionState;
-  note: string | null;
-};
+export {
+  SUBMISSION_STATES,
+  type StoredSubmission,
+  type SubmissionKind,
+  type SubmissionState,
+} from "./submission-types";
 
 export function storageConfig() {
   const url = process.env.SUPABASE_URL?.replace(/\/+$/, "");
@@ -64,6 +58,27 @@ export async function rest<T>(path: string, init: RequestInit & { prefer?: strin
   return (text ? JSON.parse(text) : undefined) as T;
 }
 
+/**
+ * A page of rows plus the total matching count, from one request. PostgREST
+ * reports the total in Content-Range ("0-24/137") when asked for count=exact.
+ */
+export async function restPage<T>(path: string): Promise<{ rows: T[]; total: number }> {
+  const cfg = storageConfig();
+  if (!cfg) throw new Error("storage_not_configured");
+  const res = await fetch(`${cfg.url}/rest/v1/${path}`, {
+    headers: { apikey: cfg.key, Authorization: `Bearer ${cfg.key}`, Prefer: "count=exact" },
+    signal: AbortSignal.timeout(10_000),
+    cache: "no-store",
+  });
+  if (!res.ok) {
+    console.error(`[storage] GET ${path} -> ${res.status} ${await res.text().catch(() => "")}`);
+    throw new StorageError(res.status);
+  }
+  const total = Number(res.headers.get("content-range")?.split("/")[1] ?? NaN);
+  const rows = (await res.json()) as T[];
+  return { rows, total: Number.isFinite(total) ? total : rows.length };
+}
+
 export async function storeSubmission(
   kind: SubmissionKind,
   payload: Record<string, unknown>,
@@ -75,24 +90,4 @@ export async function storeSubmission(
     prefer: "return=representation",
   });
   return rows[0];
-}
-
-export async function listSubmissions(filter: { kind?: SubmissionKind; state?: SubmissionState } = {}) {
-  const q = new URLSearchParams({ select: "*", order: "created_at.desc", limit: "200" });
-  if (filter.kind) q.set("kind", `eq.${filter.kind}`);
-  if (filter.state) q.set("state", `eq.${filter.state}`);
-  return rest<StoredSubmission[]>(`submissions?${q.toString()}`);
-}
-
-export async function updateSubmission(
-  id: string,
-  patch: { state?: SubmissionState; note?: string | null },
-): Promise<StoredSubmission | null> {
-  const q = new URLSearchParams({ id: `eq.${id}`, select: "*" });
-  const rows = await rest<StoredSubmission[]>(`submissions?${q.toString()}`, {
-    method: "PATCH",
-    body: JSON.stringify(patch),
-    prefer: "return=representation",
-  });
-  return rows[0] ?? null;
 }

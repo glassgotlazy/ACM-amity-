@@ -109,21 +109,30 @@ export function HomepageEditor() {
     if (status === "ready") load();
   }, [status, load]);
 
-  async function put(row: Row) {
-    return api<{ row: Row }>(`/api/admin/cms/sections/${row.key}`, { method: "PUT", json: row });
+  const [stale, setStale] = useState<Row | null>(null);
+
+  // `updated_at` travels back as the expected version, so a section someone
+  // else saved in the meantime is not silently overwritten.
+  async function put(row: Row, overwrite = false) {
+    return api<{ row: Row }>(`/api/admin/cms/sections/${row.key}`, {
+      method: "PUT",
+      json: { ...row, _expected_updated_at: overwrite ? undefined : row.updated_at },
+    });
   }
 
-  async function save() {
+  async function save(overwrite = false) {
     if (!editing) return;
     setSaving(true);
     setErrors({});
     try {
-      await put(editing);
+      await put(editing, overwrite);
+      setStale(null);
       toast("ok", `${SECTIONS[editing.key].name} is updated on the homepage.`);
       setEditing(null);
       await load();
     } catch (e) {
       if (e instanceof ApiError && e.code === "invalid") setErrors(e.errors);
+      if (e instanceof ApiError && e.code === "stale") setStale(e.extra.current as Row);
       toast("error", explain(e));
     } finally {
       setSaving(false);
@@ -133,10 +142,11 @@ export function HomepageEditor() {
   async function flip(row: Row) {
     setBusy(row.key);
     try {
-      await put({ ...row, enabled: !row.enabled });
-      setRows((rs) => rs?.map((r) => (r.key === row.key ? { ...r, enabled: !row.enabled } : r)) ?? null);
+      const { row: saved } = await put({ ...row, enabled: !row.enabled });
+      setRows((rs) => rs?.map((r) => (r.key === row.key ? { ...r, ...saved } : r)) ?? null);
       toast("ok", `${SECTIONS[row.key].name} is now ${row.enabled ? "hidden" : "shown"}.`);
     } catch (e) {
+      if (e instanceof ApiError && e.code === "stale") load();
       toast("error", explain(e));
     } finally {
       setBusy(null);
@@ -201,6 +211,7 @@ export function HomepageEditor() {
                 tone="ghost"
                 onClick={() => {
                   setErrors({});
+                  setStale(null);
                   setEditing(row);
                 }}
                 aria-label={`Edit ${ui.name}`}
@@ -219,7 +230,7 @@ export function HomepageEditor() {
         footer={
           <>
             <Btn onClick={() => setEditing(null)}>Cancel</Btn>
-            <Btn tone="primary" onClick={save} disabled={saving}>
+            <Btn tone="primary" onClick={() => save()} disabled={saving}>
               {saving ? "Saving…" : "Save section"}
             </Btn>
           </>
@@ -233,6 +244,17 @@ export function HomepageEditor() {
               save();
             }}
           >
+            {stale ? (
+              <StaleNotice
+                onLoad={() => {
+                  setEditing(stale);
+                  setStale(null);
+                  load();
+                }}
+                onOverwrite={() => save(true)}
+                busy={saving}
+              />
+            ) : null}
             <p className="text-sm text-ink-muted">{SECTIONS[editing.key].about}</p>
             <SectionFields ui={SECTIONS[editing.key]} value={editing} set={(p) => setEditing((r) => (r ? ({ ...r, ...p } as Row) : r))} errors={errors} />
           </form>
@@ -295,6 +317,175 @@ function SectionFields({ ui, value, set, errors }: { ui: SectionUi; value: Row; 
       {has("image") ? (
         <ImageField label={label("image", "Image")} use="cover" value={(value.image_url as string) ?? null} onChange={(v) => set({ image_url: v })} error={errors.image_url} hint={ui.hints?.image} />
       ) : null}
+    </>
+  );
+}
+
+function StaleNotice({ onLoad, onOverwrite, busy }: { onLoad: () => void; onOverwrite: () => void; busy: boolean }) {
+  return (
+    <div role="alert" className="border border-acm/60 bg-acm-wash px-4 py-3 text-sm text-ink-muted">
+      <p className="font-medium text-ink">Someone else saved this after you opened it.</p>
+      <p className="mt-1">Saving now would overwrite their changes. Choose which version to keep.</p>
+      <div className="mt-3 flex flex-wrap gap-2">
+        <Btn size="sm" onClick={onLoad}>
+          Load their version
+        </Btn>
+        <Btn size="sm" tone="danger" onClick={onOverwrite} disabled={busy}>
+          Keep mine and overwrite
+        </Btn>
+      </div>
+    </div>
+  );
+}
+
+/* -------------------------------------------------------------------------- */
+/* Page headers                                                                */
+/* -------------------------------------------------------------------------- */
+
+const PAGES: Record<string, { name: string; path: string; note?: string; accent?: boolean }> = {
+  page_projects: { name: "Projects", path: "/projects" },
+  page_problems: { name: "Problem Lab", path: "/problems", accent: true },
+  page_submit: { name: "Submit a problem", path: "/problems/submit" },
+  page_ideas: { name: "Project ideas", path: "/ideas" },
+  page_research: { name: "Research", path: "/research" },
+  page_teams: { name: "Teams", path: "/teams" },
+  page_teams_core: { name: "Teams · core team block", path: "/teams" },
+  page_activity: { name: "Activity", path: "/activity", note: "Small print under the header" },
+  page_events: { name: "Events", path: "/events" },
+  page_join: { name: "Join", path: "/join" },
+  page_discover: { name: "Find your project", path: "/discover" },
+};
+
+/** The header (eyebrow, headline, lede) of every other public page. */
+export function PagesEditor() {
+  const toast = useToast();
+  const { status } = useCms();
+  const [rows, setRows] = useState<Row[] | null>(null);
+  const [loadError, setLoadError] = useState<unknown>(null);
+  const [editing, setEditing] = useState<Row | null>(null);
+  const [errors, setErrors] = useState<Errors>({});
+  const [saving, setSaving] = useState(false);
+  const [stale, setStale] = useState<Row | null>(null);
+
+  const load = useCallback(async () => {
+    setLoadError(null);
+    try {
+      setRows((await api<{ rows: Row[] }>("/api/admin/cms/sections?pages=1")).rows);
+    } catch (e) {
+      setLoadError(e);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (status === "ready") load();
+  }, [status, load]);
+
+  async function save(overwrite = false) {
+    if (!editing) return;
+    setSaving(true);
+    setErrors({});
+    try {
+      await api(`/api/admin/cms/sections/${editing.key}`, {
+        method: "PUT",
+        json: { ...editing, _expected_updated_at: overwrite ? undefined : editing.updated_at },
+      });
+      toast("ok", `The ${PAGES[editing.key]?.name ?? "page"} header is live.`);
+      setEditing(null);
+      setStale(null);
+      await load();
+    } catch (e) {
+      if (e instanceof ApiError && e.code === "invalid") setErrors(e.errors);
+      if (e instanceof ApiError && e.code === "stale") setStale(e.extra.current as Row);
+      toast("error", explain(e));
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  if (loadError) return <ErrorState error={loadError} retry={load} />;
+  if (!rows) return <LoadingRows rows={8} />;
+
+  const ui = editing ? PAGES[editing.key] : undefined;
+
+  return (
+    <>
+      <ul className="border border-line">
+        {rows.map((row) => {
+          const meta = PAGES[row.key] ?? { name: row.key, path: "" };
+          return (
+            <li key={row.key} className="flex flex-wrap items-center gap-x-4 gap-y-1 border-b border-line px-4 py-3 last:border-b-0">
+              <span className="min-w-0 flex-1">
+                <span className="block font-medium text-ink">{meta.name}</span>
+                <span className="block truncate text-xs text-ink-faint">
+                  <code className="font-mono">{meta.path}</code> · {s(row.title).split("\n")[0]}
+                </span>
+              </span>
+              <Btn
+                size="sm"
+                tone="ghost"
+                onClick={() => {
+                  setErrors({});
+                  setStale(null);
+                  setEditing(row);
+                }}
+                aria-label={`Edit ${meta.name} header`}
+              >
+                Edit
+              </Btn>
+            </li>
+          );
+        })}
+      </ul>
+
+      <Drawer
+        open={editing !== null}
+        title={ui ? `Edit page · ${ui.name}` : ""}
+        onClose={() => setEditing(null)}
+        footer={
+          <>
+            <Btn onClick={() => setEditing(null)}>Cancel</Btn>
+            <Btn tone="primary" onClick={() => save()} disabled={saving}>
+              {saving ? "Saving…" : "Save header"}
+            </Btn>
+          </>
+        }
+      >
+        {editing ? (
+          <form
+            className="space-y-5"
+            onSubmit={(e) => {
+              e.preventDefault();
+              save();
+            }}
+          >
+            {stale ? (
+              <StaleNotice
+                onLoad={() => {
+                  setEditing(stale);
+                  setStale(null);
+                  load();
+                }}
+                onOverwrite={() => save(true)}
+                busy={saving}
+              />
+            ) : null}
+            <TextInput label="Eyebrow" value={s(editing.eyebrow)} onChange={(v) => setEditing({ ...editing, eyebrow: v })} error={errors.eyebrow} maxLength={60} />
+            <TextArea
+              label="Headline"
+              hint={ui?.accent ? `${HEADLINE_HINT} The last line is set in the accent colour.` : HEADLINE_HINT}
+              rows={3}
+              value={s(editing.title)}
+              onChange={(v) => setEditing({ ...editing, title: v })}
+              error={errors.title}
+              maxLength={200}
+            />
+            <TextArea label="Introduction" rows={4} value={s(editing.body)} onChange={(v) => setEditing({ ...editing, body: v })} error={errors.body} maxLength={800} />
+            {ui?.note ? (
+              <TextArea label={ui.note} rows={3} value={s(editing.note)} onChange={(v) => setEditing({ ...editing, note: v })} error={errors.note} maxLength={400} />
+            ) : null}
+          </form>
+        ) : null}
+      </Drawer>
     </>
   );
 }

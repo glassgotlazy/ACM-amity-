@@ -1,10 +1,12 @@
-import { DOMAINS, ROLES as SKILL_ROLES, STATUSES } from "@/data/taxonomy";
+import { DOMAINS, LEVELS, ORIGINS, PROBLEM_CATEGORIES, ROLES as SKILL_ROLES, STATUSES } from "@/data/taxonomy";
+import { ACTIVITY_KINDS, BANDS } from "./content-types";
 import { publicMediaPrefix } from "./media";
 import { checkHref, type KnownSlugs } from "./routes";
 import {
   EVENT_STATUSES,
   FOOTER_GROUPS,
   MILESTONE_STATES,
+  PAGE_KEYS,
   SECTION_KEYS,
   SOCIAL_PLATFORMS,
   type SectionKey,
@@ -133,6 +135,35 @@ class Check {
     return s;
   }
 
+  /** A list of fixed-shape objects; errors come back as "field.index.key". */
+  objList(
+    field: string,
+    spec: Record<string, { kind: "text"; max: number; required?: boolean } | { kind: "enum"; options: readonly string[] } | { kind: "int"; min: number; max: number }>,
+    maxItems: number,
+  ): Record<string, unknown>[] {
+    const v = this.raw(field) ?? [];
+    if (!Array.isArray(v)) return this.fail(field, "Must be a list."), [];
+    if (v.length > maxItems) this.fail(field, `At most ${maxItems} items.`);
+    return v.slice(0, maxItems).map((item, i) => {
+      const inner = new Check((item && typeof item === "object" ? item : {}) as Record<string, unknown>, this.ctx);
+      const out: Record<string, unknown> = {};
+      for (const [key, rule] of Object.entries(spec)) {
+        if (rule.kind === "text") out[key] = inner.text(key, { max: rule.max, required: rule.required });
+        else if (rule.kind === "enum") out[key] = inner.oneOf(key, rule.options);
+        else out[key] = inner.int(key, rule.min, rule.max);
+      }
+      for (const [k, m] of Object.entries(inner.errors)) this.fail(`${field}.${i}.${k}`, m);
+      return out;
+    });
+  }
+
+  /** A list whose every value must come from a fixed vocabulary. */
+  pick(field: string, options: readonly string[], maxItems = options.length): string[] {
+    const items = this.list(field, { maxItems, max: 60 });
+    if (items.some((x) => !options.includes(x))) this.fail(field, "Pick from the options.");
+    return items;
+  }
+
   done<T>(row: T): Result<T> {
     return Object.keys(this.errors).length ? { ok: false, errors: this.errors } : { ok: true, row };
   }
@@ -197,7 +228,8 @@ export const SECTION_EXTRA: Partial<Record<SectionKey, Record<string, "text" | "
 
 export function validateSection(key: string, input: Input, ctx: Ctx) {
   const c = new Check(input, ctx);
-  if (!(SECTION_KEYS as readonly string[]).includes(key)) c.fail("key", "Unknown section.");
+  const isPage = (PAGE_KEYS as readonly string[]).includes(key);
+  if (!isPage && !(SECTION_KEYS as readonly string[]).includes(key)) c.fail("key", "Unknown section.");
   const allowed = SECTION_EXTRA[key as SectionKey] ?? {};
   const extraIn = (input.extra && typeof input.extra === "object" ? input.extra : {}) as Input;
   const e = new Check(extraIn, ctx);
@@ -211,7 +243,7 @@ export function validateSection(key: string, input: Input, ctx: Ctx) {
 
   const row = {
     key,
-    enabled: key === "hero" ? true : c.bool("enabled"),
+    enabled: key === "hero" || isPage ? true : c.bool("enabled"),
     eyebrow: c.text("eyebrow", { max: 60 }),
     title: c.text("title", { max: 200 }),
     subtitle: c.text("subtitle", { max: 200 }),
@@ -362,4 +394,124 @@ export function validateProject(input: Input, ctx: Ctx) {
   };
   const result = c.done(row);
   return result.ok ? { ok: true as const, row: result.row, members } : result;
+}
+
+// ---------------------------------------------------------------------------
+// Long-form content
+// ---------------------------------------------------------------------------
+
+const LEVEL_IDS = LEVELS.map((l) => l.id);
+const text = (max: number, required = false) => ({ kind: "text" as const, max, required });
+const oneOfRule = (options: readonly string[]) => ({ kind: "enum" as const, options });
+
+export function validateProblem(input: Input, ctx: Ctx) {
+  const c = new Check(input, ctx);
+  const pp = (input.potential_project && typeof input.potential_project === "object" ? input.potential_project : {}) as Input;
+  const pc = new Check(pp, ctx);
+  const potential_project = {
+    name: pc.text("name", { max: 120, required: true }),
+    summary: pc.text("summary", { max: 600 }),
+    ...(pc.text("slug", { max: 80 }) ? { slug: pc.text("slug", { max: 80 }) } : {}),
+  };
+  for (const [k, m] of Object.entries(pc.errors)) c.fail(`potential_project.${k}`, m);
+  return c.done({
+    slug: c.slug("slug"),
+    title: c.text("title", { max: 160, required: true }),
+    hook: c.text("hook", { max: 300 }),
+    question: c.text("question", { max: 400, required: true }),
+    origin: c.oneOf("origin", Object.keys(ORIGINS)),
+    category: c.oneOf("category", PROBLEM_CATEGORIES),
+    domains: c.pick("domains", DOMAINS),
+    level: c.oneOf("level", LEVEL_IDS),
+    context: c.list("context", { maxItems: 12, max: 600 }),
+    why_it_matters: c.list("why_it_matters", { maxItems: 12, max: 600 }),
+    directions: c.objList("directions", { title: text(120, true), detail: text(600) }, 12),
+    technologies: c.list("technologies", { maxItems: 20, max: 40 }),
+    potential_project,
+    skills: c.list("skills", { maxItems: 20, max: 60 }),
+    open_roles: c.pick("open_roles", SKILL_ROLES),
+    team: c.objList("team", { role: oneOfRule(SKILL_ROLES), count: { kind: "int", min: 1, max: 20 }, note: text(200) }, 12),
+    research_questions: c.list("research_questions", { maxItems: 12, max: 400 }),
+    next_steps: c.list("next_steps", { maxItems: 12, max: 400 }),
+    featured: c.bool("featured"),
+    published: c.bool("published"),
+  });
+}
+
+export function validateIdea(input: Input, ctx: Ctx) {
+  const c = new Check(input, ctx);
+  const problem_slug = c.optional("problem_slug", 80);
+  if (problem_slug && !ctx.slugs.problems.includes(problem_slug)) c.fail("problem_slug", "No such problem.");
+  return c.done({
+    slug: c.slug("slug"),
+    name: c.text("name", { max: 120, required: true }),
+    tagline: c.text("tagline", { max: 200 }),
+    level: c.oneOf("level", LEVEL_IDS),
+    band: c.oneOf("band", BANDS),
+    domains: c.pick("domains", DOMAINS),
+    team_size: c.text("team_size", { max: 20 }),
+    technologies: c.list("technologies", { maxItems: 20, max: 40 }),
+    skills: c.list("skills", { maxItems: 20, max: 60 }),
+    learn: c.list("learn", { maxItems: 12, max: 300 }),
+    problem_slug,
+    published: c.bool("published"),
+  });
+}
+
+export function validateResearch(input: Input, ctx: Ctx) {
+  const c = new Check(input, ctx);
+  return c.done({
+    slug: c.slug("slug"),
+    title: c.text("title", { max: 160, required: true }),
+    status: c.oneOf("status", Object.keys(STATUSES)),
+    field: c.text("field", { max: 120 }),
+    question: c.text("question", { max: 600, required: true }),
+    background: c.list("background", { maxItems: 12, max: 1200 }),
+    literature: c.objList("literature", { theme: text(160, true), note: text(600) }, 20),
+    exploration: c.list("exploration", { maxItems: 12, max: 600 }),
+    experiments: c.objList("experiments", { title: text(160, true), state: oneOfRule(["running", "planned", "blocked"]), note: text(600) }, 20),
+    analysis: c.optional("analysis", 2000),
+    paper: c.optional("paper", 600),
+    stages: c.objList("stages", { id: text(40, true), name: text(60, true), state: oneOfRule(["done", "active", "open"]), detail: text(400) }, 12),
+    open_to: c.list("open_to", { maxItems: 12, max: 200 }),
+    published: c.bool("published"),
+  });
+}
+
+export function validateWorkingTeam(input: Input, ctx: Ctx) {
+  const c = new Check(input, ctx);
+  return c.done({
+    slug: c.slug("slug"),
+    name: c.text("name", { max: 80, required: true }),
+    focus: c.text("focus", { max: 300 }),
+    charter: c.text("charter", { max: 1500 }),
+    domains: c.pick("domains", DOMAINS),
+    works: c.list("works", { maxItems: 12, max: 80 }),
+    projects: c.objList("projects", { name: text(120, true), slug: text(80) }, 12),
+    open_positions: c.objList("open_positions", { role: oneOfRule(SKILL_ROLES), level: text(30), note: text(200) }, 20),
+    meets: c.text("meets", { max: 120 }),
+    size: c.int("size", 0, 500),
+    published: c.bool("published"),
+  });
+}
+
+export function validateActivity(input: Input, ctx: Ctx) {
+  const c = new Check(input, ctx);
+  const target_label = c.text("target_label", { max: 80 });
+  const target_href = c.text("target_href", { max: 300 });
+  if (target_href) {
+    const problem = checkHref(target_href, ctx.slugs);
+    if (problem) c.fail("target_href", problem);
+  }
+  if (Boolean(target_label) !== Boolean(target_href)) c.fail(target_label ? "target_href" : "target_label", "A link needs both a label and a destination.");
+  return c.done({
+    kind: c.oneOf("kind", Object.keys(ACTIVITY_KINDS)),
+    text: c.text("text", { max: 400, required: true }),
+    actor: c.text("actor", { max: 80 }),
+    target_label: target_label || null,
+    target_href: target_href || null,
+    when_label: c.text("when_label", { max: 40 }),
+    day_label: c.text("day_label", { max: 40 }),
+    published: c.bool("published"),
+  });
 }

@@ -5,5 +5,5 @@ type Params = { params: Promise<{ resource: string }> };
 
 export async function POST(req: Request, { params }: Params) {
   const { resource } = await params;
-  return handle(async () => reorderRows(resource, ((await json(req)) as { ids?: unknown })?.ids));
+  return handle(req, "content:write", async (s) => reorderRows(resource, ((await json(req)) as { ids?: unknown })?.ids, s.actor));
 }

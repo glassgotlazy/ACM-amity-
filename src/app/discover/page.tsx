@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { PageHeader } from "@/components/ui/SectionHeading";
 import { DiscoverFlow } from "@/components/discover/DiscoverFlow";
-import { getProjects } from "@/lib/cms/read";
+import { getIdeas, getPage, getProblems, getProjects } from "@/lib/cms/read";
+import { CmsTitle } from "@/components/ui/Lines";
 
 export const metadata: Metadata = {
   title: "Find Your Project",
@@ -9,21 +10,15 @@ export const metadata: Metadata = {
 };
 
 export default async function DiscoverPage() {
-  const projects = await getProjects();
+  const [projects, ideas, problems, page] = await Promise.all([getProjects(), getIdeas(), getProblems(), getPage("page_discover")]);
   return (
     <>
       <PageHeader
-        eyebrow="Discover"
-        title={
-          <>
-            WHAT DO YOU
-            <br />
-            WANT TO BUILD?
-          </>
-        }
-        lede="Two questions. Then a shortlist of problems to explore, projects with open roles, and unclaimed ideas — ranked by how closely they match what you picked."
+        eyebrow={page.eyebrow}
+        title={<CmsTitle text={page.title} />}
+        lede={page.body || undefined}
       />
-      <DiscoverFlow projects={projects} />
+      <DiscoverFlow projects={projects} ideas={ideas} problems={problems} />
     </>
   );
 }

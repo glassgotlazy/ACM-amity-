@@ -8,8 +8,10 @@ import { Button } from "@/components/ui/Button";
 export function AdminLogin() {
   const params = useSearchParams();
   const unconfigured = params.get("unconfigured") === "1";
+  const expired = params.get("expired") === "1";
 
   const [password, setPassword] = useState("");
+  const [name, setName] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -26,7 +28,7 @@ export function AdminLogin() {
       const res = await fetch("/api/admin/session", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ password }),
+        body: JSON.stringify({ password, name }),
       });
       if (res.ok) {
         // Hard navigation on purpose. The client router prefetches /admin
@@ -41,7 +43,9 @@ export function AdminLogin() {
       setError(
         data.error === "not_configured"
           ? "No admin password is configured for this deployment."
-          : "That password is not right.",
+          : data.error === "too_many_attempts"
+            ? "Too many wrong attempts from this network. Wait 15 minutes and try again."
+            : "That password is not right.",
       );
     } catch {
       setError("Could not reach the server. Check your connection and try again.");
@@ -58,6 +62,22 @@ export function AdminLogin() {
           unreachable. Set ADMIN_PASSWORD in the deployment and redeploy.
         </p>
       ) : null}
+
+      {expired ? (
+        <p role="status" className="border border-line px-5 py-4 font-mono text-micro uppercase leading-relaxed text-ink-faint">
+          <span className="text-acm-bright">Signed out ·</span> Your session ended. Sign in again to continue.
+        </p>
+      ) : null}
+
+      <TextField
+        label="Your name"
+        hint="Shown in the audit log"
+        autoComplete="name"
+        maxLength={40}
+        value={name}
+        onChange={(e) => setName(e.target.value)}
+        disabled={unconfigured || busy}
+      />
 
       <TextField
         label="Admin password"

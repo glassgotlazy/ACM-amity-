@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import { PageHeader } from "@/components/ui/SectionHeading";
+import { CmsTitle } from "@/components/ui/Lines";
 import { ProblemForm } from "@/components/forms/ProblemForm";
 import { Reveal } from "@/components/ui/Reveal";
+import { getPage } from "@/lib/cms/read";
 
 export const metadata: Metadata = {
   title: "Submit a Problem",
@@ -9,19 +11,14 @@ export const metadata: Metadata = {
     "Noticed something on campus that should work better? Write it up. A well-described problem is a contribution in itself.",
 };
 
-export default function SubmitProblemPage() {
+export default async function SubmitProblemPage() {
+  const page = await getPage("page_submit");
   return (
     <>
       <PageHeader
-        eyebrow="Problem Lab / Submit"
-        title={
-          <>
-            YOU NOTICED
-            <br />
-            SOMETHING.
-          </>
-        }
-        lede="The people who see a problem clearly are usually the people living with it. You do not need a solution, a team or a technical background to write one down — a precise description is the hard part."
+        eyebrow={page.eyebrow}
+        title={<CmsTitle text={page.title} />}
+        lede={page.body || undefined}
       />
 
       <div className="shell grid gap-16 py-20 lg:grid-cols-[1fr_2fr] lg:gap-24">

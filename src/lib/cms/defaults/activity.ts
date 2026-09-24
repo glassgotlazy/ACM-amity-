@@ -1,15 +1,10 @@
-export type ActivityKind = "build" | "research" | "team" | "problem" | "role" | "review";
+import type { ActivityItem } from "../content-types";
 
-export type ActivityItem = {
-  id: string;
-  kind: ActivityKind;
-  text: string;
-  actor: string;
-  target?: { label: string; href: string };
-  when: string;
-  day: string;
-};
-
+/**
+ * Built-in content, used only until "Load remaining content" copies it into
+ * the database (see supabase/admin.sql). After that the database is the only
+ * source and this file is never read by the public site.
+ */
 /**
  * Real project milestones, taken from the commit history of the two ACM
  * repositories. Each entry describes something that actually shipped.
@@ -18,7 +13,7 @@ export type ActivityItem = {
  * history is a poor proxy for who contributed what, and this feed does not
  * pretend otherwise.
  */
-export const activity: ActivityItem[] = [
+export const defaultActivity: ActivityItem[] = [
   {
     id: "a1",
     kind: "build",
@@ -110,12 +105,3 @@ export const activity: ActivityItem[] = [
     day: "Ongoing",
   },
 ];
-
-export const ACTIVITY_KINDS: Record<ActivityKind, string> = {
-  build: "BUILD",
-  research: "RESEARCH",
-  team: "TEAM",
-  problem: "PROBLEM",
-  role: "ROLE",
-  review: "REVIEW",
-};

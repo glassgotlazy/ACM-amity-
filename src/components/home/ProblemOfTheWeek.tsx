@@ -1,5 +1,5 @@
 import Link from "next/link";
-import type { Problem } from "@/data/problems";
+import type { Problem } from "@/lib/cms/content-types";
 import { DifficultyMeter, OriginTag, Tag } from "@/components/ui/Badges";
 import { Reveal } from "@/components/ui/Reveal";
 import type { Section } from "@/lib/cms/types";

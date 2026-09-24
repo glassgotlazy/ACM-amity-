@@ -1,8 +1,10 @@
-import { readSections } from "@/lib/cms/write";
+import { readPages, readSections } from "@/lib/cms/write";
 import { handle } from "../_handle";
 
 export const dynamic = "force-dynamic";
 
-export async function GET() {
-  return handle(async () => ({ rows: await readSections() }));
+/** Homepage sections; `?pages=1` returns the other pages' headers instead. */
+export async function GET(req: Request) {
+  const pages = new URL(req.url).searchParams.get("pages") === "1";
+  return handle(req, "content:write", async () => ({ rows: pages ? await readPages() : await readSections() }));
 }

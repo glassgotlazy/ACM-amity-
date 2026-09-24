@@ -5,12 +5,12 @@ export const dynamic = "force-dynamic";
 
 type Params = { params: Promise<{ resource: string }> };
 
-export async function GET(_req: Request, { params }: Params) {
+export async function GET(req: Request, { params }: Params) {
   const { resource } = await params;
-  return handle(async () => ({ rows: await listRows(resource) }));
+  return handle(req, "content:write", async () => ({ rows: await listRows(resource) }));
 }
 
 export async function POST(req: Request, { params }: Params) {
   const { resource } = await params;
-  return handle(async () => ({ row: await createRow(resource, await json(req)) }));
+  return handle(req, "content:write", async (s) => ({ row: await createRow(resource, await json(req), s.actor) }));
 }

@@ -4,7 +4,7 @@ import { motion, useReducedMotion, useScroll, useTransform } from "framer-motion
 import { useRef } from "react";
 import Link from "next/link";
 import { PROBLEM_CATEGORIES } from "@/data/taxonomy";
-import { problems } from "@/data/problems";
+import type { Problem } from "@/lib/cms/content-types";
 import { ProblemCard } from "@/components/problems/ProblemCard";
 import { Reveal } from "@/components/ui/Reveal";
 import { ArrowLink } from "@/components/ui/ArrowLink";
@@ -17,7 +17,7 @@ import { lines, type Section } from "@/lib/cms/types";
  * full-bleed treatment: its own dark field, its own numbering, and a headline
  * that is larger than anything else on the page apart from the hero.
  */
-export function ProblemLabIntro({ section, index }: { section: Section; index: string }) {
+export function ProblemLabIntro({ section, index, problems }: { section: Section; index: string; problems: Problem[] }) {
   const reduce = useReducedMotion();
   const ref = useRef<HTMLElement>(null);
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start end", "end start"] });

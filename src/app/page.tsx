@@ -9,8 +9,17 @@ import { ContributionPitch } from "@/components/home/ContributionPitch";
 import { IdeasTeaser } from "@/components/home/IdeasTeaser";
 import { RecruitCTA } from "@/components/home/RecruitCTA";
 import { FinalCTA } from "@/components/home/FinalCTA";
-import { problemOfTheWeek } from "@/data/problems";
-import { getAnnouncements, getEvents, getProjects, getSections, getSettings, upcoming } from "@/lib/cms/read";
+import {
+  getAnnouncements,
+  getEvents,
+  getIdeas,
+  getProblems,
+  getProjects,
+  getSections,
+  getSettings,
+  problemOfTheWeek,
+  upcoming,
+} from "@/lib/cms/read";
 import type { SectionKey } from "@/lib/cms/types";
 
 /**
@@ -35,15 +44,17 @@ const NUMBERED: SectionKey[] = [
 ];
 
 export default async function Home() {
-  const [sections, settings, events, announcements, projects] = await Promise.all([
+  const [sections, settings, events, announcements, projects, problems, ideas, featured] = await Promise.all([
     getSections(),
     getSettings(),
     getEvents(),
     getAnnouncements(),
     getProjects(),
+    getProblems(),
+    getIdeas(),
+    // Resolved on the server so the weekly pick is baked into the HTML.
+    problemOfTheWeek(),
   ]);
-  // Resolved on the server so the weekly pick is baked into the HTML.
-  const featured = problemOfTheWeek();
   const nextEvents = upcoming(events).slice(0, 3);
   const featuredProjects = projects.filter((p) => p.featured);
 
@@ -53,12 +64,13 @@ export default async function Home() {
     (s) =>
       s.enabled &&
       !(s.key === "events" && nextEvents.length === 0) &&
-      !(s.key === "announcements" && announcements.length === 0),
+      !(s.key === "announcements" && announcements.length === 0) &&
+      !(s.key === "problem_of_the_week" && !featured),
   );
 
   let n = 0;
   const numbered = new Map(
-    visible.filter((s) => NUMBERED.includes(s.key)).map((s) => [s.key, String(++n).padStart(2, "0")]),
+    visible.filter((s) => NUMBERED.includes(s.key as SectionKey)).map((s) => [s.key, String(++n).padStart(2, "0")]),
   );
 
   return (
@@ -73,15 +85,15 @@ export default async function Home() {
           case "what_we_build":
             return <WhatWeBuild key={section.key} section={section} index={index} projects={featuredProjects} />;
           case "problem_lab":
-            return <ProblemLabIntro key={section.key} section={section} index={index} />;
+            return <ProblemLabIntro key={section.key} section={section} index={index} problems={problems} />;
           case "problem_of_the_week":
-            return <ProblemOfTheWeek key={section.key} section={section} index={index} problem={featured} />;
+            return <ProblemOfTheWeek key={section.key} section={section} index={index} problem={featured!} />;
           case "events":
             return <EventsSection key={section.key} section={section} index={index} events={nextEvents} />;
           case "difficulty":
             return <DifficultySystem key={section.key} section={section} index={index} />;
           case "ideas":
-            return <IdeasTeaser key={section.key} section={section} index={index} />;
+            return <IdeasTeaser key={section.key} section={section} index={index} ideas={ideas} />;
           case "contribution":
             return <ContributionPitch key={section.key} section={section} index={index} />;
           case "recruit":

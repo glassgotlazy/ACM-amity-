@@ -53,6 +53,14 @@ export function explain(error: unknown): string {
       return "Some fields need attention.";
     case "conflict":
       return Object.values(error.errors)[0] ?? "That clashes with an existing item.";
+    case "stale":
+      return "Someone else changed this after you opened it. Nothing was overwritten.";
+    case "content_not_loaded":
+      return "Load the remaining content from the Dashboard first.";
+    case "forbidden":
+      return "Your account is not allowed to do that.";
+    case "cross_site_request":
+      return "The request was blocked because it did not come from this site. Reload the page.";
     case "not_found":
       return "That item no longer exists. It may have been deleted in another tab.";
     default:

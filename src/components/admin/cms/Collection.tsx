@@ -51,7 +51,12 @@ export function Collection(props: CollectionProps) {
   const [rows, setRows] = useState<Row[] | null>(null);
   const [loadError, setLoadError] = useState<unknown>(null);
   const [query, setQuery] = useState("");
-  const [editing, setEditing] = useState<{ id: string | null; draft: Draft } | null>(null);
+  /**
+   * `version` is the row's updated_at when the editor opened; saving sends it
+   * back so the server can refuse a stale write. `stale` holds the newer row
+   * when that happens, so the admin chooses what to keep.
+   */
+  const [editing, setEditing] = useState<{ id: string | null; draft: Draft; version?: string; stale?: Row } | null>(null);
   const [errors, setErrors] = useState<Errors>({});
   const [saving, setSaving] = useState(false);
   const [doomed, setDoomed] = useState<Row | null>(null);
@@ -80,12 +85,17 @@ export function Collection(props: CollectionProps) {
     return q && searchText ? rows.filter((r) => searchText(r).toLowerCase().includes(q)) : rows;
   }, [rows, query, searchText]);
 
-  async function save() {
+  const open = (row: Row) => {
+    setErrors({});
+    setEditing({ id: row.id, draft: toDraft(row), version: typeof row.updated_at === "string" ? row.updated_at : undefined });
+  };
+
+  async function save(overwrite = false) {
     if (!editing) return;
     setSaving(true);
     setErrors({});
     try {
-      const body = fromDraft(editing.draft);
+      const body = { ...fromDraft(editing.draft), _expected_updated_at: overwrite ? undefined : editing.version };
       if (editing.id) await api(`/api/admin/cms/${resource}/${editing.id}`, { method: "PUT", json: body });
       else await api(`/api/admin/cms/${resource}`, { method: "POST", json: body });
       toast("ok", editing.id ? `Changes to the ${noun} are live.` : `New ${noun} created.`);
@@ -95,6 +105,9 @@ export function Collection(props: CollectionProps) {
       cms.refresh();
     } catch (e) {
       if (e instanceof ApiError && (e.code === "invalid" || e.code === "conflict")) setErrors(e.errors);
+      if (e instanceof ApiError && e.code === "stale") {
+        setEditing((ed) => (ed ? { ...ed, stale: e.extra.current as Row } : ed));
+      }
       toast("error", explain(e));
     } finally {
       setSaving(false);
@@ -106,10 +119,15 @@ export function Collection(props: CollectionProps) {
     setBusyRow(row.id);
     try {
       const draft = { ...toDraft(row), [toggle.key]: !row[toggle.key] };
-      await api(`/api/admin/cms/${resource}/${row.id}`, { method: "PUT", json: fromDraft(draft) });
-      setRows((rs) => rs?.map((r) => (r.id === row.id ? { ...r, [toggle.key]: !row[toggle.key] } : r)) ?? null);
+      const { row: saved } = await api<{ row: Row }>(`/api/admin/cms/${resource}/${row.id}`, {
+        method: "PUT",
+        json: { ...fromDraft(draft), _expected_updated_at: row.updated_at },
+      });
+      // Keep the returned row (with its new updated_at) so the next edit is not seen as stale.
+      setRows((rs) => rs?.map((r) => (r.id === row.id ? { ...r, ...saved } : r)) ?? null);
       toast("ok", `${label(row)} is now ${!row[toggle.key] ? toggle.on.toLowerCase() : toggle.off.toLowerCase()}.`);
     } catch (e) {
+      if (e instanceof ApiError && e.code === "stale") load();
       toast("error", e instanceof ApiError && e.code === "invalid" ? "Open the item and fix its fields first." : explain(e));
     } finally {
       setBusyRow(null);
@@ -242,15 +260,7 @@ export function Collection(props: CollectionProps) {
                       </td>
                     ) : null}
                     <td className="whitespace-nowrap px-3 py-2 text-right">
-                      <Btn
-                        size="sm"
-                        tone="ghost"
-                        onClick={() => {
-                          setErrors({});
-                          setEditing({ id: row.id, draft: toDraft(row) });
-                        }}
-                        aria-label={`Edit ${label(row)}`}
-                      >
+                      <Btn size="sm" tone="ghost" onClick={() => open(row)} aria-label={`Edit ${label(row)}`}>
                         Edit
                       </Btn>
                       <Btn
@@ -283,12 +293,34 @@ export function Collection(props: CollectionProps) {
               </span>
             ) : null}
             <Btn onClick={() => setEditing(null)}>Cancel</Btn>
-            <Btn tone="primary" onClick={save} disabled={saving}>
+            <Btn tone="primary" onClick={() => save()} disabled={saving}>
               {saving ? "Saving…" : editing?.id ? "Save changes" : `Create ${noun}`}
             </Btn>
           </>
         }
       >
+        {editing?.stale ? (
+          <div role="alert" className="mb-6 border border-acm/60 bg-acm-wash px-4 py-3 text-sm text-ink-muted">
+            <p className="font-medium text-ink">Someone else saved this {noun} after you opened it.</p>
+            <p className="mt-1">Saving now would overwrite their changes. Choose which version to keep.</p>
+            <div className="mt-3 flex flex-wrap gap-2">
+              <Btn
+                size="sm"
+                onClick={() => {
+                  const current = editing.stale!;
+                  setErrors({});
+                  setEditing({ id: current.id, draft: toDraft(current), version: current.updated_at as string | undefined });
+                  load();
+                }}
+              >
+                Load their version
+              </Btn>
+              <Btn size="sm" tone="danger" onClick={() => save(true)} disabled={saving}>
+                Keep mine and overwrite
+              </Btn>
+            </div>
+          </div>
+        ) : null}
         {editing ? (
           <form
             onSubmit={(e) => {

@@ -1,21 +1,11 @@
-import type { Domain, Role } from "./taxonomy";
+import type { Team } from "../content-types";
 
-export type Team = {
-  slug: string;
-  name: string;
-  /** A sentence that says what the team is actually for. */
-  focus: string;
-  charter: string;
-  domains: Domain[];
-  works: string[];
-  projects: { name: string; slug: string }[];
-  openPositions: { role: Role; level: string; note: string }[];
-  meets: string;
-  /** Demo figure — replace with a real roster when membership data exists. */
-  size: number;
-};
-
-export const teams: Team[] = [
+/**
+ * Built-in content, used only until "Load remaining content" copies it into
+ * the database (see supabase/admin.sql). After that the database is the only
+ * source and this file is never read by the public site.
+ */
+export const defaultWorkingTeams: Team[] = [
   {
     slug: "ai",
     name: "AI Team",
@@ -128,7 +118,3 @@ export const teams: Team[] = [
     size: 4,
   },
 ];
-
-export function teamBySlug(slug: string) {
-  return teams.find((t) => t.slug === slug);
-}

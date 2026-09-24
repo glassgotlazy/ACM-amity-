@@ -1,38 +1,17 @@
-import type { Domain, LevelId, OriginId, ProblemCategory, Role } from "./taxonomy";
+import type { Problem } from "../content-types";
 
-export type Problem = {
-  slug: string;
-  index: number;
-  title: string;
-  /** The one-line framing used on cards and in the ticker. */
-  hook: string;
-  /** Always a "How might we…" question. */
-  question: string;
-  origin: OriginId;
-  category: ProblemCategory;
-  domains: Domain[];
-  level: LevelId;
-  /** Where students currently run into it. */
-  context: string[];
-  whyItMatters: string[];
-  directions: { title: string; detail: string }[];
-  technologies: string[];
-  potentialProject: { name: string; slug?: string; summary: string };
-  skills: string[];
-  openRoles: Role[];
-  team: { role: Role; count: number; note: string }[];
-  researchQuestions: string[];
-  nextSteps: string[];
-  featured?: boolean;
-};
-
+/**
+ * Built-in content, used only until "Load remaining content" copies it into
+ * the database (see supabase/admin.sql). After that the database is the only
+ * source and this file is never read by the public site.
+ */
 /**
  * These are problem statements written by ACM students from things they have
  * noticed on campus. They are exploration material — none of them has been
  * commissioned, confirmed or endorsed by Amity University, and none should be
  * described as an official university brief.
  */
-export const problems: Problem[] = [
+export const defaultProblems: Problem[] = [
   {
     slug: "university-knowledge",
     index: 1,
@@ -390,22 +369,3 @@ export const problems: Problem[] = [
     ],
   },
 ];
-
-export function problemBySlug(slug: string) {
-  return problems.find((p) => p.slug === slug);
-}
-
-/**
- * Rotation for the homepage feature. It advances on its own each week so the
- * section is never stale; a backend can replace it with a real editorial pick
- * later.
- *
- * Call this from a server component only. The result is baked into the
- * rendered HTML, so the client never recomputes it and there is no hydration
- * mismatch at a week boundary — and the page that renders it must set
- * `revalidate`, or the pick freezes at build time.
- */
-export function problemOfTheWeek(): Problem {
-  const week = Math.floor(Date.now() / 6048e5);
-  return problems[week % problems.length] ?? problems[0];
-}

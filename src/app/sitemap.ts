@@ -1,8 +1,6 @@
 import type { MetadataRoute } from "next";
 import { SITE_URL } from "@/lib/site";
-import { getEvents, getProjects } from "@/lib/cms/read";
-import { problems } from "@/data/problems";
-import { researchProjects } from "@/data/research";
+import { getEvents, getProblems, getProjects, getResearch } from "@/lib/cms/read";
 
 /**
  * Every public route. Derived from the same data the pages render, so a new
@@ -13,7 +11,7 @@ import { researchProjects } from "@/data/research";
  */
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const now = new Date();
-  const [projects, events] = await Promise.all([getProjects(), getEvents()]);
+  const [projects, events, problems, researchProjects] = await Promise.all([getProjects(), getEvents(), getProblems(), getResearch()]);
 
   const staticRoutes: { path: string; priority: number; frequency: MetadataRoute.Sitemap[number]["changeFrequency"] }[] = [
     { path: "", priority: 1, frequency: "weekly" },

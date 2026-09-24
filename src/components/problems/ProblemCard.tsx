@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { motion, useReducedMotion } from "framer-motion";
 import { useRef, useState } from "react";
-import type { Problem } from "@/data/problems";
+import type { Problem } from "@/lib/cms/content-types";
 import { DifficultyMeter, OriginTag, Tag } from "@/components/ui/Badges";
 import { pad } from "@/lib/utils";
 

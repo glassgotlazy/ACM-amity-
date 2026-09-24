@@ -2,6 +2,7 @@ import { unstable_cache } from "next/cache";
 import { cache } from "react";
 import { isStorageConfigured, rest, StorageError } from "@/lib/supabase";
 import * as D from "./defaults";
+import { CONTENT, defaultsOf, type ContentKey, type ContentOf } from "./content";
 import {
   SECTION_KEYS,
   brandCaption,
@@ -9,6 +10,7 @@ import {
   type Announcement,
   type EventItem,
   type NavItem,
+  type PageKey,
   type Project,
   type ProjectMemberRow,
   type ProjectRow,
@@ -43,6 +45,11 @@ export const CMS_TAGS = {
   events: "cms:events",
   projects: "cms:projects",
   announcements: "cms:announcements",
+  problems: "cms:problems",
+  ideas: "cms:ideas",
+  research: "cms:research",
+  workteams: "cms:workteams",
+  activity: "cms:activity",
 } as const;
 export type CmsTag = (typeof CMS_TAGS)[keyof typeof CMS_TAGS];
 export const ALL_CMS_TAGS = Object.values(CMS_TAGS);
@@ -120,6 +127,13 @@ export async function getSection(key: SectionKey): Promise<Section> {
   return (await getSections()).find((s) => s.key === key)!;
 }
 
+/** A public page's header, edited under Pages in the admin. */
+export const getPage = cache(async (key: PageKey): Promise<Section> => {
+  const rows = (await isInitialised()) ? ((await sectionRows()) ?? []) : [];
+  const base = D.defaultPages.find((p) => p.key === key)!;
+  return { ...base, ...(rows.find((r) => r.key === key) ?? {}), enabled: true };
+});
+
 const teamRows = cached("cms-team", CMS_TAGS.team, async () => {
   const [roles, members] = await Promise.all([
     select<TeamRole>("roles?select=id,name,sort&order=sort.asc"),
@@ -185,4 +199,57 @@ export const getAnnouncements = cache(async (): Promise<Announcement[]> => {
 export async function ogBrand() {
   const s = await getSettings();
   return { short: s.short_name, caption: brandCaption(s) };
+}
+
+// ---------------------------------------------------------------------------
+// Long-form content: problems, ideas, research, working teams, activity.
+// These are switched over one collection at a time: until a collection has
+// been loaded into its table (a row in content_seeds), the built-in content
+// is served — so running admin.sql never empties a page.
+// ---------------------------------------------------------------------------
+
+function contentRows(key: ContentKey) {
+  const def = CONTENT[key];
+  return cached(`cms-content-${key}`, CMS_TAGS[key], async () => {
+    const [seed, rows] = await Promise.all([
+      select<{ entity: string }>(`content_seeds?select=entity&entity=eq.${key}`),
+      select<Record<string, unknown>>(`${def.table}?select=*&published=eq.true&order=sort.asc&limit=500`),
+    ]);
+    return seed?.length && rows ? rows : null;
+  });
+}
+
+const contentCache = Object.fromEntries(
+  (Object.keys(CONTENT) as ContentKey[]).map((k) => [k, contentRows(k)]),
+) as Record<ContentKey, () => Promise<Record<string, unknown>[] | null>>;
+
+async function content<K extends ContentKey>(key: K): Promise<ContentOf<K>[]> {
+  const rows = await contentCache[key]();
+  if (!rows) return defaultsOf(key);
+  const def = CONTENT[key] as unknown as { fromRow: (r: Record<string, unknown>, i: number) => ContentOf<K> };
+  return rows.map((r, i) => def.fromRow(r, i));
+}
+
+export const getProblems = cache(() => content("problems"));
+export const getIdeas = cache(() => content("ideas"));
+export const getResearch = cache(() => content("research"));
+export const getWorkingTeams = cache(() => content("workteams"));
+export const getActivity = cache(() => content("activity"));
+
+export async function getProblem(slug: string) {
+  return (await getProblems()).find((p) => p.slug === slug);
+}
+
+export async function getResearchProject(slug: string) {
+  return (await getResearch()).find((r) => r.slug === slug);
+}
+
+/**
+ * The homepage's weekly pick. It advances on its own each week; the page
+ * that renders it revalidates daily, so the pick lands on time.
+ */
+export async function problemOfTheWeek() {
+  const problems = await getProblems();
+  const week = Math.floor(Date.now() / 6048e5);
+  return problems.length ? problems[week % problems.length] : undefined;
 }

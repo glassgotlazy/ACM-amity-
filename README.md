@@ -99,7 +99,17 @@ pages, so a change is live on the next request — no redeploy.
 # One-time setup, after the submissions queue above works:
 # 1. Supabase SQL editor: run supabase/cms.sql once (additive; never touches submissions).
 # 2. /admin → Dashboard → "Load current website content".
+# 3. Supabase SQL editor: run supabase/admin.sql once (audit log, edit tracking,
+#    and tables for problems, ideas, research, working teams, activity).
+# 4. /admin → Dashboard → "Load remaining content".
 ```
+
+After step 4 every piece of public content is edited in the admin: site
+settings, navigation, homepage sections, every page header (Pages), team and
+roles, working teams, projects, problem statements, project ideas, research,
+events, announcements, the activity log and media. Only the shared
+vocabulary in `src/data/taxonomy.ts` (domains, difficulty levels, statuses,
+skill roles) and the demo contribution profile stay in code.
 
 Until step 2 the public site renders its built-in defaults
 (`src/lib/cms/defaults/`), so deploying this code changes nothing for
@@ -127,8 +137,61 @@ database is the only source and an empty table means "show nothing", never
 - **Submissions stay separate.** A project proposal in the queue does not
   become a project; publishing one means creating it under Projects.
 
-Problem statements, working teams, research and the activity log still live
-in `src/data/` and appear read-only under Catalogue.
+Each long-form collection switches over on its own: until "Load remaining
+content" has copied it into its table, the site keeps serving the built-in
+copy, so running `admin.sql` never empties a page.
+
+### The submissions queue
+
+`/admin/submissions` reads the existing `submissions` table directly —
+there is no second store. Search (name, email, project), filters (type,
+status, category, date range), sorting and paging all run in Postgres, 25
+rows at a time. Opening a row fetches it fresh and shows every stored field,
+grouped; anything the grouping does not know about appears under "Other
+details". Status changes and notes are saved through the admin API and the
+table only updates once the database confirms. CSV export respects the
+current filters (formula-like cells are neutralised for Excel/Sheets), and a
+project proposal can be turned into an unpublished draft project.
+
+**Concurrent edits.** Every edit carries the version (`updated_at`) the
+admin loaded. If someone else saved in between, the write is refused with
+the current record and the admin chooses: load their version, or overwrite
+deliberately. This covers submissions, projects and every other CMS item,
+site settings, homepage sections and page headers.
+
+### Admin security
+
+- **Authentication.** One shared password (`ADMIN_PASSWORD`). Sign-in issues
+  an HttpOnly, SameSite=Lax cookie holding `expiry.actor.signature`
+  (HMAC-SHA256, 12 hours). The typed name only labels the audit log. Changing
+  the password signs everyone out.
+- **Authorisation on the server, per route.** Middleware guards `/admin`
+  pages; every `/api/admin/*` route independently verifies the signed
+  session and the permission it needs (`src/lib/admin-guard.ts`,
+  `src/lib/admin-permissions.ts`). Nothing sent by the browser — hidden
+  buttons, local storage, URL parameters — is trusted. There is one role
+  today; adding editor-style roles means adding them to the permission map,
+  not changing routes.
+- **Cross-site requests.** Writes whose `Origin`/`Sec-Fetch-Site` is another
+  site are refused, on top of the SameSite cookie.
+- **Sign-in rate limit.** Eight failed attempts from one address in 15
+  minutes pause sign-in from that address (counted in the audit log, so it
+  works across serverless instances; IPs are stored only as salted hashes).
+- **Audit log.** Sign-ins (and failures), sign-outs, status changes and every
+  create/update/delete/upload/export are recorded with who, what and when —
+  never passwords, tokens or form contents. See `/admin/audit`.
+- **Database.** Every table has RLS enabled, no policies, and all grants
+  revoked from `anon`/`authenticated`: the public Supabase key can read and
+  write nothing. The site uses the service-role key on the server only; it is
+  never in a `NEXT_PUBLIC_` variable, a bundle, a response or a log line.
+  `admin.sql` ends with a query that lists every table's RLS state.
+- **Storage.** The `cms-media` bucket is public-read (images on the site) with
+  no write policies; uploads and deletes go only through the admin API,
+  which checks the file's real type, size and pixel dimensions and names the
+  file itself. SVG is not accepted.
+- **Headers.** `X-Frame-Options`, `X-Content-Type-Options`,
+  `Referrer-Policy` and `Permissions-Policy` on every response; admin pages
+  and APIs are `no-store` and `noindex`.
 
 **Leaving `FORM_ENDPOINT` unset is a supported state, not a broken one.** The
 forms still validate, animate and confirm, but nothing is transmitted and every
@@ -173,6 +236,8 @@ not merely that it is hidden in the interface.
 | `/api/admin/session` | Admin sign-in / sign-out (shared password, signed cookie) |
 | `/api/admin/submissions` | Queue list and per-row state/note updates; cookie-checked |
 | `/api/admin/cms/*` | CMS reads and writes, validated server-side; cookie-checked |
+| `/api/admin/submissions/*` | Queue search, detail, status/note, delete, CSV export, proposal → draft project |
+| `/api/admin/stats` · `/api/admin/audit` | Dashboard counts and the audit log |
 | `/api/admin/media` | Media library upload, list and delete; cookie-checked |
 
 ---
@@ -187,14 +252,14 @@ src/
     site/       chrome — Navbar, Footer, Cursor, ScrollProgress, PageTransition
     forms/      Field primitives, ApplyForm, ProblemForm, JoinFlow
     home/ problems/ projects/ research/ activity/ profile/ discover/ ideas/ admin/
-  data/         content not yet in the CMS (problems, ideas, research,
-                working teams, activity) and the shared taxonomy
-  lib/cms/      CMS types, read layer, validation, writes, media, defaults
+  data/         the shared taxonomy and the demo contribution profile
+  lib/cms/      CMS types, read layer, validation, writes, media, and the
+                built-in defaults served until content is loaded
   lib/          motion vocabulary and small helpers
 ```
 
-**Data is fully separated from presentation.** Pages read CMS content through
-`src/lib/cms/read.ts` and everything else from `src/data/`. `src/data/taxonomy.ts` holds the shared vocabulary — domains,
+**Data is fully separated from presentation.** Pages read content through
+`src/lib/cms/read.ts`. `src/data/taxonomy.ts` holds the shared vocabulary — domains,
 difficulty levels, statuses, roles, problem provenance — and every badge, filter
 and label on the site derives from it, so the taxonomy cannot drift between
 pages.
@@ -307,9 +372,8 @@ reduced-motion support.
 
 ## Replacing the demo data
 
-Projects, team, events, navigation and site text are already in the CMS.
-What remains in `src/data/` exports a typed array and its accessors; moving one
-into the CMS follows the same pattern — a table in `supabase/cms.sql`, a
-cached getter in `src/lib/cms/read.ts`, a validator, and a `Collection` screen
-in the admin. The contribution profile needs authentication and repository
-activity first.
+All public content is in the CMS. Adding a new kind of content follows the
+same pattern: a table (in a new additive `.sql` file), a cached getter in
+`src/lib/cms/read.ts`, a validator in `src/lib/cms/validate.ts`, a resource
+entry in `src/lib/cms/write.ts`, and a `Collection` screen in the admin. The
+contribution profile needs authentication and repository activity first.

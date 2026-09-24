@@ -1,18 +1,17 @@
 import { renderOgImage, OG_SIZE, OG_CONTENT_TYPE } from "@/lib/og";
-import { problems, problemBySlug } from "@/data/problems";
+import { getProblem, getProblems, ogBrand } from "@/lib/cms/read";
 import { ORIGINS } from "@/data/taxonomy";
-import { ogBrand } from "@/lib/cms/read";
 
 export const alt = "An ACM @ Amity problem statement";
 export const size = OG_SIZE;
 export const contentType = OG_CONTENT_TYPE;
 
-export function generateStaticParams() {
-  return problems.map((p) => ({ slug: p.slug }));
+export async function generateStaticParams() {
+  return (await getProblems()).map((p) => ({ slug: p.slug }));
 }
 
 export default async function Image({ params }: { params: { slug: string } }) {
-  const problem = problemBySlug(params.slug);
+  const problem = await getProblem(params.slug);
 
   return renderOgImage(
     {

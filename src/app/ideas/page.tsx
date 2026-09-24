@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import { PageHeader } from "@/components/ui/SectionHeading";
+import { CmsTitle } from "@/components/ui/Lines";
 import { IdeaIndex } from "@/components/ideas/IdeaIndex";
-import { ideas } from "@/data/ideas";
 import { RecruitCTA } from "@/components/home/RecruitCTA";
-import { getSection } from "@/lib/cms/read";
+import { getIdeas, getPage, getSection } from "@/lib/cms/read";
 
 export const metadata: Metadata = {
   title: "Project Ideas",
@@ -12,20 +12,15 @@ export const metadata: Metadata = {
 };
 
 export default async function IdeasPage() {
+  const [ideas, page] = await Promise.all([getIdeas(), getPage("page_ideas")]);
   const recruit = await getSection("recruit");
   return (
     <>
       <PageHeader
         index="06"
-        eyebrow="Project ideas"
-        title={
-          <>
-            DON’T HAVE AN IDEA?
-            <br />
-            WE’VE GOT PROBLEMS.
-          </>
-        }
-        lede="Not knowing what to build is the most common reason people never start. Every idea below is unclaimed and has no team — which means the first person in gets to decide what it becomes."
+        eyebrow={page.eyebrow}
+        title={<CmsTitle text={page.title} />}
+        lede={page.body || undefined}
         meta={[
           { label: "Ideas", value: String(ideas.length) },
           { label: "Beginner", value: String(ideas.filter((i) => i.band === "Beginner").length) },
@@ -33,7 +28,7 @@ export default async function IdeasPage() {
           { label: "Claimed", value: "0" },
         ]}
       />
-      <IdeaIndex />
+      <IdeaIndex ideas={ideas} />
       <RecruitCTA section={recruit} />
     </>
   );

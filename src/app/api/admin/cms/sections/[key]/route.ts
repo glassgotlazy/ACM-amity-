@@ -5,5 +5,5 @@ type Params = { params: Promise<{ key: string }> };
 
 export async function PUT(req: Request, { params }: Params) {
   const { key } = await params;
-  return handle(async () => ({ row: await saveSection(key, await json(req)) }));
+  return handle(req, "content:write", async (s) => ({ row: await saveSection(key, await json(req), s.actor) }));
 }

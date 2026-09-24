@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { PageHeader } from "@/components/ui/SectionHeading";
-import { teams } from "@/data/teams";
-import { getTeam } from "@/lib/cms/read";
+import { CmsTitle } from "@/components/ui/Lines";
+import { getPage, getTeam, getWorkingTeams } from "@/lib/cms/read";
 import type { PublicMember } from "@/lib/cms/types";
 import { Reveal } from "@/components/ui/Reveal";
 import { Tag } from "@/components/ui/Badges";
@@ -15,22 +15,16 @@ export const metadata: Metadata = {
 };
 
 export default async function TeamsPage() {
-  const coreTeam = await getTeam();
+  const [coreTeam, teams, page, core] = await Promise.all([getTeam(), getWorkingTeams(), getPage("page_teams"), getPage("page_teams_core")]);
   const openCount = teams.reduce((n, t) => n + t.openPositions.length, 0);
 
   return (
     <>
       <PageHeader
         index="04"
-        eyebrow="Teams"
-        title={
-          <>
-            FIND PEOPLE WHOSE SKILLS
-            <br />
-            COVER WHAT YOURS DON’T.
-          </>
-        }
-        lede="Teams are how a problem becomes work that actually ships. You join one because of what it works on, not because of what it is called — and most projects need more than one."
+        eyebrow={page.eyebrow}
+        title={<CmsTitle text={page.title} />}
+        lede={page.body || undefined}
         meta={[
           { label: "Teams", value: String(teams.length) },
           { label: "Open positions", value: String(openCount) },
@@ -44,18 +38,17 @@ export default async function TeamsPage() {
         <div className="shell py-20">
           <Reveal className="flex items-baseline gap-4">
             <span className="meta text-acm-bright">00 /</span>
-            <span className="meta">Chapter leadership</span>
+            <span className="meta">{core.eyebrow}</span>
           </Reveal>
 
           <div className="mt-10 grid gap-12 lg:grid-cols-[1fr_1.7fr] lg:gap-20">
             <Reveal delay={0.05}>
               <h2 id="core-team" className="text-display-sm text-balance">
-                The core team.
+                <CmsTitle text={core.title} />
               </h2>
-              <p className="mt-6 max-w-prose text-[0.9375rem] leading-relaxed text-ink-muted text-pretty">
-                Office bearers for the current term. They set direction and unblock work — the building itself happens
-                in the teams below.
-              </p>
+              {core.body ? (
+                <p className="mt-6 max-w-prose text-[0.9375rem] leading-relaxed text-ink-muted text-pretty">{core.body}</p>
+              ) : null}
             </Reveal>
 
             <div className="grid gap-px bg-line sm:grid-cols-2">

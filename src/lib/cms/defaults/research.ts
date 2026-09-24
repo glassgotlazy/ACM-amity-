@@ -1,30 +1,11 @@
-import type { StatusId } from "./taxonomy";
+import type { ResearchProject } from "../content-types";
 
-export type ResearchStage = {
-  id: string;
-  name: string;
-  state: "done" | "active" | "open";
-  detail: string;
-};
-
-export type ResearchProject = {
-  slug: string;
-  title: string;
-  status: StatusId;
-  field: string;
-  question: string;
-  background: string[];
-  /** Reading list themes — deliberately not fabricated citations. */
-  literature: { theme: string; note: string }[];
-  exploration: string[];
-  experiments: { title: string; state: "running" | "planned" | "blocked"; note: string }[];
-  analysis: string | null;
-  paper: string | null;
-  stages: ResearchStage[];
-  openTo: string[];
-};
-
-export const researchProjects: ResearchProject[] = [
+/**
+ * Built-in content, used only until "Load remaining content" copies it into
+ * the database (see supabase/admin.sql). After that the database is the only
+ * source and this file is never read by the public site.
+ */
+export const defaultResearch: ResearchProject[] = [
   {
     slug: "quantum-handshake",
     title: "Quantum Handshake",
@@ -109,7 +90,3 @@ export const researchProjects: ResearchProject[] = [
     ],
   },
 ];
-
-export function researchBySlug(slug: string) {
-  return researchProjects.find((r) => r.slug === slug);
-}

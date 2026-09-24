@@ -3,7 +3,7 @@
 import { AnimatePresence, LayoutGroup, motion, useReducedMotion } from "framer-motion";
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { ideas, BANDS } from "@/data/ideas";
+import { BANDS, type Idea } from "@/lib/cms/content-types";
 import { DOMAINS } from "@/data/taxonomy";
 import { FilterBar } from "@/components/ui/FilterBar";
 import { DifficultyMeter, Tag } from "@/components/ui/Badges";
@@ -11,7 +11,7 @@ import { DifficultyMeter, Tag } from "@/components/ui/Badges";
 const BAND_FILTERS = ["All", ...BANDS] as const;
 const DOMAIN_FILTERS = ["All domains", ...DOMAINS] as const;
 
-export function IdeaIndex() {
+export function IdeaIndex({ ideas }: { ideas: Idea[] }) {
   const [band, setBand] = useState<string>("All");
   const [domain, setDomain] = useState<string>("All domains");
   const reduce = useReducedMotion();
@@ -20,7 +20,7 @@ export function IdeaIndex() {
     const map: Record<string, number> = { All: ideas.length };
     for (const b of BANDS) map[b] = ideas.filter((i) => i.band === b).length;
     return map;
-  }, []);
+  }, [ideas]);
 
   const shown = useMemo(
     () =>
@@ -29,7 +29,7 @@ export function IdeaIndex() {
           (band === "All" || idea.band === band) &&
           (domain === "All domains" || idea.domains.includes(domain as never)),
       ),
-    [band, domain],
+    [ideas, band, domain],
   );
 
   return (

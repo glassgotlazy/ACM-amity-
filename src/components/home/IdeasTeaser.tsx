@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { motion, useReducedMotion } from "framer-motion";
-import { ideas } from "@/data/ideas";
+import type { Idea } from "@/lib/cms/content-types";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { ArrowLink } from "@/components/ui/ArrowLink";
 import { DifficultyMeter } from "@/components/ui/Badges";
@@ -14,7 +14,7 @@ import type { Section } from "@/lib/cms/types";
  * A dense index rather than a card grid — the point of this section is that
  * there are many starting points, which a list conveys and tiles do not.
  */
-export function IdeasTeaser({ section, index }: { section: Section; index: string }) {
+export function IdeasTeaser({ section, index, ideas }: { section: Section; index: string; ideas: Idea[] }) {
   const reduce = useReducedMotion();
   const shown = ideas.slice(0, 6);
 

@@ -11,31 +11,47 @@ import {
   type ReactNode,
 } from "react";
 import { cn } from "@/lib/utils";
-import { api, explain } from "./api";
+import { api, ApiError, explain } from "./api";
 
 /* -------------------------------------------------------------------------- */
 /* Shared admin state: CMS setup status and valid link targets                */
 /* -------------------------------------------------------------------------- */
 
 type CmsStatus = "loading" | "missing" | "empty" | "ready" | "error";
+export type ContentKey = "problems" | "ideas" | "research" | "workteams" | "activity";
+type ContentState = Record<ContentKey, "missing" | "empty" | "ready">;
 
-const CmsContext = createContext<{ status: CmsStatus; routes: string[]; refresh: () => void }>({
+type CmsState = {
+  status: CmsStatus;
+  /** Per long-form collection: tables created (admin.sql) and content loaded. */
+  content: ContentState | null;
+  /** Whether the audit log table exists. */
+  audit: boolean;
+  actor: string;
+  routes: string[];
+  refresh: () => void;
+};
+
+const CmsContext = createContext<CmsState>({
   status: "loading",
+  content: null,
+  audit: false,
+  actor: "",
   routes: [],
   refresh: () => {},
 });
 
 export function CmsProvider({ children }: { children: ReactNode }) {
-  const [status, setStatus] = useState<CmsStatus>("loading");
-  const [routes, setRoutes] = useState<string[]>([]);
+  const [state, setState] = useState<Omit<CmsState, "refresh">>({ status: "loading", content: null, audit: false, actor: "", routes: [] });
 
   const refresh = useCallback(async () => {
     try {
-      const body = await api<{ status: CmsStatus; routes: string[] }>("/api/admin/cms/status");
-      setStatus(body.status);
-      setRoutes(body.routes);
-    } catch {
-      setStatus("error");
+      const body = await api<Omit<CmsState, "refresh">>("/api/admin/cms/status");
+      setState(body);
+    } catch (e) {
+      // An ended session sends the admin back to sign in rather than showing a broken page.
+      if (e instanceof ApiError && e.status === 401) window.location.assign("/admin/login?expired=1");
+      else setState((s) => ({ ...s, status: "error" }));
     }
   }, []);
 
@@ -43,7 +59,7 @@ export function CmsProvider({ children }: { children: ReactNode }) {
     refresh();
   }, [refresh]);
 
-  return <CmsContext.Provider value={{ status, routes, refresh }}>{children}</CmsContext.Provider>;
+  return <CmsContext.Provider value={{ ...state, refresh }}>{children}</CmsContext.Provider>;
 }
 
 export const useCms = () => useContext(CmsContext);
@@ -98,6 +114,7 @@ export function AdminPage({
   description,
   actions,
   gate = true,
+  content,
   children,
 }: {
   title: string;
@@ -105,6 +122,8 @@ export function AdminPage({
   actions?: ReactNode;
   /** CMS editors wait for setup; the dashboard and queues do not. */
   gate?: boolean;
+  /** Long-form editors also need their collection loaded. */
+  content?: ContentKey;
   children: ReactNode;
 }) {
   return (
@@ -117,15 +136,29 @@ export function AdminPage({
         {actions ? <div className="flex shrink-0 flex-wrap gap-2">{actions}</div> : null}
       </div>
       <div className="mt-8">
-        {gate ? <SetupGate>{children}</SetupGate> : children}
+        {gate ? <SetupGate content={content}>{children}</SetupGate> : children}
       </div>
     </div>
   );
 }
 
 /** Editing needs the tables and the initial content; say so instead of failing on save. */
-function SetupGate({ children }: { children: ReactNode }) {
-  const { status } = useCms();
+function SetupGate({ children, content: key }: { children: ReactNode; content?: ContentKey }) {
+  const { status, content } = useCms();
+  if (status === "ready" && key && content && content[key] !== "ready") {
+    return (
+      <Notice tone="warn" title={content[key] === "missing" ? "Run supabase/admin.sql first" : "Content not loaded yet"}>
+        {content[key] === "missing" ? (
+          <>This section needs the tables from <code className="font-mono text-ink">supabase/admin.sql</code>. Run it in the Supabase SQL editor, then reload.</>
+        ) : (
+          <>
+            Open the <a href="/admin" className="text-acm-bright underline underline-offset-4">Dashboard</a> and choose “Load
+            remaining content”. Until then the site shows its built-in copy.
+          </>
+        )}
+      </Notice>
+    );
+  }
   if (status === "ready") return <>{children}</>;
   if (status === "loading") return <LoadingRows />;
   return (
@@ -344,7 +377,7 @@ export function Drawer({
           <h2 id={id} className="text-lg font-semibold tracking-[-0.02em]">
             {title}
           </h2>
-          <Btn tone="ghost" size="sm" onClick={onClose} aria-label="Close">
+          <Btn tone="ghost" size="sm" onClick={onClose} aria-label="Close panel">
             ✕
           </Btn>
         </div>
@@ -671,5 +704,134 @@ export function ListField({
       ) : null}
       {error ? <p className="mt-1.5 text-xs font-medium text-acm-bright">{error}</p> : null}
     </fieldset>
+  );
+}
+
+/** A set of checkboxes over a fixed vocabulary (domains, roles…). */
+export function Checkboxes({
+  label,
+  options,
+  value,
+  onChange,
+  error,
+}: {
+  label: string;
+  options: readonly string[];
+  value: string[];
+  onChange: (v: string[]) => void;
+  error?: string;
+}) {
+  return (
+    <fieldset>
+      <legend className="font-mono text-label uppercase text-ink-muted">{label}</legend>
+      <div className="mt-2 flex flex-wrap gap-2">
+        {options.map((o) => {
+          const on = value.includes(o);
+          return (
+            <label
+              key={o}
+              className={cn(
+                "flex cursor-pointer items-center gap-2 border px-3 py-1.5 text-sm",
+                on ? "border-acm text-ink" : "border-line text-ink-muted",
+              )}
+            >
+              <input
+                type="checkbox"
+                checked={on}
+                onChange={() => onChange(on ? value.filter((x) => x !== o) : [...value, o])}
+                className="accent-[rgb(var(--acm))]"
+              />
+              {o}
+            </label>
+          );
+        })}
+      </div>
+      {error ? <p className="mt-1.5 text-xs font-medium text-acm-bright">{error}</p> : null}
+    </fieldset>
+  );
+}
+
+type Obj = Record<string, unknown>;
+
+/**
+ * An ordered list of small records (milestones, directions, open roles…)
+ * with add, move and remove. `render` draws one row's inputs.
+ */
+export function RowsEditor({
+  label,
+  rows,
+  onChange,
+  blank,
+  render,
+  error,
+  max = 20,
+}: {
+  label: string;
+  rows: Obj[];
+  onChange: (rows: Obj[]) => void;
+  blank: () => Obj;
+  render: (row: Obj, set: (p: Obj) => void, i: number) => ReactNode;
+  error?: string;
+  max?: number;
+}) {
+  const move = (i: number, d: -1 | 1) => {
+    const next = [...rows];
+    [next[i], next[i + d]] = [next[i + d], next[i]];
+    onChange(next);
+  };
+  return (
+    <fieldset>
+      <legend className="font-mono text-label uppercase text-ink-muted">{label}</legend>
+      <ul className="mt-2 space-y-2">
+        {rows.map((row, i) => (
+          <li key={i} className="flex items-start gap-1 border border-line bg-surface/50 p-2">
+            <div className="grid flex-1 gap-2 sm:grid-cols-[repeat(auto-fit,minmax(8rem,1fr))]">
+              {render(row, (p) => onChange(rows.map((r, j) => (j === i ? { ...r, ...p } : r))), i)}
+            </div>
+            <MoveButtons
+              label={`${label} ${i + 1}`}
+              onUp={i > 0 ? () => move(i, -1) : undefined}
+              onDown={i < rows.length - 1 ? () => move(i, 1) : undefined}
+            />
+            <button
+              type="button"
+              onClick={() => onChange(rows.filter((_, j) => j !== i))}
+              aria-label={`Remove ${label} ${i + 1}`}
+              className="flex h-8 w-8 shrink-0 items-center justify-center text-ink-faint hover:text-acm-bright"
+            >
+              ✕
+            </button>
+          </li>
+        ))}
+      </ul>
+      {rows.length < max ? (
+        <Btn size="sm" className="mt-2" onClick={() => onChange([...rows, blank()])}>
+          + Add
+        </Btn>
+      ) : null}
+      {error ? <p className="mt-1.5 text-xs font-medium text-acm-bright">{error}</p> : null}
+    </fieldset>
+  );
+}
+
+/** Nested errors arrive keyed like "timeline.2.phase"; show the first per list. */
+export function firstError(errors: Record<string, string>, prefix: string) {
+  const key = Object.keys(errors).find((k) => k === prefix || k.startsWith(`${prefix}.`));
+  if (!key) return undefined;
+  const m = key.match(/\.(\d+)\.(\w+)$/);
+  return m ? `Row ${Number(m[1]) + 1}, ${m[2].replace(/_/g, " ")}: ${errors[key]}` : errors[key];
+}
+
+/** Class for the small inputs inside a RowsEditor row. */
+export const rowControl =
+  "h-9 w-full border border-line bg-surface px-3 text-sm text-ink placeholder:text-ink-ghost focus:border-acm focus:outline-none";
+
+/** A titled group inside a long form. */
+export function Part({ title, children }: { title: string; children: ReactNode }) {
+  return (
+    <section className="space-y-5 border-t border-line pt-6 first:border-t-0 first:pt-0">
+      <h3 className="font-mono text-label uppercase text-ink">{title}</h3>
+      {children}
+    </section>
   );
 }

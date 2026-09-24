@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { problems, problemBySlug } from "@/data/problems";
-import { getProjects } from "@/lib/cms/read";
+import { getProblem, getProblems, getProjects } from "@/lib/cms/read";
 import { DifficultyMeter, OriginTag, Tag } from "@/components/ui/Badges";
 import { level } from "@/data/taxonomy";
 import { Reveal } from "@/components/ui/Reveal";
@@ -10,20 +9,20 @@ import { ArrowLink } from "@/components/ui/ArrowLink";
 import { Section, Prose } from "@/components/ui/Section";
 import { TurnIntoProject } from "@/components/problems/TurnIntoProject";
 
-export function generateStaticParams() {
-  return problems.map((p) => ({ slug: p.slug }));
+export async function generateStaticParams() {
+  return (await getProblems()).map((p) => ({ slug: p.slug }));
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
-  const problem = problemBySlug(slug);
+  const problem = await getProblem(slug);
   if (!problem) return { title: "Problem not found" };
   return { title: problem.title, description: problem.question };
 }
 
 export default async function ProblemPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const problem = problemBySlug(slug);
+  const problem = await getProblem(slug);
   if (!problem) notFound();
 
   const lvl = level(problem.level);

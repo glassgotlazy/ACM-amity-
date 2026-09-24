@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { AnimatePresence, LayoutGroup, motion, useReducedMotion } from "framer-motion";
 import { useMemo, useState } from "react";
-import { activity, ACTIVITY_KINDS, type ActivityKind } from "@/data/activity";
+import { ACTIVITY_KINDS, type ActivityItem, type ActivityKind } from "@/lib/cms/content-types";
 import { FilterBar } from "@/components/ui/FilterBar";
 
 const KIND_TONE: Record<ActivityKind, string> = {
@@ -17,7 +17,7 @@ const KIND_TONE: Record<ActivityKind, string> = {
 
 const FILTERS = ["All", ...Object.values(ACTIVITY_KINDS)] as const;
 
-export function ActivityFeed() {
+export function ActivityFeed({ activity }: { activity: ActivityItem[] }) {
   const reduce = useReducedMotion();
   const [filter, setFilter] = useState<string>("All");
 
@@ -27,11 +27,11 @@ export function ActivityFeed() {
       map[label] = activity.filter((a) => a.kind === kind).length;
     }
     return map;
-  }, []);
+  }, [activity]);
 
   const shown = useMemo(
     () => (filter === "All" ? activity : activity.filter((a) => ACTIVITY_KINDS[a.kind] === filter)),
-    [filter],
+    [activity, filter],
   );
 
   // Group by day so the feed reads as a log rather than an undifferentiated list.

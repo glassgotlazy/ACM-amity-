@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { PageHeader } from "@/components/ui/SectionHeading";
+import { CmsTitle } from "@/components/ui/Lines";
 import { JoinFlow } from "@/components/forms/JoinFlow";
-import { getSettings } from "@/lib/cms/read";
+import { getPage, getSettings } from "@/lib/cms/read";
 
 export const metadata: Metadata = {
   title: "Join ACM",
@@ -9,19 +10,13 @@ export const metadata: Metadata = {
 };
 
 export default async function JoinPage() {
-  const { registration_url } = await getSettings();
+  const [{ registration_url }, page] = await Promise.all([getSettings(), getPage("page_join")]);
   return (
     <>
       <PageHeader
-        eyebrow="Join ACM @ Amity"
-        title={
-          <>
-            YOU DON’T NEED
-            <br />
-            TO KNOW EVERYTHING.
-          </>
-        }
-        lede="Seven short questions. There is no test, no minimum skill level and no wrong answer — the only thing that matters is that there is something you want to work on."
+        eyebrow={page.eyebrow}
+        title={<CmsTitle text={page.title} />}
+        lede={page.body || undefined}
       />
       <JoinFlow registrationUrl={registration_url} />
     </>

@@ -6,7 +6,7 @@ import { useEffect, useState, type ReactNode } from "react";
 import { cn } from "@/lib/utils";
 import { SignOut } from "../SignOut";
 import { ThemeToggle } from "@/components/site/ThemeToggle";
-import { CmsProvider, ToastProvider } from "./kit";
+import { CmsProvider, ToastProvider, useCms } from "./kit";
 
 const NAV: { group: string; items: { href: string; label: string }[] }[] = [
   { group: "", items: [{ href: "/admin", label: "Dashboard" }] },
@@ -17,20 +17,31 @@ const NAV: { group: string; items: { href: string; label: string }[] }[] = [
       { href: "/admin/settings", label: "Site Settings" },
       { href: "/admin/navigation", label: "Navigation" },
       { href: "/admin/homepage", label: "Homepage" },
+      { href: "/admin/pages", label: "Pages" },
+      { href: "/admin/media", label: "Media" },
+    ],
+  },
+  {
+    group: "People",
+    items: [
+      { href: "/admin/team", label: "Team" },
+      { href: "/admin/roles", label: "Roles" },
+      { href: "/admin/working-teams", label: "Working teams" },
     ],
   },
   {
     group: "Content",
     items: [
-      { href: "/admin/team", label: "Team" },
-      { href: "/admin/roles", label: "Roles" },
-      { href: "/admin/events", label: "Events" },
       { href: "/admin/projects", label: "Projects" },
+      { href: "/admin/problems", label: "Problem statements" },
+      { href: "/admin/ideas", label: "Project ideas" },
+      { href: "/admin/research", label: "Research" },
+      { href: "/admin/events", label: "Events" },
       { href: "/admin/announcements", label: "Announcements" },
-      { href: "/admin/media", label: "Media" },
+      { href: "/admin/activity", label: "Activity log" },
     ],
   },
-  { group: "Reference", items: [{ href: "/admin/catalogue", label: "Catalogue" }] },
+  { group: "Security", items: [{ href: "/admin/audit", label: "Audit log" }] },
 ];
 
 /** Admin chrome: a fixed sidebar on desktop, a slide-in menu on phones. */
@@ -81,7 +92,8 @@ export function AdminShell({ siteName, children }: { siteName: string; children:
         </a>
         <ThemeToggle />
       </div>
-      <div className="border-t border-line px-1 py-2">
+      <div className="flex items-center justify-between gap-2 border-t border-line px-1 py-2">
+        <SignedInAs />
         <SignOut />
       </div>
     </nav>
@@ -139,4 +151,9 @@ export function AdminShell({ siteName, children }: { siteName: string; children:
       </CmsProvider>
     </ToastProvider>
   );
+}
+
+function SignedInAs() {
+  const { actor } = useCms();
+  return actor ? <span className="truncate px-3 text-xs text-ink-faint">Signed in as {actor}</span> : <span />;
 }

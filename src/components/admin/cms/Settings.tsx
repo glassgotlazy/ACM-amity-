@@ -27,6 +27,7 @@ export function SettingsEditor() {
   const [loadError, setLoadError] = useState<unknown>(null);
   const [errors, setErrors] = useState<Errors>({});
   const [saving, setSaving] = useState(false);
+  const [stale, setStale] = useState<Draft | null>(null);
 
   const load = useCallback(async () => {
     setLoadError(null);
@@ -60,16 +61,21 @@ export function SettingsEditor() {
     />
   );
 
-  async function save() {
+  async function save(overwrite = false) {
     setSaving(true);
     setErrors({});
     try {
-      const { row } = await api<{ row: Draft }>("/api/admin/cms/settings", { method: "PUT", json: draft });
+      const { row } = await api<{ row: Draft }>("/api/admin/cms/settings", {
+        method: "PUT",
+        json: { ...draft, _expected_updated_at: overwrite ? undefined : (JSON.parse(saved) as Draft).updated_at },
+      });
       setDraft(row);
       setSaved(JSON.stringify(row));
+      setStale(null);
       toast("ok", "Site settings are live on every page.");
     } catch (e) {
       if (e instanceof ApiError && e.code === "invalid") setErrors(e.errors);
+      if (e instanceof ApiError && e.code === "stale") setStale(e.extra.current as Draft);
       toast("error", explain(e));
     } finally {
       setSaving(false);
@@ -83,6 +89,27 @@ export function SettingsEditor() {
         save();
       }}
     >
+      {stale ? (
+        <div role="alert" className="mb-8 border border-acm/60 bg-acm-wash px-4 py-3 text-sm text-ink-muted">
+          <p className="font-medium text-ink">Someone else saved the site settings after you opened this page.</p>
+          <p className="mt-1">Saving now would overwrite their changes. Choose which version to keep.</p>
+          <div className="mt-3 flex flex-wrap gap-2">
+            <Btn
+              size="sm"
+              onClick={() => {
+                setDraft(stale);
+                setSaved(JSON.stringify(stale));
+                setStale(null);
+              }}
+            >
+              Load their version
+            </Btn>
+            <Btn size="sm" tone="danger" onClick={() => save(true)} disabled={saving}>
+              Keep mine and overwrite
+            </Btn>
+          </div>
+        </div>
+      ) : null}
       <Group title="Identity" description="Shown in the browser tab, search results, share cards, header and footer.">
         {text("site_name", "Website name", { required: true, max: 80, hint: "e.g. ACM BuildHub" })}
         {text("short_name", "Short name", { required: true, max: 24, hint: "The large part of the wordmark, e.g. ACM" })}
