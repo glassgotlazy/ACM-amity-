@@ -126,6 +126,9 @@ export async function POST(request: Request) {
   // Tell the core team, after the response has gone out so the student
   // never waits on it. Only when RESEND_API_KEY and ALERT_EMAIL_TO are set.
   const to = alertRecipients();
+  if ((stored || forwarded) && !to.length && process.env.RESEND_API_KEY) {
+    console.warn("[email] new-submission alert skipped: ALERT_EMAIL_TO has no valid address");
+  }
   if ((stored || forwarded) && to.length) {
     after(() =>
       sendEmail({
@@ -133,7 +136,9 @@ export async function POST(request: Request) {
         subject: `New ${LABEL[kind].toLowerCase()}: ${submissionTitle({ kind, payload: clean, anonymous: clean.anonymous === true }).slice(0, 80)}`,
         text: `A new ${LABEL[kind].toLowerCase()} arrived on ${SITE_URL}.\n\nOpen the queue: ${SITE_URL}/admin/submissions?kind=${kind}&state=new\n`,
         replyTo: typeof clean.email === "string" && clean.anonymous !== true ? clean.email : undefined,
-      }).then(() => undefined),
+      }).then((ok) => {
+        if (ok) console.log(`[email] new-submission alert sent to ${to.length} address${to.length === 1 ? "" : "es"}`);
+      }),
     );
   }
 

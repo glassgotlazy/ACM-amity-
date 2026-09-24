@@ -17,10 +17,14 @@ export function emailConfigured(): boolean {
 const FROM = () => process.env.EMAIL_FROM || "ACM BuildHub <onboarding@resend.dev>";
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-export async function sendEmail(msg: { to: string[]; subject: string; text: string; replyTo?: string }): Promise<boolean> {
+export type SendResult = { ok: true } | { ok: false; error: string };
+
+/** Sends one email and says why when it does not go out. Never throws. */
+export async function sendEmailDetailed(msg: { to: string[]; subject: string; text: string; replyTo?: string }): Promise<SendResult> {
   const key = process.env.RESEND_API_KEY;
+  if (!key) return { ok: false, error: "RESEND_API_KEY is not set." };
   const to = msg.to.map((t) => t.trim()).filter((t) => EMAIL.test(t));
-  if (!key || to.length === 0) return false;
+  if (to.length === 0) return { ok: false, error: "No valid recipient address." };
   try {
     const res = await fetch("https://api.resend.com/emails", {
       method: "POST",
@@ -34,16 +38,38 @@ export async function sendEmail(msg: { to: string[]; subject: string; text: stri
       }),
       signal: AbortSignal.timeout(10_000),
     });
-    if (!res.ok) console.error(`[email] resend -> ${res.status} ${await res.text().catch(() => "")}`);
-    return res.ok;
+    if (res.ok) return { ok: true };
+    const raw = await res.text().catch(() => "");
+    let message = raw;
+    try {
+      message = (JSON.parse(raw) as { message?: string }).message ?? raw;
+    } catch {}
+    const error = `Resend answered ${res.status}: ${message.slice(0, 300)}`;
+    console.error(`[email] ${error}`);
+    return { ok: false, error };
   } catch (error) {
     console.error("[email] send failed:", error);
-    return false;
+    return { ok: false, error: "Could not reach Resend." };
   }
 }
 
+export async function sendEmail(msg: { to: string[]; subject: string; text: string; replyTo?: string }): Promise<boolean> {
+  return (await sendEmailDetailed(msg)).ok;
+}
+
+/**
+ * Admin addresses from ALERT_EMAIL_TO. Accepts "a@x.com, b@y.com" and also
+ * "Name <a@x.com>" or quoted values, since those are easy to paste by mistake.
+ */
 export function alertRecipients(): string[] {
-  return (process.env.ALERT_EMAIL_TO ?? "").split(",").map((s) => s.trim()).filter(Boolean);
+  return (process.env.ALERT_EMAIL_TO ?? "")
+    .split(/[,;\n]/)
+    .map((s) => {
+      const t = s.trim().replace(/^["']|["']$/g, "");
+      const angle = t.match(/<([^>]+)>/);
+      return (angle ? angle[1] : t).trim();
+    })
+    .filter((s) => EMAIL.test(s));
 }
 
 /* -------------------------------------------------------------------------- */

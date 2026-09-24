@@ -7,6 +7,8 @@ import { Btn, ErrorState, LoadingRows, Notice, TextArea, TextInput, useToast } f
 type Template = { key: "accepted" | "declined" | "reviewing"; subject: string; body: string };
 type Data = { templates: Record<Template["key"], Template>; defaults: Record<Template["key"], Template>; configured: boolean; alerts: boolean };
 
+type TestResult = { ok: boolean; to: string[]; error?: string };
+
 const LABEL: Record<Template["key"], string> = {
   accepted: "When a submission is accepted",
   declined: "When a submission is declined",
@@ -21,6 +23,8 @@ export function EmailTemplates() {
   const [drafts, setDrafts] = useState<Record<string, Template>>({});
   const [errors, setErrors] = useState<Record<string, Record<string, string>>>({});
   const [saving, setSaving] = useState<string | null>(null);
+  const [testing, setTesting] = useState(false);
+  const [test, setTest] = useState<TestResult | null>(null);
 
   const load = useCallback(async () => {
     setError(null);
@@ -35,6 +39,18 @@ export function EmailTemplates() {
   useEffect(() => {
     load();
   }, [load]);
+
+  async function sendTest() {
+    setTesting(true);
+    setTest(null);
+    try {
+      setTest(await api<TestResult>("/api/admin/email-test", { method: "POST" }));
+    } catch (e) {
+      setTest({ ok: false, to: [], error: explain(e) });
+    } finally {
+      setTesting(false);
+    }
+  }
 
   if (error) return <ErrorState error={error} retry={load} />;
   if (!data) return <LoadingRows rows={3} />;
@@ -55,6 +71,26 @@ export function EmailTemplates() {
 
   return (
     <div className="space-y-8">
+      <section className="border border-line bg-surface p-5">
+        <h2 className="text-base font-semibold">Test email setup</h2>
+        <p className="mt-1 text-sm text-ink-muted">
+          Sends a test message to the admin alert address (<code className="font-mono text-ink">ALERT_EMAIL_TO</code>) and shows what happened.
+        </p>
+        <Btn className="mt-4" onClick={sendTest} disabled={testing}>
+          {testing ? "Sending…" : "Send test email"}
+        </Btn>
+        {test ? (
+          test.ok ? (
+            <p role="status" className="mt-3 text-sm text-signal-live">
+              Sent to {test.to.join(", ")}. Check that inbox (and its spam folder) in a minute.
+            </p>
+          ) : (
+            <p role="alert" className="mt-3 text-sm text-acm-bright">
+              Not sent{test.to.length ? ` to ${test.to.join(", ")}` : ""}. {test.error}
+            </p>
+          )
+        ) : null}
+      </section>
       {!data.configured ? (
         <Notice tone="warn" title="Email is not switched on">
           Add <code className="font-mono text-ink">RESEND_API_KEY</code> and <code className="font-mono text-ink">EMAIL_FROM</code> in

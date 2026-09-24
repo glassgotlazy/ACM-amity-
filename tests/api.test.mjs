@@ -289,6 +289,14 @@ ok("backup served as an attachment", /attachment/.test(r.headers.get("content-di
 r = await anon.call("/api/admin/backup");
 ok("backup needs a session", r.status === 401);
 
+// ---------------------------------------------------------------- email test
+r = await owner.call("/api/admin/email-test", { method: "POST" });
+ok("email test explains a missing API key", r.status === 200 && r.body?.ok === false && /RESEND_API_KEY/.test(r.body?.error ?? ""));
+r = await events.call("/api/admin/email-test", { method: "POST" });
+ok("email test needs settings permission", r.status === 403);
+r = await anon.call("/api/admin/email-test", { method: "POST" });
+ok("email test needs a session", r.status === 401 || r.status === 403);
+
 // ---------------------------------------------------------------- audit trail
 r = await owner.call("/api/admin/audit?per=100");
 const summaries = (r.body?.rows ?? []).map((x) => x.summary ?? "").join("\n");
