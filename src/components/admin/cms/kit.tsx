@@ -316,6 +316,11 @@ export function Pill({ on, children }: { on: boolean; children: ReactNode }) {
 
 function useDialogFocus(open: boolean, onClose: () => void) {
   const ref = useRef<HTMLDivElement>(null);
+  // Parents pass a new onClose on every render (an inline arrow). Reading it
+  // through a ref keeps the effect below tied to `open` only — otherwise each
+  // keystroke in a form re-ran it and moved focus back to the close button.
+  const close = useRef(onClose);
+  close.current = onClose;
   useEffect(() => {
     if (!open) return;
     const previous = document.activeElement as HTMLElement | null;
@@ -329,7 +334,7 @@ function useDialogFocus(open: boolean, onClose: () => void) {
     function onKey(e: KeyboardEvent) {
       if (e.key === "Escape") {
         e.stopPropagation();
-        onClose();
+        close.current();
       }
       if (e.key === "Tab") {
         const els = focusables();
@@ -353,7 +358,7 @@ function useDialogFocus(open: boolean, onClose: () => void) {
       document.body.style.overflow = overflow;
       previous?.focus?.();
     };
-  }, [open, onClose]);
+  }, [open]);
   return ref;
 }
 

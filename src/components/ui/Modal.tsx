@@ -16,6 +16,9 @@ type Props = {
 export function Modal({ open, onClose, title, eyebrow, children, wide = false }: Props) {
   const reduce = useReducedMotion();
   const panelRef = useRef<HTMLDivElement>(null);
+  // Read through a ref: the effect below must not re-run (and refocus) when a parent re-renders.
+  const closeRef = useRef(onClose);
+  closeRef.current = onClose;
 
   // Close on Escape, trap focus inside the panel, and stop the page behind
   // from scrolling while the dialog is open.
@@ -28,7 +31,7 @@ export function Modal({ open, onClose, title, eyebrow, children, wide = false }:
 
     function onKeyDown(event: KeyboardEvent) {
       if (event.key === "Escape") {
-        onClose();
+        closeRef.current();
         return;
       }
       if (event.key !== "Tab" || !panelRef.current) return;
@@ -60,7 +63,7 @@ export function Modal({ open, onClose, title, eyebrow, children, wide = false }:
       cancelAnimationFrame(raf);
       previous?.focus?.();
     };
-  }, [open, onClose]);
+  }, [open]);
 
   return (
     <AnimatePresence>
