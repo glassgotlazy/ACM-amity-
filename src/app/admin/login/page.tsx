@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 export default function AdminLoginPage() {
   return (
     <>
-      <PageHeader eyebrow="Admin" title="SIGN IN" lede="This view is for the core team. One password, no accounts." />
+      <PageHeader eyebrow="Admin" title="SIGN IN" lede="For the core team. Sign in with your own admin account, or leave Email empty and use the shared admin password." />
       {/* The form gets its own labelled section so the page's heading order
           runs h1 → h2 → the footer's h3s, with nothing skipped. */}
       <section className="shell py-16" aria-labelledby="admin-login-heading">
