@@ -10,7 +10,9 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { cn } from "@/lib/utils";
+import { AnimatePresence, motion, useIsPresent } from "framer-motion";
+import { cx as cn } from "@/lib/utils";
+import { enter, exit, snap } from "./motion";
 import { api, ApiError, explain } from "./api";
 
 /* -------------------------------------------------------------------------- */
@@ -93,22 +95,29 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   return (
     <ToastContext.Provider value={push}>
       {children}
-      <div className="pointer-events-none fixed bottom-5 right-5 z-[300] flex w-[min(24rem,calc(100vw-2.5rem))] flex-col gap-2">
-        {toasts.map((t) => (
-          <div
-            key={t.id}
-            role={t.tone === "error" ? "alert" : "status"}
-            className={cn(
-              "pointer-events-auto border bg-surface-raised px-4 py-3 text-sm shadow-lg",
-              t.tone === "ok" ? "border-signal-live/50 text-ink" : "border-acm text-ink",
-            )}
-          >
-            <span className={cn("mr-2 font-mono text-micro uppercase", t.tone === "ok" ? "text-signal-live" : "text-acm-bright")}>
-              {t.tone === "ok" ? "Saved" : "Error"}
-            </span>
-            {t.text}
-          </div>
-        ))}
+      <div className="pointer-events-none fixed bottom-5 right-5 z-[300] flex w-[min(24rem,calc(100vw-2.5rem))] flex-col items-stretch gap-2">
+        <AnimatePresence initial={false}>
+          {toasts.map((t) => (
+            <motion.div
+              key={t.id}
+              layout="position"
+              role={t.tone === "error" ? "alert" : "status"}
+              initial={{ opacity: 0, y: 14, scale: 0.98 }}
+              animate={{ opacity: 1, y: 0, scale: 1, transition: enter(0.26) }}
+              exit={{ opacity: 0, x: 24, transition: exit(0.16) }}
+              transition={snap}
+              className={cn(
+                "pointer-events-auto relative flex items-start gap-3 overflow-hidden border border-line-strong bg-surface-raised py-3 pl-4 pr-4 text-sm text-ink shadow-[0_12px_32px_-12px_rgba(0,0,0,0.45)]",
+              )}
+            >
+              <span aria-hidden className={cn("absolute inset-y-0 left-0 w-[3px]", t.tone === "ok" ? "bg-signal-live" : "bg-acm")} />
+              <span className={cn("mt-px shrink-0 font-mono text-micro uppercase leading-5", t.tone === "ok" ? "text-signal-live" : "text-acm-bright")}>
+                {t.tone === "ok" ? "Done" : "Error"}
+              </span>
+              <span className="leading-5">{t.text}</span>
+            </motion.div>
+          ))}
+        </AnimatePresence>
       </div>
     </ToastContext.Provider>
   );
@@ -207,7 +216,9 @@ export function LoadingRows({ rows = 4 }: { rows?: number }) {
   return (
     <div aria-busy="true" aria-label="Loading" className="space-y-px">
       {Array.from({ length: rows }, (_, i) => (
-        <div key={i} className="h-14 animate-pulse bg-surface" />
+        <div key={i} className="relative h-14 overflow-hidden bg-surface" style={{ opacity: 1 - i * (0.5 / rows) }}>
+          <div className="absolute inset-y-0 -left-1/2 w-1/2 animate-sweep bg-gradient-to-r from-transparent via-ink/[0.04] to-transparent motion-reduce:hidden" />
+        </div>
       ))}
     </div>
   );
@@ -249,7 +260,9 @@ export function Btn({
       type="button"
       {...rest}
       className={cn(
-        "inline-flex items-center justify-center gap-2 font-mono uppercase transition-colors duration-150 disabled:cursor-not-allowed disabled:opacity-50",
+        "inline-flex select-none items-center justify-center gap-2 font-mono uppercase",
+        "transition-[color,background-color,border-color,transform] duration-150 ease-out active:scale-[0.97] disabled:pointer-events-none disabled:opacity-45",
+        "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-acm",
         size === "md" ? "h-10 px-4 text-label" : "h-8 px-3 text-micro",
         tone === "primary" && "bg-acm-solid text-white hover:bg-acm-deep",
         tone === "default" && "border border-line-strong text-ink hover:border-ink-faint",
@@ -362,58 +375,71 @@ function useDialogFocus(open: boolean, onClose: () => void) {
   return ref;
 }
 
-/** Side panel for create/edit forms: long forms scroll, the page stays put. */
-export function Drawer({
-  open,
-  title,
-  onClose,
-  children,
-  footer,
-}: {
-  open: boolean;
-  title: string;
-  onClose: () => void;
-  children: ReactNode;
-  footer: ReactNode;
-}) {
-  const ref = useDialogFocus(open, onClose);
-  const id = useId();
-  if (!open) return null;
+/** The dimmed layer behind panels and dialogs. */
+function Backdrop({ onClose }: { onClose: () => void }) {
   return (
-    <div className="fixed inset-0 z-[200] flex justify-end">
-      <div className="absolute inset-0 bg-black/60" onClick={onClose} aria-hidden />
-      <div
+    <motion.div
+      className="absolute inset-0 bg-black/55"
+      onClick={onClose}
+      aria-hidden
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1, transition: enter(0.2) }}
+      exit={{ opacity: 0, transition: exit(0.16) }}
+    />
+  );
+}
+
+/**
+ * While a panel animates out it stays in the page for a moment; it must not
+ * catch clicks or keyboard focus during that time.
+ */
+function useLeaving() {
+  const present = useIsPresent();
+  return present
+    ? { present }
+    : // Closing: gone for keyboard, pointer and screen readers at once; only the picture lingers.
+      { present, inert: true, className: "pointer-events-none" };
+}
+
+/** Side panel for create/edit forms: long forms scroll, the page stays put. */
+export function Drawer(props: { open: boolean; title: string; onClose: () => void; children: ReactNode; footer: ReactNode }) {
+  return <AnimatePresence>{props.open ? <DrawerPanel key="drawer" {...props} /> : null}</AnimatePresence>;
+}
+
+function DrawerPanel({ title, onClose, children, footer }: { title: string; onClose: () => void; children: ReactNode; footer: ReactNode }) {
+  const ref = useDialogFocus(true, onClose);
+  const id = useId();
+  const leaving = useLeaving();
+  return (
+    <div className={cn("fixed inset-0 z-[200] flex justify-end", leaving.className)} inert={leaving.inert}>
+      <Backdrop onClose={onClose} />
+      <motion.div
         ref={ref}
-        role="dialog"
-        aria-modal="true"
+        role={leaving.present ? "dialog" : undefined}
+        aria-modal={leaving.present ? "true" : undefined}
+        aria-hidden={leaving.present ? undefined : true}
         aria-labelledby={id}
-        className="relative flex h-full w-full max-w-2xl flex-col border-l border-line bg-void"
+        className="relative flex h-full w-full max-w-2xl flex-col border-l border-line bg-void shadow-[-24px_0_48px_-24px_rgba(0,0,0,0.45)]"
+        initial={{ x: "100%" }}
+        animate={{ x: 0, transition: enter(0.32) }}
+        exit={{ x: "100%", transition: exit(0.2) }}
       >
         <div className="flex items-center justify-between border-b border-line px-6 py-4">
           <h2 id={id} className="text-lg font-semibold tracking-[-0.02em]">
             {title}
           </h2>
-          <Btn tone="ghost" size="sm" onClick={onClose} aria-label="Close panel">
+          <Btn tone="ghost" size="sm" onClick={onClose} aria-label="Close panel" className="w-8 px-0 text-sm tracking-normal">
             ✕
           </Btn>
         </div>
-        <div className="flex-1 overflow-y-auto px-6 py-6">{children}</div>
-        <div className="flex flex-wrap items-center justify-end gap-2 border-t border-line px-6 py-4">{footer}</div>
-      </div>
+        <div className="flex-1 overflow-y-auto overscroll-contain px-6 py-6">{children}</div>
+        <div className="flex flex-wrap items-center justify-end gap-2 border-t border-line bg-void px-6 py-4">{footer}</div>
+      </motion.div>
     </div>
   );
 }
 
-export function ConfirmDialog({
-  open,
-  title,
-  children,
-  confirmLabel = "Delete",
-  busy,
-  disabled,
-  onConfirm,
-  onClose,
-}: {
+type ConfirmProps = {
   open: boolean;
   title: string;
   children?: ReactNode;
@@ -423,19 +449,29 @@ export function ConfirmDialog({
   disabled?: boolean;
   onConfirm: () => void;
   onClose: () => void;
-}) {
-  const ref = useDialogFocus(open, onClose);
+};
+
+export function ConfirmDialog(props: ConfirmProps) {
+  return <AnimatePresence>{props.open ? <ConfirmPanel key="confirm" {...props} /> : null}</AnimatePresence>;
+}
+
+function ConfirmPanel({ title, children, confirmLabel = "Delete", busy, disabled, onConfirm, onClose }: ConfirmProps) {
+  const ref = useDialogFocus(true, onClose);
   const id = useId();
-  if (!open) return null;
+  const leaving = useLeaving();
   return (
-    <div className="fixed inset-0 z-[250] flex items-center justify-center p-5">
-      <div className="absolute inset-0 bg-black/60" onClick={onClose} aria-hidden />
-      <div
+    <div className={cn("fixed inset-0 z-[250] flex items-center justify-center p-5", leaving.className)} inert={leaving.inert}>
+      <Backdrop onClose={onClose} />
+      <motion.div
         ref={ref}
-        role="alertdialog"
-        aria-modal="true"
+        role={leaving.present ? "alertdialog" : undefined}
+        aria-modal={leaving.present ? "true" : undefined}
+        aria-hidden={leaving.present ? undefined : true}
         aria-labelledby={id}
-        className="relative w-full max-w-md border border-line-strong bg-void p-6"
+        className="relative w-full max-w-md border border-line-strong bg-void p-6 shadow-[0_24px_64px_-16px_rgba(0,0,0,0.5)]"
+        initial={{ opacity: 0, scale: 0.96, y: 6 }}
+        animate={{ opacity: 1, scale: 1, y: 0, transition: enter(0.22) }}
+        exit={{ opacity: 0, scale: 0.98, transition: exit(0.13) }}
       >
         <h2 id={id} className="text-lg font-semibold tracking-[-0.02em]">
           {title}
@@ -449,7 +485,7 @@ export function ConfirmDialog({
             {busy ? "Working…" : confirmLabel}
           </Btn>
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 }
@@ -610,13 +646,13 @@ export function Toggle({
         aria-checked={checked}
         onClick={() => onChange(!checked)}
         className={cn(
-          "relative mt-0.5 h-5 w-9 shrink-0 border transition-colors",
+          "relative mt-0.5 h-5 w-9 shrink-0 border transition-colors duration-200 ease-out",
           checked ? "border-acm bg-acm-solid" : "border-line-strong bg-surface",
         )}
       >
         <span
           className={cn(
-            "absolute top-0.5 h-3.5 w-3.5 bg-white transition-transform",
+            "absolute top-0.5 h-3.5 w-3.5 bg-white transition-transform duration-200 ease-out",
             checked ? "translate-x-[1.1rem]" : "translate-x-0.5",
           )}
           aria-hidden

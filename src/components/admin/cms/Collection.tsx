@@ -7,7 +7,9 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { cn } from "@/lib/utils";
+import { cx as cn } from "@/lib/utils";
+import { motion } from "framer-motion";
+import { snap } from "./motion";
 import { api, ApiError, explain } from "./api";
 import { DeletedButton, HistoryButton } from "./history";
 import {
@@ -356,9 +358,12 @@ export function Collection(props: CollectionProps) {
               </thead>
               <tbody>
                 {shown.map((row, i) => (
-                  <tr
+                  <motion.tr
                     key={row.id}
-                    className="border-b border-line last:border-b-0 hover:bg-surface/60"
+                    // Reordered rows slide to their new place instead of jumping.
+                    layout={reorderable ? "position" : false}
+                    transition={snap}
+                    className="relative border-b border-line bg-void transition-colors duration-150 last:border-b-0 hover:bg-surface/60"
                   >
                     {reorderable ? (
                       <td className="px-1 py-2">
@@ -420,7 +425,7 @@ export function Collection(props: CollectionProps) {
                         Delete
                       </Btn>
                     </td>
-                  </tr>
+                  </motion.tr>
                 ))}
               </tbody>
             </table>
@@ -455,7 +460,7 @@ export function Collection(props: CollectionProps) {
                 target="_blank"
                 rel="noopener"
                 title="Opens the page with drafts shown, as last saved"
-                className="inline-flex h-10 items-center px-3 text-sm text-ink-muted underline-offset-4 hover:text-ink hover:underline"
+                className="inline-flex h-10 items-center px-3 font-mono text-label uppercase text-ink-faint transition-colors duration-150 hover:text-ink"
               >
                 Preview
               </a>

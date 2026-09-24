@@ -112,8 +112,10 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
       </head>
       <body className="min-h-screen antialiased">
-        <ScrollProgress />
-        <Cursor />
+        <HideOnAdmin>
+          <ScrollProgress />
+          <Cursor />
+        </HideOnAdmin>
         <Navbar brand={brand} items={header} extra={mobileExtra} />
         <CommandPalette
           index={buildIndex({

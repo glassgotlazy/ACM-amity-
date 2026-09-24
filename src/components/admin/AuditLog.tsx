@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { cn } from "@/lib/utils";
+import { cx as cn } from "@/lib/utils";
 import { api } from "./cms/api";
 import { Btn, EmptyState, ErrorState, LoadingRows, Notice } from "./cms/kit";
 

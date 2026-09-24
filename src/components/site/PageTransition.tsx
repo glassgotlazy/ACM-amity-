@@ -3,6 +3,7 @@
 import { motion, useReducedMotion } from "framer-motion";
 import { usePathname } from "next/navigation";
 import { ease } from "@/lib/motion";
+import { isAdminPath } from "./HideOnAdmin";
 
 /**
  * Route-level entrance. Deliberately short and vertical only — a long or
@@ -12,7 +13,9 @@ export function PageTransition({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const reduce = useReducedMotion();
 
-  if (reduce) return <>{children}</>;
+  // The admin console has its own, lighter transition (and must not remount
+  // its sidebar and data on every click).
+  if (reduce || isAdminPath(pathname)) return <>{children}</>;
 
   return (
     <motion.div

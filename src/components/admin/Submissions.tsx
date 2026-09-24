@@ -2,7 +2,14 @@
 
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  Suspense,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import {
   CATEGORY,
   FIELD_GROUPS,
@@ -15,11 +22,27 @@ import {
   type SubmissionKind,
   type SubmissionState,
 } from "@/lib/submission-types";
-import { cn } from "@/lib/utils";
+import { cx as cn } from "@/lib/utils";
+import { AnimatePresence, motion } from "framer-motion";
+import { enter, exit, snap } from "./cms/motion";
 import { api, ApiError, explain } from "./cms/api";
-import { Btn, ConfirmDialog, Drawer, EmptyState, ErrorState, LoadingRows, useCms, useToast } from "./cms/kit";
+import {
+  Btn,
+  ConfirmDialog,
+  Drawer,
+  EmptyState,
+  ErrorState,
+  LoadingRows,
+  useCms,
+  useToast,
+} from "./cms/kit";
 
-type Page = { rows: StoredSubmission[]; total: number; page: number; per: number };
+type Page = {
+  rows: StoredSubmission[];
+  total: number;
+  page: number;
+  per: number;
+};
 
 const STATE_TONE: Record<SubmissionState, string> = {
   new: "text-acm-bright",
@@ -29,16 +52,32 @@ const STATE_TONE: Record<SubmissionState, string> = {
   declined: "text-ink-ghost",
 };
 
-const FILTER_KEYS = ["kind", "state", "category", "q", "from", "to", "sort", "page"] as const;
+const FILTER_KEYS = [
+  "kind",
+  "state",
+  "category",
+  "q",
+  "from",
+  "to",
+  "sort",
+  "page",
+] as const;
 
 const control =
   "h-10 border border-line bg-surface px-3 text-sm text-ink placeholder:text-ink-ghost focus:border-acm focus:outline-none";
 
 const fmt = (iso: string) =>
-  new Intl.DateTimeFormat("en-IN", { day: "numeric", month: "short", year: "numeric", hour: "numeric", minute: "2-digit" }).format(new Date(iso));
+  new Intl.DateTimeFormat("en-IN", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  }).format(new Date(iso));
 
 /** The version to send back with an edit: null for a never-edited row, undefined when the column does not exist yet. */
-const versionOf = (row: StoredSubmission) => ("updated_at" in row ? (row.updated_at ?? null) : undefined);
+const versionOf = (row: StoredSubmission) =>
+  "updated_at" in row ? (row.updated_at ?? null) : undefined;
 
 function str(v: unknown): string {
   if (Array.isArray(v)) return v.join(", ");
@@ -52,8 +91,16 @@ function Manager() {
   const toast = useToast();
 
   // Filters live in the URL, so a refresh or a shared link shows the same view.
-  const filters = useMemo(() => Object.fromEntries(FILTER_KEYS.map((k) => [k, params.get(k) ?? ""])) as Record<(typeof FILTER_KEYS)[number], string>, [params]);
-  const kind = (SUBMISSION_KINDS as readonly string[]).includes(filters.kind) ? (filters.kind as SubmissionKind) : null;
+  const filters = useMemo(
+    () =>
+      Object.fromEntries(
+        FILTER_KEYS.map((k) => [k, params.get(k) ?? ""]),
+      ) as Record<(typeof FILTER_KEYS)[number], string>,
+    [params],
+  );
+  const kind = (SUBMISSION_KINDS as readonly string[]).includes(filters.kind)
+    ? (filters.kind as SubmissionKind)
+    : null;
 
   // Two quick changes (From, then To) must not start from the same stale
   // URL, or the second would drop the first: keep the pending query here
@@ -74,7 +121,9 @@ function Manager() {
       if (!("page" in patch)) next.delete("page");
       if ("kind" in patch) next.delete("category");
       pending.current = next.toString();
-      router.replace(`/admin/submissions${next.toString() ? `?${next}` : ""}`, { scroll: false });
+      router.replace(`/admin/submissions${next.toString() ? `?${next}` : ""}`, {
+        scroll: false,
+      });
     },
     [params, router],
   );
@@ -129,7 +178,8 @@ function Manager() {
   useEffect(() => setSelected(new Set()), [query]);
 
   const pageIds = data?.rows.map((r) => r.id) ?? [];
-  const allTicked = pageIds.length > 0 && pageIds.every((id) => selected.has(id));
+  const allTicked =
+    pageIds.length > 0 && pageIds.every((id) => selected.has(id));
   const toggleRow = (id: string) =>
     setSelected((cur) => {
       const next = new Set(cur);
@@ -142,11 +192,23 @@ function Manager() {
     if (!selected.size || (action === "state" && !bulkState)) return;
     setBulkBusy(true);
     try {
-      const { count } = await api<{ count: number }>("/api/admin/submissions/bulk", {
-        method: "POST",
-        json: { ids: [...selected], action, ...(action === "state" ? { state: bulkState } : {}) },
-      });
-      toast("ok", action === "delete" ? `${count} deleted.` : `${count} marked as ${STATE_LABEL[bulkState as SubmissionState]}.`);
+      const { count } = await api<{ count: number }>(
+        "/api/admin/submissions/bulk",
+        {
+          method: "POST",
+          json: {
+            ids: [...selected],
+            action,
+            ...(action === "state" ? { state: bulkState } : {}),
+          },
+        },
+      );
+      toast(
+        "ok",
+        action === "delete"
+          ? `${count} deleted.`
+          : `${count} marked as ${STATE_LABEL[bulkState as SubmissionState]}.`,
+      );
       setSelected(new Set());
       setBulkState("");
       setBulkDelete(false);
@@ -162,17 +224,31 @@ function Manager() {
   async function changeState(row: StoredSubmission, state: SubmissionState) {
     setBusy(row.id);
     try {
-      const { row: saved } = await api<{ row: StoredSubmission }>(`/api/admin/submissions/${row.id}`, {
-        method: "PATCH",
-        json: { state, expected_updated_at: versionOf(row) },
-      });
-      setData((d) => (d ? { ...d, rows: d.rows.map((r) => (r.id === row.id ? saved : r)) } : d));
+      const { row: saved } = await api<{ row: StoredSubmission }>(
+        `/api/admin/submissions/${row.id}`,
+        {
+          method: "PATCH",
+          json: { state, expected_updated_at: versionOf(row) },
+        },
+      );
+      setData((d) =>
+        d
+          ? { ...d, rows: d.rows.map((r) => (r.id === row.id ? saved : r)) }
+          : d,
+      );
       toast("ok", `Status set to ${STATE_LABEL[state]}.`);
     } catch (e) {
       if (e instanceof ApiError && e.code === "stale") {
         const current = e.extra.current as StoredSubmission;
-        setData((d) => (d ? { ...d, rows: d.rows.map((r) => (r.id === row.id ? current : r)) } : d));
-        toast("error", `Someone else changed this to ${STATE_LABEL[current.state]} first. Nothing was overwritten.`);
+        setData((d) =>
+          d
+            ? { ...d, rows: d.rows.map((r) => (r.id === row.id ? current : r)) }
+            : d,
+        );
+        toast(
+          "error",
+          `Someone else changed this to ${STATE_LABEL[current.state]} first. Nothing was overwritten.`,
+        );
       } else {
         toast("error", `Unable to update the status. ${explain(e)}`);
       }
@@ -187,8 +263,15 @@ function Manager() {
   return (
     <div>
       {/* Type tabs */}
-      <div role="tablist" aria-label="Submission type" className="flex flex-wrap gap-1 border-b border-line">
-        {[{ k: "", label: "All" }, ...SUBMISSION_KINDS.map((k) => ({ k, label: KIND_LABEL[k] }))].map((t) => (
+      <div
+        role="tablist"
+        aria-label="Submission type"
+        className="flex flex-wrap gap-1 border-b border-line"
+      >
+        {[
+          { k: "", label: "All" },
+          ...SUBMISSION_KINDS.map((k) => ({ k, label: KIND_LABEL[k] })),
+        ].map((t) => (
           <button
             key={t.k || "all"}
             type="button"
@@ -196,11 +279,21 @@ function Manager() {
             aria-selected={filters.kind === t.k}
             onClick={() => setFilters({ kind: t.k })}
             className={cn(
-              "-mb-px border-b-2 px-4 py-2.5 font-mono text-label uppercase transition-colors",
-              filters.kind === t.k ? "border-acm text-ink" : "border-transparent text-ink-faint hover:text-ink",
+              "relative -mb-px px-4 py-2.5 font-mono text-label uppercase transition-colors duration-150",
+              filters.kind === t.k
+                ? "text-ink"
+                : "text-ink-faint hover:text-ink",
             )}
           >
             {t.label}
+            {filters.kind === t.k ? (
+              <motion.span
+                layoutId="submission-tab"
+                transition={snap}
+                aria-hidden
+                className="absolute inset-x-0 bottom-0 h-0.5 bg-acm"
+              />
+            ) : null}
           </button>
         ))}
       </div>
@@ -208,7 +301,9 @@ function Manager() {
       {/* Filters */}
       <div className="mt-5 grid grid-cols-2 gap-3 lg:grid-cols-[1.4fr_repeat(5,auto)] lg:items-end">
         <label className="col-span-2 block lg:col-span-1">
-          <span className="block font-mono text-micro uppercase text-ink-faint">Search</span>
+          <span className="block font-mono text-micro uppercase text-ink-faint">
+            Search
+          </span>
           <input
             type="search"
             value={search}
@@ -219,8 +314,15 @@ function Manager() {
           />
         </label>
         <label className="block">
-          <span className="block font-mono text-micro uppercase text-ink-faint">Status</span>
-          <select aria-label="Status" value={filters.state} onChange={(e) => setFilters({ state: e.target.value })} className={cn(control, "mt-1 w-full")}>
+          <span className="block font-mono text-micro uppercase text-ink-faint">
+            Status
+          </span>
+          <select
+            aria-label="Status"
+            value={filters.state}
+            onChange={(e) => setFilters({ state: e.target.value })}
+            className={cn(control, "mt-1 w-full")}
+          >
             <option value="">Any status</option>
             {SUBMISSION_STATES.map((st) => (
               <option key={st} value={st}>
@@ -230,7 +332,9 @@ function Manager() {
           </select>
         </label>
         <label className="block">
-          <span className="block font-mono text-micro uppercase text-ink-faint">{kind ? CATEGORY[kind].label : "Category"}</span>
+          <span className="block font-mono text-micro uppercase text-ink-faint">
+            {kind ? CATEGORY[kind].label : "Category"}
+          </span>
           <select
             aria-label={kind ? CATEGORY[kind].label : "Category"}
             value={filters.category}
@@ -250,16 +354,43 @@ function Manager() {
           </select>
         </label>
         <label className="block">
-          <span className="block font-mono text-micro uppercase text-ink-faint">From</span>
-          <input type="date" aria-label="From" value={filters.from} onChange={(e) => setFilters({ from: e.target.value })} className={cn(control, "mt-1 w-full")} />
+          <span className="block font-mono text-micro uppercase text-ink-faint">
+            From
+          </span>
+          <input
+            type="date"
+            aria-label="From"
+            value={filters.from}
+            onChange={(e) => setFilters({ from: e.target.value })}
+            className={cn(control, "mt-1 w-full")}
+          />
         </label>
         <label className="block">
-          <span className="block font-mono text-micro uppercase text-ink-faint">To</span>
-          <input type="date" aria-label="To" value={filters.to} onChange={(e) => setFilters({ to: e.target.value })} className={cn(control, "mt-1 w-full")} />
+          <span className="block font-mono text-micro uppercase text-ink-faint">
+            To
+          </span>
+          <input
+            type="date"
+            aria-label="To"
+            value={filters.to}
+            onChange={(e) => setFilters({ to: e.target.value })}
+            className={cn(control, "mt-1 w-full")}
+          />
         </label>
         <label className="block">
-          <span className="block font-mono text-micro uppercase text-ink-faint">Sort</span>
-          <select aria-label="Sort" value={filters.sort || "newest"} onChange={(e) => setFilters({ sort: e.target.value === "newest" ? "" : e.target.value })} className={cn(control, "mt-1 w-full")}>
+          <span className="block font-mono text-micro uppercase text-ink-faint">
+            Sort
+          </span>
+          <select
+            aria-label="Sort"
+            value={filters.sort || "newest"}
+            onChange={(e) =>
+              setFilters({
+                sort: e.target.value === "newest" ? "" : e.target.value,
+              })
+            }
+            className={cn(control, "mt-1 w-full")}
+          >
             <option value="newest">Newest first</option>
             <option value="oldest">Oldest first</option>
             <option value="name">Name A–Z</option>
@@ -269,7 +400,9 @@ function Manager() {
 
       <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
         <p className="text-sm text-ink-muted" aria-live="polite">
-          {data ? `${data.total} submission${data.total === 1 ? "" : "s"}${loading ? " · updating…" : ""}` : "Loading…"}
+          {data
+            ? `${data.total} submission${data.total === 1 ? "" : "s"}${loading ? " · updating…" : ""}`
+            : "Loading…"}
         </p>
         <div className="flex flex-wrap gap-2">
           {Object.values(filters).some(Boolean) ? (
@@ -297,34 +430,66 @@ function Manager() {
         </div>
       </div>
 
-      {selected.size ? (
-        <div role="region" aria-label="Bulk actions" className="mt-4 flex flex-wrap items-center gap-3 border border-acm/50 bg-acm-wash px-4 py-3">
-          <span className="text-sm font-medium text-ink">{selected.size} selected</span>
-          <select
-            aria-label="New status for selected"
-            value={bulkState}
-            onChange={(e) => setBulkState(e.target.value as SubmissionState | "")}
-            className={cn(control, "h-9")}
+      <AnimatePresence initial={false}>
+        {selected.size ? (
+          <motion.div
+            key="bulk"
+            role="region"
+            aria-label="Bulk actions"
+            initial={{ opacity: 0, y: -6 }}
+            animate={{ opacity: 1, y: 0, transition: enter(0.2) }}
+            exit={{ opacity: 0, y: -4, transition: exit(0.14) }}
+            className="mt-4 flex flex-wrap items-center gap-3 border border-acm/50 bg-acm-wash px-4 py-3"
           >
-            <option value="">Set status…</option>
-            {SUBMISSION_STATES.map((st) => (
-              <option key={st} value={st}>
-                {STATE_LABEL[st]}
-              </option>
-            ))}
-          </select>
-          <Btn size="sm" tone="primary" onClick={() => runBulk("state")} disabled={!bulkState || bulkBusy}>
-            {bulkBusy ? "Working…" : "Apply"}
-          </Btn>
-          <Btn size="sm" tone="danger" onClick={() => setBulkDelete(true)} disabled={bulkBusy}>
-            Delete selected
-          </Btn>
-          <Btn size="sm" tone="ghost" onClick={() => setSelected(new Set())} className="ml-auto">
-            Clear selection
-          </Btn>
-          <p className="basis-full text-xs text-ink-faint">Bulk status changes do not email applicants. Open a submission to send one.</p>
-        </div>
-      ) : null}
+            <span className="text-sm font-medium text-ink">
+              {selected.size} selected
+            </span>
+            <select
+              aria-label="New status for selected"
+              value={bulkState}
+              onChange={(e) =>
+                setBulkState(e.target.value as SubmissionState | "")
+              }
+              className={cn(control, "h-9")}
+            >
+              <option value="">Set status…</option>
+              {SUBMISSION_STATES.map((st) => (
+                <option key={st} value={st}>
+                  {STATE_LABEL[st]}
+                </option>
+              ))}
+            </select>
+            <Btn
+              size="sm"
+              tone="primary"
+              onClick={() => runBulk("state")}
+              disabled={!bulkState || bulkBusy}
+            >
+              {bulkBusy ? "Working…" : "Apply"}
+            </Btn>
+            <Btn
+              size="sm"
+              tone="danger"
+              onClick={() => setBulkDelete(true)}
+              disabled={bulkBusy}
+            >
+              Delete selected
+            </Btn>
+            <Btn
+              size="sm"
+              tone="ghost"
+              onClick={() => setSelected(new Set())}
+              className="ml-auto"
+            >
+              Clear selection
+            </Btn>
+            <p className="basis-full text-xs text-ink-faint">
+              Bulk status changes do not email applicants. Open a submission to
+              send one.
+            </p>
+          </motion.div>
+        ) : null}
+      </AnimatePresence>
 
       <div className="mt-4">
         {error ? (
@@ -333,10 +498,17 @@ function Manager() {
           <LoadingRows rows={6} />
         ) : data.rows.length === 0 ? (
           <EmptyState title="No submissions found">
-            {Object.values(filters).some(Boolean) ? "Nothing matches these filters." : "New applications, problems and proposals appear here as soon as they are sent."}
+            {Object.values(filters).some(Boolean)
+              ? "Nothing matches these filters."
+              : "New applications, problems and proposals appear here as soon as they are sent."}
           </EmptyState>
         ) : (
-          <div className={cn("relative overflow-x-auto border border-line transition-opacity", loading && "opacity-60")}>
+          <div
+            className={cn(
+              "relative overflow-x-auto border border-line transition-opacity",
+              loading && "opacity-60",
+            )}
+          >
             <table className="w-full min-w-[46rem] text-left text-sm">
               <thead className="border-b border-line bg-surface">
                 <tr>
@@ -345,12 +517,25 @@ function Manager() {
                       type="checkbox"
                       aria-label="Select all on this page"
                       checked={allTicked}
-                      onChange={() => setSelected(allTicked ? new Set() : new Set(pageIds))}
+                      onChange={() =>
+                        setSelected(allTicked ? new Set() : new Set(pageIds))
+                      }
                       className="h-4 w-4 accent-acm"
                     />
                   </th>
-                  {["Received", "Type", "Submission", "Contact", "Status", ""].map((h) => (
-                    <th key={h || "actions"} scope="col" className="px-3 py-3 font-mono text-micro font-normal uppercase text-ink-faint">
+                  {[
+                    "Received",
+                    "Type",
+                    "Submission",
+                    "Contact",
+                    "Status",
+                    "",
+                  ].map((h) => (
+                    <th
+                      key={h || "actions"}
+                      scope="col"
+                      className="px-3 py-3 font-mono text-micro font-normal uppercase text-ink-faint"
+                    >
                       {h || <span className="sr-only">Actions</span>}
                     </th>
                   ))}
@@ -359,9 +544,17 @@ function Manager() {
               <tbody>
                 {data.rows.map((row) => {
                   const p = row.payload;
-                  const contact = row.anonymous ? "Anonymous" : str(p.email) || str(p.name) || "—";
+                  const contact = row.anonymous
+                    ? "Anonymous"
+                    : str(p.email) || str(p.name) || "—";
                   return (
-                    <tr key={row.id} className={cn("border-b border-line last:border-b-0 hover:bg-surface/60", selected.has(row.id) && "bg-surface")}>
+                    <tr
+                      key={row.id}
+                      className={cn(
+                        "border-b border-line last:border-b-0 hover:bg-surface/60",
+                        selected.has(row.id) && "bg-surface",
+                      )}
+                    >
                       <td className="px-3 py-3">
                         <input
                           type="checkbox"
@@ -371,22 +564,41 @@ function Manager() {
                           className="h-4 w-4 accent-acm"
                         />
                       </td>
-                      <td className="whitespace-nowrap px-3 py-3 text-xs text-ink-faint">{fmt(row.created_at)}</td>
-                      <td className="whitespace-nowrap px-3 py-3 font-mono text-micro uppercase text-ink-muted">{KIND_LABEL[row.kind]}</td>
+                      <td className="whitespace-nowrap px-3 py-3 text-xs text-ink-faint">
+                        {fmt(row.created_at)}
+                      </td>
+                      <td className="whitespace-nowrap px-3 py-3 font-mono text-micro uppercase text-ink-muted">
+                        {KIND_LABEL[row.kind]}
+                      </td>
                       <td className="max-w-[22rem] px-3 py-3">
-                        <button type="button" onClick={() => setOpenId(row.id)} className="line-clamp-2 text-left font-medium text-ink hover:text-acm-bright">
+                        <button
+                          type="button"
+                          onClick={() => setOpenId(row.id)}
+                          className="line-clamp-2 text-left font-medium text-ink hover:text-acm-bright"
+                        >
                           {submissionTitle(row)}
                         </button>
-                        {row.note ? <span className="mt-0.5 block truncate text-xs text-ink-faint">Note: {row.note}</span> : null}
+                        {row.note ? (
+                          <span className="mt-0.5 block truncate text-xs text-ink-faint">
+                            Note: {row.note}
+                          </span>
+                        ) : null}
                       </td>
-                      <td className="max-w-[14rem] truncate px-3 py-3 text-ink-muted">{contact}</td>
+                      <td className="max-w-[14rem] truncate px-3 py-3 text-ink-muted">
+                        {contact}
+                      </td>
                       <td className="px-3 py-2">
                         <select
                           aria-label={`Status of ${submissionTitle(row)}`}
                           value={row.state}
                           disabled={busy === row.id}
-                          onChange={(e) => changeState(row, e.target.value as SubmissionState)}
-                          className={cn("h-9 border border-line bg-void px-2 font-mono text-micro uppercase focus:border-acm focus:outline-none disabled:opacity-50", STATE_TONE[row.state])}
+                          onChange={(e) =>
+                            changeState(row, e.target.value as SubmissionState)
+                          }
+                          className={cn(
+                            "h-9 border border-line bg-void px-2 font-mono text-micro uppercase focus:border-acm focus:outline-none disabled:opacity-50",
+                            STATE_TONE[row.state],
+                          )}
                         >
                           {SUBMISSION_STATES.map((st) => (
                             <option key={st} value={st}>
@@ -396,7 +608,12 @@ function Manager() {
                         </select>
                       </td>
                       <td className="px-3 py-2 text-right">
-                        <Btn size="sm" tone="ghost" onClick={() => setOpenId(row.id)} aria-label={`Open ${submissionTitle(row)}`}>
+                        <Btn
+                          size="sm"
+                          tone="ghost"
+                          onClick={() => setOpenId(row.id)}
+                          aria-label={`Open ${submissionTitle(row)}`}
+                        >
                           Open
                         </Btn>
                       </td>
@@ -410,14 +627,25 @@ function Manager() {
       </div>
 
       {data && data.total > data.per ? (
-        <nav aria-label="Pages" className="mt-4 flex items-center justify-between gap-3">
-          <Btn size="sm" disabled={page <= 1 || loading} onClick={() => setFilters({ page: String(page - 1) })}>
+        <nav
+          aria-label="Pages"
+          className="mt-4 flex items-center justify-between gap-3"
+        >
+          <Btn
+            size="sm"
+            disabled={page <= 1 || loading}
+            onClick={() => setFilters({ page: String(page - 1) })}
+          >
             ← Previous
           </Btn>
           <span className="text-sm text-ink-muted">
             Page {page} of {pages}
           </span>
-          <Btn size="sm" disabled={page >= pages || loading} onClick={() => setFilters({ page: String(page + 1) })}>
+          <Btn
+            size="sm"
+            disabled={page >= pages || loading}
+            onClick={() => setFilters({ page: String(page + 1) })}
+          >
             Next →
           </Btn>
         </nav>
@@ -430,13 +658,20 @@ function Manager() {
         onConfirm={() => runBulk("delete")}
         onClose={() => setBulkDelete(false)}
       >
-        They are removed from the database for good. Export them as CSV first if you may need them.
+        They are removed from the database for good. Export them as CSV first if
+        you may need them.
       </ConfirmDialog>
 
       <Detail
         id={openId}
         onClose={() => setOpenId(null)}
-        onChanged={(row) => setData((d) => (d ? { ...d, rows: d.rows.map((r) => (r.id === row.id ? row : r)) } : d))}
+        onChanged={(row) =>
+          setData((d) =>
+            d
+              ? { ...d, rows: d.rows.map((r) => (r.id === row.id ? row : r)) }
+              : d,
+          )
+        }
         onDeleted={() => {
           setOpenId(null);
           load();
@@ -479,7 +714,9 @@ function Detail({
     setStale(null);
     setDraft(null);
     try {
-      const { row } = await api<{ row: StoredSubmission }>(`/api/admin/submissions/${id}`);
+      const { row } = await api<{ row: StoredSubmission }>(
+        `/api/admin/submissions/${id}`,
+      );
       setRow(row);
       setState(row.state);
       setNote(row.note ?? "");
@@ -493,14 +730,26 @@ function Detail({
   }, [fetchRow]);
 
   const dirty = row ? state !== row.state || note !== (row.note ?? "") : false;
-  const address = row && !row.anonymous && typeof row.payload.email === "string" ? row.payload.email : "";
-  const canNotify = Boolean(emailOn && row && address && state !== row.state && ["accepted", "declined", "reviewing"].includes(state));
+  const address =
+    row && !row.anonymous && typeof row.payload.email === "string"
+      ? row.payload.email
+      : "";
+  const canNotify = Boolean(
+    emailOn &&
+    row &&
+    address &&
+    state !== row.state &&
+    ["accepted", "declined", "reviewing"].includes(state),
+  );
 
   async function save(overwrite = false) {
     if (!row) return;
     setSaving(true);
     try {
-      const { row: saved, emailed } = await api<{ row: StoredSubmission; emailed?: boolean }>(`/api/admin/submissions/${row.id}`, {
+      const { row: saved, emailed } = await api<{
+        row: StoredSubmission;
+        emailed?: boolean;
+      }>(`/api/admin/submissions/${row.id}`, {
         method: "PATCH",
         json: {
           state,
@@ -514,10 +763,15 @@ function Detail({
       onChanged(saved);
       toast(
         canNotify && notify && !emailed ? "error" : "ok",
-        canNotify && notify ? (emailed ? "Saved, and the applicant was emailed." : "Saved, but the email could not be sent.") : "Changes saved.",
+        canNotify && notify
+          ? emailed
+            ? "Saved, and the applicant was emailed."
+            : "Saved, but the email could not be sent."
+          : "Changes saved.",
       );
     } catch (e) {
-      if (e instanceof ApiError && e.code === "stale") setStale(e.extra.current as StoredSubmission);
+      if (e instanceof ApiError && e.code === "stale")
+        setStale(e.extra.current as StoredSubmission);
       toast("error", `Unable to save. ${explain(e)}`);
     } finally {
       setSaving(false);
@@ -543,9 +797,15 @@ function Detail({
     if (!row) return;
     setDrafting(true);
     try {
-      const { project } = await api<{ project: { slug: string } }>(`/api/admin/submissions/${row.id}/project`, { method: "POST" });
+      const { project } = await api<{ project: { slug: string } }>(
+        `/api/admin/submissions/${row.id}/project`,
+        { method: "POST" },
+      );
       setDraft(project);
-      toast("ok", "Draft project created. It stays hidden until you publish it.");
+      toast(
+        "ok",
+        "Draft project created. It stays hidden until you publish it.",
+      );
     } catch (e) {
       toast("error", explain(e));
     } finally {
@@ -555,7 +815,11 @@ function Detail({
 
   const groups = row ? FIELD_GROUPS[row.kind] : [];
   const listed = new Set(groups.flatMap((g) => g.fields.map(([k]) => k)));
-  const other = row ? Object.keys(row.payload).filter((k) => !listed.has(k) && k !== "anonymous") : [];
+  const other = row
+    ? Object.keys(row.payload).filter(
+        (k) => !listed.has(k) && k !== "anonymous",
+      )
+    : [];
 
   return (
     <>
@@ -566,11 +830,19 @@ function Detail({
         footer={
           row ? (
             <>
-              <Btn tone="danger" className="mr-auto" onClick={() => setConfirmDelete(true)}>
+              <Btn
+                tone="danger"
+                className="mr-auto"
+                onClick={() => setConfirmDelete(true)}
+              >
                 Delete
               </Btn>
               <Btn onClick={onClose}>Close</Btn>
-              <Btn tone="primary" onClick={() => save()} disabled={!dirty || saving}>
+              <Btn
+                tone="primary"
+                onClick={() => save()}
+                disabled={!dirty || saving}
+              >
                 {saving ? "Saving…" : "Save changes"}
               </Btn>
             </>
@@ -586,11 +858,17 @@ function Detail({
         ) : (
           <div className="space-y-8">
             {stale ? (
-              <div role="alert" className="border border-acm/60 bg-acm-wash px-4 py-3 text-sm text-ink-muted">
-                <p className="font-medium text-ink">Someone else updated this submission after you opened it.</p>
+              <div
+                role="alert"
+                className="border border-acm/60 bg-acm-wash px-4 py-3 text-sm text-ink-muted"
+              >
+                <p className="font-medium text-ink">
+                  Someone else updated this submission after you opened it.
+                </p>
                 <p className="mt-1">
                   It is now <strong>{STATE_LABEL[stale.state]}</strong>
-                  {stale.note ? ` with the note “${stale.note}”` : ""}. Nothing was overwritten.
+                  {stale.note ? ` with the note “${stale.note}”` : ""}. Nothing
+                  was overwritten.
                 </p>
                 <div className="mt-3 flex flex-wrap gap-2">
                   <Btn
@@ -605,21 +883,41 @@ function Detail({
                   >
                     Load their version
                   </Btn>
-                  <Btn size="sm" tone="danger" onClick={() => save(true)} disabled={saving}>
+                  <Btn
+                    size="sm"
+                    tone="danger"
+                    onClick={() => save(true)}
+                    disabled={saving}
+                  >
                     Keep mine and overwrite
                   </Btn>
                 </div>
               </div>
             ) : null}
 
-            <section aria-labelledby="sub-admin" className="border border-line bg-surface p-4">
-              <h3 id="sub-admin" className="font-mono text-label uppercase text-ink">
+            <section
+              aria-labelledby="sub-admin"
+              className="border border-line bg-surface p-4"
+            >
+              <h3
+                id="sub-admin"
+                className="font-mono text-label uppercase text-ink"
+              >
                 Review
               </h3>
               <div className="mt-4 grid gap-4 sm:grid-cols-2">
                 <label className="block">
-                  <span className="block font-mono text-micro uppercase text-ink-faint">Status</span>
-                  <select aria-label="Status" value={state} onChange={(e) => setState(e.target.value as SubmissionState)} className={cn(control, "mt-1 w-full", STATE_TONE[state])}>
+                  <span className="block font-mono text-micro uppercase text-ink-faint">
+                    Status
+                  </span>
+                  <select
+                    aria-label="Status"
+                    value={state}
+                    onChange={(e) =>
+                      setState(e.target.value as SubmissionState)
+                    }
+                    className={cn(control, "mt-1 w-full", STATE_TONE[state])}
+                  >
                     {SUBMISSION_STATES.map((st) => (
                       <option key={st} value={st}>
                         {STATE_LABEL[st]}
@@ -629,26 +927,39 @@ function Detail({
                 </label>
                 <dl className="text-xs text-ink-faint">
                   <dt className="font-mono uppercase">Received</dt>
-                  <dd className="mt-1 text-sm text-ink-muted">{fmt(row.created_at)}</dd>
+                  <dd className="mt-1 text-sm text-ink-muted">
+                    {fmt(row.created_at)}
+                  </dd>
                   {row.updated_at ? (
                     <>
                       <dt className="mt-2 font-mono uppercase">Last changed</dt>
-                      <dd className="mt-1 text-sm text-ink-muted">{fmt(row.updated_at)}</dd>
+                      <dd className="mt-1 text-sm text-ink-muted">
+                        {fmt(row.updated_at)}
+                      </dd>
                     </>
                   ) : null}
                 </dl>
               </div>
               {canNotify ? (
                 <label className="mt-4 flex items-start gap-2 text-sm text-ink">
-                  <input type="checkbox" checked={notify} onChange={(e) => setNotify(e.target.checked)} className="mt-1 accent-[rgb(var(--acm))]" />
+                  <input
+                    type="checkbox"
+                    checked={notify}
+                    onChange={(e) => setNotify(e.target.checked)}
+                    className="mt-1 accent-[rgb(var(--acm))]"
+                  />
                   <span>
                     Email the applicant about this ({address})
-                    <span className="block text-xs text-ink-faint">Uses the template under Inbox → Emails.</span>
+                    <span className="block text-xs text-ink-faint">
+                      Uses the template under Inbox → Emails.
+                    </span>
                   </span>
                 </label>
               ) : null}
               <label className="mt-4 block">
-                <span className="block font-mono text-micro uppercase text-ink-faint">Private note</span>
+                <span className="block font-mono text-micro uppercase text-ink-faint">
+                  Private note
+                </span>
                 <textarea
                   aria-label="Private note"
                   rows={3}
@@ -664,7 +975,10 @@ function Detail({
                   {draft ? (
                     <p className="text-sm text-ink-muted">
                       Draft created.{" "}
-                      <Link href="/admin/projects" className="text-acm-bright underline underline-offset-4">
+                      <Link
+                        href="/admin/projects"
+                        className="text-acm-bright underline underline-offset-4"
+                      >
                         Open Projects
                       </Link>{" "}
                       to finish and publish it.
@@ -672,9 +986,14 @@ function Detail({
                   ) : (
                     <>
                       <Btn size="sm" onClick={toProject} disabled={drafting}>
-                        {drafting ? "Creating…" : "Create draft project from this proposal"}
+                        {drafting
+                          ? "Creating…"
+                          : "Create draft project from this proposal"}
                       </Btn>
-                      <p className="mt-2 text-xs text-ink-faint">Pre-fills a hidden project from the proposal. Nothing is published until you do it under Projects.</p>
+                      <p className="mt-2 text-xs text-ink-faint">
+                        Pre-fills a hidden project from the proposal. Nothing is
+                        published until you do it under Projects.
+                      </p>
                     </>
                   )}
                 </div>
@@ -682,25 +1001,38 @@ function Detail({
             </section>
 
             <section aria-labelledby="sub-info">
-              <h3 id="sub-info" className="font-mono text-label uppercase text-ink">
+              <h3
+                id="sub-info"
+                className="font-mono text-label uppercase text-ink"
+              >
                 Submission
               </h3>
               <dl className="mt-3 grid grid-cols-[8rem_1fr] gap-x-4 gap-y-2 text-sm">
                 <dt className="text-ink-faint">Type</dt>
                 <dd className="text-ink">{KIND_LABEL[row.kind]}</dd>
                 <dt className="text-ink-faint">Anonymous</dt>
-                <dd className="text-ink">{row.anonymous ? "Yes — identity fields were cleared before sending" : "No"}</dd>
+                <dd className="text-ink">
+                  {row.anonymous
+                    ? "Yes — identity fields were cleared before sending"
+                    : "No"}
+                </dd>
                 <dt className="text-ink-faint">Reference</dt>
-                <dd className="break-all font-mono text-xs text-ink-muted">{row.id}</dd>
+                <dd className="break-all font-mono text-xs text-ink-muted">
+                  {row.id}
+                </dd>
               </dl>
             </section>
 
             {groups.map((g) => {
-              const present = g.fields.filter(([k]) => str(row.payload[k]).trim());
+              const present = g.fields.filter(([k]) =>
+                str(row.payload[k]).trim(),
+              );
               if (!present.length) return null;
               return (
                 <section key={g.title} aria-label={g.title}>
-                  <h3 className="font-mono text-label uppercase text-ink">{g.title}</h3>
+                  <h3 className="font-mono text-label uppercase text-ink">
+                    {g.title}
+                  </h3>
                   <dl className="mt-3 space-y-3 text-sm">
                     {present.map(([k, label]) => (
                       <div key={k}>
@@ -717,7 +1049,9 @@ function Detail({
 
             {other.length ? (
               <section aria-label="Other details">
-                <h3 className="font-mono text-label uppercase text-ink">Other details</h3>
+                <h3 className="font-mono text-label uppercase text-ink">
+                  Other details
+                </h3>
                 <dl className="mt-3 space-y-3 text-sm">
                   {other.map((k) => (
                     <div key={k}>
@@ -741,8 +1075,8 @@ function Detail({
         onConfirm={remove}
         onClose={() => setConfirmDelete(false)}
       >
-        It is removed from the database for good. This cannot be undone. Use “Declined” instead if you only want it out of
-        the way.
+        It is removed from the database for good. This cannot be undone. Use
+        “Declined” instead if you only want it out of the way.
       </ConfirmDialog>
     </>
   );
@@ -753,14 +1087,22 @@ function Value({ field, value }: { field: string; value: unknown }) {
   const text = str(value);
   if (field === "email" && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(text)) {
     return (
-      <a href={`mailto:${text}`} className="text-acm-bright underline underline-offset-4">
+      <a
+        href={`mailto:${text}`}
+        className="text-acm-bright underline underline-offset-4"
+      >
         {text}
       </a>
     );
   }
   if (/^https?:\/\/\S+$/i.test(text)) {
     return (
-      <a href={text} target="_blank" rel="noreferrer noopener nofollow" className="break-all text-acm-bright underline underline-offset-4">
+      <a
+        href={text}
+        target="_blank"
+        rel="noreferrer noopener nofollow"
+        className="break-all text-acm-bright underline underline-offset-4"
+      >
         {text}
       </a>
     );
