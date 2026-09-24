@@ -34,7 +34,7 @@ function Tile({ label, value, href, hint }: { label: string; value: number | nul
 
 /** Setup steps, then live numbers from the database. Nothing here is a demo figure. */
 export function Dashboard() {
-  const { status, content, audit, refresh } = useCms();
+  const { status, content, audit, v3, role, refresh } = useCms();
   const toast = useToast();
   const [stats, setStats] = useState<Stats | null>(null);
   const [error, setError] = useState<unknown>(null);
@@ -111,6 +111,16 @@ export function Dashboard() {
           <Btn tone="primary" className="mt-4" onClick={() => run("content")} disabled={loading !== null}>
             {loading === "content" ? "Loading…" : "Load remaining content"}
           </Btn>
+        </Notice>
+      ) : null}
+
+      {status === "ready" && !contentMissing && !contentEmpty && audit && !v3 && role === "owner" ? (
+        <Notice tone="info" title="Step 5 (optional) · Run supabase/v3.sql">
+          <p>
+            Switches on personal admin accounts with roles, history and undo for every edit, editable applicant emails, event photo
+            galleries and the GitHub activity import. It changes no existing data. Run it in the Supabase SQL editor, then reload
+            this page.
+          </p>
         </Notice>
       ) : null}
 

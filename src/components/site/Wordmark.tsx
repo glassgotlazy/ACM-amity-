@@ -1,4 +1,5 @@
 import type { Brand } from "@/lib/cms/types";
+import { CmsImage } from "@/components/ui/CmsImage";
 import { cn } from "@/lib/utils";
 
 /**
@@ -8,14 +9,19 @@ import { cn } from "@/lib/utils";
 export function Wordmark({ brand, size }: { brand: Brand; size: "sm" | "lg" }) {
   if (brand.logo) {
     return (
-      // eslint-disable-next-line @next/next/no-img-element -- small, fixed-height mark; the file is already sized on upload
-      <img
-        src={brand.logo}
-        alt={size === "lg" ? brand.label.replace(/ home$/, "") : ""}
-        className={cn("w-auto object-contain", size === "sm" ? "h-8 max-w-[10rem]" : "h-10 max-w-[14rem]")}
-      />
+      <span className={cn("relative block", size === "sm" ? "h-8 w-40" : "h-10 w-56")}>
+        <CmsImage
+          src={brand.logo}
+          alt={size === "lg" ? brand.label.replace(/ home$/, "") : ""}
+          sizes={size === "sm" ? "160px" : "224px"}
+          fit="contain"
+          className="object-left"
+          priority={size === "sm"}
+        />
+      </span>
     );
   }
+
 
   return size === "sm" ? (
     <>

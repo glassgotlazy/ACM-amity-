@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { api, ApiError, explain } from "./api";
 import { Btn, ErrorState, ListField, LoadingRows, TextArea, TextInput, useCms, useToast } from "./kit";
 import { ImageField } from "./media";
+import { HistoryButton } from "./history";
 import { list, s, type Draft, type Errors } from "./Collection";
 
 function Group({ title, description, children }: { title: string; description?: string; children: React.ReactNode }) {
@@ -21,7 +22,7 @@ function Group({ title, description, children }: { title: string; description?: 
 /** One form for the whole site identity. Saving updates every page. */
 export function SettingsEditor() {
   const toast = useToast();
-  const { status } = useCms();
+  const { status, v3 } = useCms();
   const [draft, setDraft] = useState<Draft | null>(null);
   const [saved, setSaved] = useState<string>("");
   const [loadError, setLoadError] = useState<unknown>(null);
@@ -60,6 +61,29 @@ export function SettingsEditor() {
       maxLength={opts.max}
     />
   );
+
+  /**
+   * Images save the moment they are chosen — just that one field, on top of
+   * the last saved settings, so other unsaved edits are left for the Save
+   * button. This is what makes a new logo appear without a second step.
+   */
+  async function saveImage(field: string, url: string | null) {
+    set({ [field]: url });
+    const base = JSON.parse(saved) as Draft;
+    try {
+      const { row } = await api<{ row: Draft }>("/api/admin/cms/settings", {
+        method: "PUT",
+        json: { ...base, [field]: url, _expected_updated_at: base.updated_at },
+      });
+      setSaved(JSON.stringify(row));
+      setDraft((d) => ({ ...d, [field]: row[field], updated_at: row.updated_at }));
+      toast("ok", url ? "Image saved — it is live on the site." : "Image removed from the site.");
+    } catch (e) {
+      if (e instanceof ApiError && e.code === "stale") setStale(e.extra.current as Draft);
+      setErrors((x) => ({ ...x, [field]: e instanceof ApiError && e.errors[field] ? e.errors[field] : explain(e) }));
+      toast("error", `The image was uploaded but not saved. ${explain(e)}`);
+    }
+  }
 
   async function save(overwrite = false) {
     setSaving(true);
@@ -130,12 +154,14 @@ export function SettingsEditor() {
       </Group>
 
       <Group title="Logo & favicon" description="Without a logo, the typographic wordmark is used.">
-        <ImageField label="Logo" use="logo" value={(draft.logo_url as string) ?? null} onChange={(v) => set({ logo_url: v })} error={errors.logo_url} />
+        <ImageField label="Logo" use="logo" value={(draft.logo_url as string) ?? null} onChange={(v) => saveImage("logo_url", v)}
+          savesItself error={errors.logo_url} />
         <ImageField
           label="Favicon"
           use="favicon"
           value={(draft.favicon_url as string) ?? null}
-          onChange={(v) => set({ favicon_url: v })}
+          onChange={(v) => saveImage("favicon_url", v)}
+          savesItself
           error={errors.favicon_url}
         />
       </Group>
@@ -152,7 +178,8 @@ export function SettingsEditor() {
           label="Registration QR code"
           use="qr"
           value={(draft.registration_qr_url as string) ?? null}
-          onChange={(v) => set({ registration_qr_url: v })}
+          onChange={(v) => saveImage("registration_qr_url", v)}
+          savesItself
           error={errors.registration_qr_url}
           hint="Upload a new QR whenever the form link changes — the QR is an image and does not update itself."
         />
@@ -186,6 +213,7 @@ export function SettingsEditor() {
 
       <div className="sticky bottom-0 -mx-5 flex items-center justify-end gap-3 border-t border-line bg-void/95 px-5 py-4 backdrop-blur sm:-mx-8 sm:px-8 lg:-mx-10 lg:px-10">
         {dirty ? <span className="mr-auto font-mono text-micro uppercase text-acm-bright">Unsaved changes</span> : null}
+        {v3 ? <HistoryButton resource="settings" id="1" onRestored={load} /> : null}
         <Btn onClick={() => draft && setDraft(JSON.parse(saved))} disabled={!dirty || saving}>
           Discard
         </Btn>

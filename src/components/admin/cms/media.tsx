@@ -66,6 +66,7 @@ export function ImageField({
   use,
   error,
   hint,
+  savesItself,
 }: {
   label: string;
   value: string | null;
@@ -73,8 +74,14 @@ export function ImageField({
   use: MediaUse;
   error?: string;
   hint?: string;
+  /** The form saves this field on change itself; skip the "not saved" warning. */
+  savesItself?: boolean;
 }) {
   const toast = useToast();
+  // What the field held when the form opened: a different value means the
+  // new image is not on the site until the form is saved.
+  const initial = useRef(value);
+  const unsaved = !savesItself && value !== initial.current;
   const input = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState(false);
   const [problem, setProblem] = useState<string | null>(null);
@@ -88,7 +95,7 @@ export function ImageField({
     try {
       const uploaded = await upload(file, use);
       onChange(uploaded.url);
-      toast("ok", `${USE_LABEL[use]} uploaded.`);
+      toast("ok", savesItself ? `${USE_LABEL[use]} uploaded.` : `${USE_LABEL[use]} uploaded — click Save to put it on the site.`);
     } catch (e) {
       setProblem(uploadError(e));
     } finally {
@@ -131,6 +138,11 @@ export function ImageField({
             ) : null}
           </div>
           <p className="text-xs text-ink-faint">{hint ?? USE_HINT[use]}</p>
+          {unsaved ? (
+            <p role="status" className="text-xs font-medium text-signal-work">
+              Not on the site yet — click Save below to apply this image.
+            </p>
+          ) : null}
           {problem || error ? (
             <p role="alert" className="text-xs font-medium text-acm-bright">
               {problem ?? error}
@@ -152,6 +164,124 @@ export function ImageField({
         onClose={() => setPicking(false)}
         onPick={(url) => {
           onChange(url);
+          setPicking(false);
+        }}
+      />
+    </div>
+  );
+}
+
+/**
+ * Several photos in order (an event's gallery): add by upload or from the
+ * library, move, remove. Saved with the rest of the form.
+ */
+export function GalleryField({
+  label,
+  value,
+  onChange,
+  error,
+  max = 24,
+}: {
+  label: string;
+  value: string[];
+  onChange: (urls: string[]) => void;
+  error?: string;
+  max?: number;
+}) {
+  const toast = useToast();
+  const input = useRef<HTMLInputElement>(null);
+  const [busy, setBusy] = useState(false);
+  const [problem, setProblem] = useState<string | null>(null);
+  const [picking, setPicking] = useState(false);
+  const id = useId();
+  const full = value.length >= max;
+
+  async function onFiles(files: FileList | null) {
+    if (!files?.length) return;
+    setBusy(true);
+    setProblem(null);
+    const added: string[] = [];
+    try {
+      for (const file of Array.from(files).slice(0, max - value.length)) {
+        added.push((await upload(file, "cover")).url);
+      }
+      toast("ok", `${added.length} photo${added.length === 1 ? "" : "s"} added — click Save to put them on the site.`);
+    } catch (e) {
+      setProblem(uploadError(e));
+    } finally {
+      if (added.length) onChange([...value, ...added]);
+      setBusy(false);
+      if (input.current) input.current.value = "";
+    }
+  }
+
+  const move = (i: number, d: -1 | 1) => {
+    const next = [...value];
+    [next[i], next[i + d]] = [next[i + d], next[i]];
+    onChange(next);
+  };
+
+  return (
+    <div>
+      <div id={id} className="font-mono text-label uppercase text-ink-muted">
+        {label}
+      </div>
+      {value.length ? (
+        <ul className="mt-2 grid grid-cols-3 gap-2 sm:grid-cols-4">
+          {value.map((url, i) => (
+            <li key={`${url}-${i}`} className="border border-line bg-surface p-1">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={url} alt={`Photo ${i + 1}`} className="aspect-[4/3] w-full object-cover" />
+              <div className="mt-1 flex justify-between">
+                <span className="flex">
+                  <Btn size="sm" tone="ghost" className="px-2" onClick={() => move(i, -1)} disabled={i === 0} aria-label={`Move photo ${i + 1} earlier`}>
+                    ←
+                  </Btn>
+                  <Btn size="sm" tone="ghost" className="px-2" onClick={() => move(i, 1)} disabled={i === value.length - 1} aria-label={`Move photo ${i + 1} later`}>
+                    →
+                  </Btn>
+                </span>
+                <Btn size="sm" tone="ghost" className="px-2 hover:text-acm-bright" onClick={() => onChange(value.filter((_, j) => j !== i))} aria-label={`Remove photo ${i + 1}`}>
+                  ✕
+                </Btn>
+              </div>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p className="mt-2 text-sm text-ink-faint">No photos yet.</p>
+      )}
+      <div className="mt-2 flex flex-wrap gap-2">
+        <Btn size="sm" onClick={() => input.current?.click()} disabled={busy || full} aria-describedby={id}>
+          {busy ? "Uploading…" : "Upload photos"}
+        </Btn>
+        <Btn size="sm" onClick={() => setPicking(true)} disabled={busy || full}>
+          Add from library
+        </Btn>
+      </div>
+      <p className="mt-2 text-xs text-ink-faint">
+        {USE_HINT.cover} · up to {max} photos
+      </p>
+      {problem || error ? (
+        <p role="alert" className="mt-1 text-xs font-medium text-acm-bright">
+          {problem ?? error}
+        </p>
+      ) : null}
+      <input
+        ref={input}
+        type="file"
+        multiple
+        accept="image/png,image/jpeg,image/webp"
+        className="sr-only"
+        tabIndex={-1}
+        aria-hidden
+        onChange={(e) => onFiles(e.target.files)}
+      />
+      <LibraryPicker
+        open={picking}
+        onClose={() => setPicking(false)}
+        onPick={(url) => {
+          onChange([...value, url]);
           setPicking(false);
         }}
       />

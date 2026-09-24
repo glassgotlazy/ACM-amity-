@@ -2,6 +2,7 @@ import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { ADMIN_COOKIE, readSession, type Session } from "@/lib/admin-auth";
 import { can, type Permission } from "@/lib/admin-permissions";
+import { getUser } from "@/lib/admin-users";
 import { isStorageConfigured } from "@/lib/supabase";
 
 /**
@@ -21,8 +22,18 @@ export async function authorize(
 ): Promise<{ session: Session; denied?: never } | { session?: never; denied: NextResponse }> {
   const secret = process.env.ADMIN_PASSWORD;
   const token = (await cookies()).get(ADMIN_COOKIE)?.value;
-  const session = secret ? await readSession(secret, token) : null;
+  let session = secret ? await readSession(secret, token) : null;
   if (!session) return { denied: NextResponse.json({ error: "unauthorised" }, { status: 401 }) };
+
+  // Personal accounts are re-checked on every call, so deactivating someone,
+  // changing their role or signing them out everywhere takes effect at once.
+  if (session.userId) {
+    const user = await getUser(session.userId).catch(() => null);
+    if (!user || !user.active || user.session_version !== session.version) {
+      return { denied: NextResponse.json({ error: "unauthorised" }, { status: 401 }) };
+    }
+    session = { ...session, role: user.role, actor: user.name };
+  }
   if (!can(session.role, permission)) return { denied: NextResponse.json({ error: "forbidden" }, { status: 403 }) };
   if (opts.needsStorage !== false && !isStorageConfigured()) {
     return { denied: NextResponse.json({ error: "storage_not_configured" }, { status: 503 }) };

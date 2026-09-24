@@ -237,15 +237,138 @@ async function replaceMembers(projectId: string, members: Row[]) {
   }
 }
 
-export async function createRow(name: string, input: unknown, actor: string) {
+// ---------------------------------------------------------------------------
+// Optional columns (added by supabase/v3.sql): written only once they exist,
+// so saving never fails on a database that has not run the migration yet.
+// ---------------------------------------------------------------------------
+
+const OPTIONAL: Record<string, string[]> = { events: ["gallery"] };
+const columnCache = new Map<string, { ok: boolean; until: number }>();
+
+async function hasColumn(table: string, column: string): Promise<boolean> {
+  const key = `${table}.${column}`;
+  const hit = columnCache.get(key);
+  if (hit && Date.now() < hit.until) return hit.ok;
+  let ok = true;
+  try {
+    await rest(`${table}?select=${column}&limit=1`);
+  } catch (error) {
+    if (error instanceof StorageError && error.status === 400) ok = false;
+    else throw error;
+  }
+  columnCache.set(key, { ok, until: Date.now() + (ok ? 3600_000 : 60_000) });
+  return ok;
+}
+
+async function dropMissingColumns(name: string, table: string, row: Row) {
+  for (const col of OPTIONAL[name] ?? []) {
+    if (col in row && !(await hasColumn(table, col))) delete row[col];
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Version history (table content_versions, from supabase/v3.sql). Before an
+// item is changed or deleted its current state is kept, so any edit can be
+// undone and a deleted item brought back. Best-effort: without the table,
+// edits still work, just without history.
+// ---------------------------------------------------------------------------
+
+async function snapshot(resourceName: string, entityId: string, action: "update" | "delete", actor: string, current?: Row) {
+  try {
+    let data = current;
+    if (!data) {
+      const table = resourceName === "settings" ? "site_settings" : resourceName === "section" ? "page_sections" : resource(resourceName).table;
+      const key = resourceName === "section" ? "key" : "id";
+      [data] = await rest<Row[]>(`${table}?${q({ [key]: `eq.${entityId}`, select: "*" })}`);
+    }
+    if (!data) return;
+    if (resourceName === "projects") {
+      data = { ...data, members: await rest<Row[]>(`project_members?${q({ project_id: `eq.${entityId}`, order: "sort.asc" })}`) };
+    }
+    await rest("content_versions", {
+      method: "POST",
+      body: JSON.stringify({ actor, resource: resourceName, entity_id: entityId, action, label: labelOf(data).slice(0, 160), data }),
+    });
+  } catch (error) {
+    if (!(error instanceof StorageError && error.status === 404)) console.error("[versions] snapshot failed:", error);
+  }
+}
+
+export type Version = { id: number; at: string; actor: string; resource: string; entity_id: string; action: string; label: string | null };
+
+export async function listVersions(resourceName: string, entityId: string): Promise<Version[] | null> {
+  try {
+    return await rest<Version[]>(
+      `content_versions?${q({ select: "id,at,actor,resource,entity_id,action,label", resource: `eq.${resourceName}`, entity_id: `eq.${entityId}`, order: "at.desc", limit: "30" })}`,
+    );
+  } catch (error) {
+    if (error instanceof StorageError && error.status === 404) return null;
+    throw error;
+  }
+}
+
+/** Items of a collection that were deleted and do not exist any more (latest copy each). */
+export async function listDeleted(resourceName: string): Promise<Version[] | null> {
+  const r = resource(resourceName);
+  let rows: Version[];
+  try {
+    rows = await rest<Version[]>(
+      `content_versions?${q({ select: "id,at,actor,resource,entity_id,action,label", resource: `eq.${resourceName}`, action: "eq.delete", order: "at.desc", limit: "100" })}`,
+    );
+  } catch (error) {
+    if (error instanceof StorageError && error.status === 404) return null;
+    throw error;
+  }
+  const latest = [...new Map(rows.map((v) => [v.entity_id, v])).values()];
+  if (!latest.length) return [];
+  const alive = await rest<{ id: string }[]>(`${r.table}?${q({ select: "id", id: `in.(${latest.map((v) => v.entity_id).join(",")})` })}`);
+  const aliveIds = new Set(alive.map((a) => a.id));
+  return latest.filter((v) => !aliveIds.has(v.entity_id)).slice(0, 50);
+}
+
+/**
+ * Puts an item back the way a version recorded it — editing it if it still
+ * exists, recreating it (same id) if it was deleted. The restore itself goes
+ * through normal validation, so it cannot bring back a broken reference.
+ */
+export async function restoreVersion(versionId: number, resourceName: string, actor: string) {
+  let v: (Version & { data: Row }) | undefined;
+  try {
+    [v] = await rest<(Version & { data: Row })[]>(`content_versions?${q({ id: `eq.${versionId}`, resource: `eq.${resourceName}`, select: "*" })}`);
+  } catch (error) {
+    if (error instanceof StorageError && error.status === 404) throw new CmsError(409, "v3_missing");
+    throw error;
+  }
+  if (!v) throw new CmsError(404, "not_found");
+  const data = { ...v.data };
+  delete data.updated_at;
+  // People removed from the team since are kept by name, without the link.
+  if (v.resource === "projects" && Array.isArray(data.members)) {
+    const ids = new Set((await rest<{ id: string }[]>("team_members?select=id")).map((m) => m.id));
+    data.members = (data.members as Row[]).map((m) => (m.member_id && !ids.has(String(m.member_id)) ? { ...m, member_id: null } : m));
+  }
+  let result: Row;
+  if (v.resource === "settings") result = await saveSettings(data, actor);
+  else if (v.resource === "section") result = await saveSection(v.entity_id, data, actor);
+  else {
+    const r = resource(v.resource);
+    const [exists] = await rest<Row[]>(`${r.table}?${q({ id: `eq.${v.entity_id}`, select: "id" })}`);
+    result = exists ? await updateRow(v.resource, v.entity_id, data, actor) : await createRow(v.resource, data, actor, v.entity_id);
+  }
+  await audit({ actor, action: "update", entity: v.resource, entity_id: v.entity_id, summary: `Restored “${v.label ?? v.entity_id}” to the version from ${new Date(v.at).toISOString().slice(0, 16).replace("T", " ")} UTC` });
+  return result;
+}
+
+export async function createRow(name: string, input: unknown, actor: string, keepId?: string) {
   const r = resource(name);
   await requireReady(name);
   const { row, members } = validate(r, input, await context());
+  await dropMissingColumns(name, r.table, row);
   return guarded(r, async () => {
     const last = await rest<{ sort: number }[]>(`${r.table}?${q({ select: "sort", order: "sort.desc", limit: "1" })}`);
     const [created] = await rest<Row[]>(r.table, {
       method: "POST",
-      body: JSON.stringify({ ...row, sort: (last[0]?.sort ?? -1) + 1 }),
+      body: JSON.stringify({ ...row, ...(keepId ? { id: keepId } : {}), sort: (last[0]?.sort ?? -1) + 1 }),
       prefer: "return=representation",
     });
     if (members) await replaceMembers(created.id!, members);
@@ -260,7 +383,9 @@ export async function updateRow(name: string, id: string, input: unknown, actor:
   checkId(id);
   await requireReady(name);
   const { row, members } = validate(r, input, await context());
+  await dropMissingColumns(name, r.table, row);
   const expected = expectedVersion(input);
+  await snapshot(name, id, "update", actor);
   return guarded(r, async () => {
     const filter = q(expected ? { id: `eq.${id}`, updated_at: `eq.${expected}` } : { id: `eq.${id}` });
     const [updated] = await rest<Row[]>(`${r.table}?${filter}`, {
@@ -302,6 +427,7 @@ export async function deleteRow(name: string, id: string, actor: string, opts: {
     }
   }
 
+  await snapshot(name, id, "delete", actor);
   const removed = await rest<Row[]>(`${r.table}?${q({ id: `eq.${id}` })}`, {
     method: "DELETE",
     prefer: "return=representation",
@@ -349,6 +475,7 @@ export async function saveSettings(input: unknown, actor: string) {
   const result = V.validateSettings(input as Record<string, unknown>, await context());
   if (!result.ok) throw new CmsError(422, "invalid", result.errors);
   const expected = expectedVersion(input);
+  await snapshot("settings", "1", "update", actor);
   const filter = q(expected ? { id: "eq.1", updated_at: `eq.${expected}` } : { id: "eq.1" });
   const [row] = await rest<Row[]>(`site_settings?${filter}`, {
     method: "PATCH",
@@ -392,6 +519,7 @@ export async function saveSection(key: string, input: unknown, actor: string) {
   if (expected && current?.updated_at && current.updated_at !== expected) {
     throw new CmsError(409, "stale", undefined, { current });
   }
+  if (current?.updated_at) await snapshot("section", key, "update", actor, current);
   const [row] = await rest<Row[]>("page_sections?on_conflict=key", {
     method: "POST",
     body: JSON.stringify({ ...result.row, sort: current?.sort ?? 99, updated_at: new Date().toISOString() }),

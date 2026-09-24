@@ -109,6 +109,19 @@ class Check {
     return s;
   }
 
+  /** A list of images from the media library (an event's photo gallery). */
+  images(field: string, maxItems: number): string[] {
+    const v = this.raw(field) ?? [];
+    if (!Array.isArray(v) || v.some((x) => typeof x !== "string")) return this.fail(field, "Must be a list."), [];
+    if (v.length > maxItems) this.fail(field, `At most ${maxItems} photos.`);
+    const prefix = publicMediaPrefix();
+    const items = (v as string[]).map((x) => x.trim()).filter(Boolean);
+    if (items.some((x) => x.length > 500 || prefix === null || !x.startsWith(prefix) || x.slice(prefix.length).includes(".."))) {
+      this.fail(field, "Choose photos from the media library.");
+    }
+    return items;
+  }
+
   list(field: string, { maxItems = 20, max = 300 }: { maxItems?: number; max?: number } = {}): string[] {
     const v = this.raw(field) ?? [];
     if (!Array.isArray(v) || v.some((x) => typeof x !== "string")) return this.fail(field, "Must be a list."), [];
@@ -298,6 +311,7 @@ export function validateEvent(input: Input, ctx: Ctx) {
     location: c.text("location", { max: 160 }),
     registration_url: c.url("registration_url"),
     image_url: c.image("image_url"),
+    gallery: c.images("gallery", 24),
     status: c.oneOf("status", EVENT_STATUSES),
     published: c.bool("published"),
   });

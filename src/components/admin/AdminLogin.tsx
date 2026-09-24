@@ -12,6 +12,7 @@ export function AdminLogin() {
 
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -28,7 +29,7 @@ export function AdminLogin() {
       const res = await fetch("/api/admin/session", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ password, name }),
+        body: JSON.stringify({ password, name, email }),
       });
       if (res.ok) {
         // Hard navigation on purpose. The client router prefetches /admin
@@ -45,7 +46,9 @@ export function AdminLogin() {
           ? "No admin password is configured for this deployment."
           : data.error === "too_many_attempts"
             ? "Too many wrong attempts from this network. Wait 15 minutes and try again."
-            : "That password is not right.",
+            : email.trim()
+              ? "That email and password do not match an active admin account."
+              : "That password is not right.",
       );
     } catch {
       setError("Could not reach the server. Check your connection and try again.");
@@ -70,14 +73,27 @@ export function AdminLogin() {
       ) : null}
 
       <TextField
-        label="Your name"
-        hint="Shown in the audit log"
-        autoComplete="name"
-        maxLength={40}
-        value={name}
-        onChange={(e) => setName(e.target.value)}
+        label="Email"
+        hint="If you have your own admin account"
+        type="email"
+        autoComplete="username"
+        maxLength={200}
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
         disabled={unconfigured || busy}
       />
+
+      {email.trim() ? null : (
+        <TextField
+          label="Your name"
+          hint="With the shared owner password · shown in the audit log"
+          autoComplete="name"
+          maxLength={40}
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          disabled={unconfigured || busy}
+        />
+      )}
 
       <TextField
         label="Admin password"

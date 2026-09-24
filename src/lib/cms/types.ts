@@ -164,6 +164,8 @@ export type EventItem = {
   location: string;
   registration_url: string | null;
   image_url: string | null;
+  /** Photos from the event (supabase/v3.sql); absent before that has run. */
+  gallery?: string[];
   status: EventStatus;
   published: boolean;
   sort: number;

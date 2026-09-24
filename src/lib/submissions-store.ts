@@ -189,3 +189,20 @@ export async function submissionCounts() {
     newByKind: Object.fromEntries(SUBMISSION_KINDS.map((k, i) => [k, newByKind[i]])) as Record<SubmissionKind, number>,
   };
 }
+
+/** Moves many rows to one state in a single request. Returns the rows changed. */
+export async function bulkSetState(ids: string[], state: SubmissionState): Promise<StoredSubmission[]> {
+  const withVersion = await hasVersionColumn();
+  return rest<StoredSubmission[]>(`submissions?${new URLSearchParams({ id: `in.(${ids.join(",")})`, select: "*" })}`, {
+    method: "PATCH",
+    body: JSON.stringify(withVersion ? { state, updated_at: new Date().toISOString() } : { state }),
+    prefer: "return=representation",
+  });
+}
+
+export async function bulkDelete(ids: string[]): Promise<StoredSubmission[]> {
+  return rest<StoredSubmission[]>(`submissions?${new URLSearchParams({ id: `in.(${ids.join(",")})` })}`, {
+    method: "DELETE",
+    prefer: "return=representation",
+  });
+}

@@ -6,6 +6,7 @@ import { TextField, TextArea, SelectField } from "./Field";
 import { Button } from "@/components/ui/Button";
 import { ease } from "@/lib/motion";
 import { submitForm, trapProps, type SubmissionResult } from "@/lib/submissions";
+import { useTurnstile } from "@/components/forms/Turnstile";
 import { DeliveryNotice, DeliveryError } from "./DeliveryNotice";
 
 type Values = {
@@ -49,6 +50,7 @@ export function ApplyForm({ projectName, roles }: { projectName: string; roles: 
   const [sending, setSending] = useState(false);
   const [result, setResult] = useState<SubmissionResult | null>(null);
   const [trap, setTrap] = useState("");
+  const turnstile = useTurnstile();
 
   function set<K extends keyof Values>(key: K, value: Values[K]) {
     setValues((v) => ({ ...v, [key]: value }));
@@ -68,7 +70,8 @@ export function ApplyForm({ projectName, roles }: { projectName: string; roles: 
     if (Object.keys(next).length > 0) return;
 
     setSending(true);
-    const outcome = await submitForm("project-application", { ...values, project: projectName }, trap);
+    const outcome = await submitForm("project-application", { ...values, project: projectName }, trap, turnstile.token);
+    if (outcome.status === "failed") turnstile.reset();
     setSending(false);
 
     // A failed delivery keeps the student on the form with their answers
@@ -199,8 +202,10 @@ export function ApplyForm({ projectName, roles }: { projectName: string; roles: 
         ) : null}
       </AnimatePresence>
 
+      {turnstile.element}
+
       <div className="flex flex-wrap items-center gap-5 border-t border-line pt-7">
-        <Button type="submit" size="lg" arrow disabled={sending}>
+        <Button type="submit" size="lg" arrow disabled={sending || !turnstile.ready}>
           {sending ? "Sending…" : "Apply"}
         </Button>
       </div>

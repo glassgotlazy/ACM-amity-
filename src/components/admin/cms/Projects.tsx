@@ -185,6 +185,7 @@ export function ProjectsEditor() {
   return (
     <Collection
       resource="projects"
+      previewPath={(r) => `/projects/${r.slug}`}
       noun="project"
       sortable
       label={(r) => s(r.name)}

@@ -40,14 +40,14 @@ export function safeEqual(a: string, b: string): boolean {
 }
 
 /**
- * A signed-in admin. There is one shared password today, so every session
- * has the "owner" role; `actor` is the name typed at sign-in, used only to
- * attribute entries in the audit log (it is self-declared, not an identity).
- * The role travels with the session so per-role permissions can be added
- * later without changing any route.
+ * A signed-in admin. The shared ADMIN_PASSWORD signs in as "owner"; people
+ * with their own account (table admin_users) sign in with email + password
+ * and carry their role and account id. `version` lets an owner sign someone
+ * out everywhere: the API compares it with the account's current version.
  */
-export type AdminRole = "owner";
-export type Session = { actor: string; role: AdminRole; expiresAt: number };
+export const ADMIN_ROLES = ["owner", "editor", "events", "reviewer"] as const;
+export type AdminRole = (typeof ADMIN_ROLES)[number];
+export type Session = { actor: string; role: AdminRole; userId: string | null; version: number; expiresAt: number };
 
 const b64url = (s: string) =>
   btoa(String.fromCharCode(...encoder.encode(s)))
@@ -65,27 +65,39 @@ export function cleanActor(name: unknown): string {
   return s.slice(0, 40) || "Admin";
 }
 
-/** Token: `expiry.actor.signature`, the signature covering expiry and actor. */
-export async function issueToken(secret: string, actor = "Admin"): Promise<string> {
+/** Token: `expiry.payload.signature`, the signature covering expiry and payload. */
+export async function issueToken(
+  secret: string,
+  who: { actor: string; role?: AdminRole; userId?: string | null; version?: number } = { actor: "Admin" },
+): Promise<string> {
   const expiry = String(Date.now() + SESSION_HOURS * 3600_000);
-  const who = b64url(cleanActor(actor));
-  return `${expiry}.${who}.${await hmac(secret, `${expiry}.${who}`)}`;
+  const payload = b64url(
+    JSON.stringify({ a: cleanActor(who.actor), r: who.role ?? "owner", u: who.userId ?? null, v: who.version ?? 0 }),
+  );
+  return `${expiry}.${payload}.${await hmac(secret, `${expiry}.${payload}`)}`;
 }
 
 export async function readSession(secret: string, token: string | undefined): Promise<Session | null> {
   if (!token) return null;
   const parts = token.split(".");
   if (parts.length !== 3) return null;
-  const [expiry, who, sig] = parts;
-  if (!/^\d+$/.test(expiry) || Number(expiry) < Date.now() || !/^[\w-]{1,120}$/.test(who)) return null;
-  if (!safeEqual(sig, await hmac(secret, `${expiry}.${who}`))) return null;
-  let actor = "Admin";
+  const [expiry, payload, sig] = parts;
+  if (!/^\d+$/.test(expiry) || Number(expiry) < Date.now() || !/^[\w-]{1,400}$/.test(payload)) return null;
+  if (!safeEqual(sig, await hmac(secret, `${expiry}.${payload}`))) return null;
   try {
-    actor = cleanActor(unb64url(who));
+    const p = JSON.parse(unb64url(payload)) as { a?: unknown; r?: unknown; u?: unknown; v?: unknown };
+    const role = (ADMIN_ROLES as readonly string[]).includes(String(p.r)) ? (p.r as AdminRole) : null;
+    if (!role) return null;
+    return {
+      actor: cleanActor(p.a),
+      role,
+      userId: typeof p.u === "string" ? p.u : null,
+      version: typeof p.v === "number" ? p.v : 0,
+      expiresAt: Number(expiry),
+    };
   } catch {
     return null;
   }
-  return { actor, role: "owner", expiresAt: Number(expiry) };
 }
 
 export async function verifyToken(secret: string, token: string | undefined): Promise<boolean> {

@@ -17,7 +17,7 @@ import {
 } from "@/lib/submission-types";
 import { cn } from "@/lib/utils";
 import { api, ApiError, explain } from "./cms/api";
-import { Btn, ConfirmDialog, Drawer, EmptyState, ErrorState, LoadingRows, useToast } from "./cms/kit";
+import { Btn, ConfirmDialog, Drawer, EmptyState, ErrorState, LoadingRows, useCms, useToast } from "./cms/kit";
 
 type Page = { rows: StoredSubmission[]; total: number; page: number; per: number };
 
@@ -94,6 +94,12 @@ function Manager() {
   const [busy, setBusy] = useState<string | null>(null);
   const [openId, setOpenId] = useState<string | null>(null);
   const request = useRef(0);
+  // Rows ticked for a bulk action. Cleared whenever the view changes, so an
+  // action never reaches rows the admin can no longer see.
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [bulkState, setBulkState] = useState<SubmissionState | "">("");
+  const [bulkBusy, setBulkBusy] = useState(false);
+  const [bulkDelete, setBulkDelete] = useState(false);
 
   const query = useMemo(() => {
     const q = new URLSearchParams();
@@ -119,6 +125,38 @@ function Manager() {
   useEffect(() => {
     load();
   }, [load]);
+
+  useEffect(() => setSelected(new Set()), [query]);
+
+  const pageIds = data?.rows.map((r) => r.id) ?? [];
+  const allTicked = pageIds.length > 0 && pageIds.every((id) => selected.has(id));
+  const toggleRow = (id: string) =>
+    setSelected((cur) => {
+      const next = new Set(cur);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+
+  async function runBulk(action: "state" | "delete") {
+    if (!selected.size || (action === "state" && !bulkState)) return;
+    setBulkBusy(true);
+    try {
+      const { count } = await api<{ count: number }>("/api/admin/submissions/bulk", {
+        method: "POST",
+        json: { ids: [...selected], action, ...(action === "state" ? { state: bulkState } : {}) },
+      });
+      toast("ok", action === "delete" ? `${count} deleted.` : `${count} marked as ${STATE_LABEL[bulkState as SubmissionState]}.`);
+      setSelected(new Set());
+      setBulkState("");
+      setBulkDelete(false);
+      await load();
+    } catch (e) {
+      toast("error", explain(e));
+    } finally {
+      setBulkBusy(false);
+    }
+  }
 
   /** Status change from the table. The row only changes once the database confirms it. */
   async function changeState(row: StoredSubmission, state: SubmissionState) {
@@ -259,6 +297,35 @@ function Manager() {
         </div>
       </div>
 
+      {selected.size ? (
+        <div role="region" aria-label="Bulk actions" className="mt-4 flex flex-wrap items-center gap-3 border border-acm/50 bg-acm-wash px-4 py-3">
+          <span className="text-sm font-medium text-ink">{selected.size} selected</span>
+          <select
+            aria-label="New status for selected"
+            value={bulkState}
+            onChange={(e) => setBulkState(e.target.value as SubmissionState | "")}
+            className={cn(control, "h-9")}
+          >
+            <option value="">Set status…</option>
+            {SUBMISSION_STATES.map((st) => (
+              <option key={st} value={st}>
+                {STATE_LABEL[st]}
+              </option>
+            ))}
+          </select>
+          <Btn size="sm" tone="primary" onClick={() => runBulk("state")} disabled={!bulkState || bulkBusy}>
+            {bulkBusy ? "Working…" : "Apply"}
+          </Btn>
+          <Btn size="sm" tone="danger" onClick={() => setBulkDelete(true)} disabled={bulkBusy}>
+            Delete selected
+          </Btn>
+          <Btn size="sm" tone="ghost" onClick={() => setSelected(new Set())} className="ml-auto">
+            Clear selection
+          </Btn>
+          <p className="basis-full text-xs text-ink-faint">Bulk status changes do not email applicants. Open a submission to send one.</p>
+        </div>
+      ) : null}
+
       <div className="mt-4">
         {error ? (
           <ErrorState error={error} retry={load} />
@@ -273,6 +340,15 @@ function Manager() {
             <table className="w-full min-w-[46rem] text-left text-sm">
               <thead className="border-b border-line bg-surface">
                 <tr>
+                  <th scope="col" className="w-10 px-3 py-3">
+                    <input
+                      type="checkbox"
+                      aria-label="Select all on this page"
+                      checked={allTicked}
+                      onChange={() => setSelected(allTicked ? new Set() : new Set(pageIds))}
+                      className="h-4 w-4 accent-acm"
+                    />
+                  </th>
                   {["Received", "Type", "Submission", "Contact", "Status", ""].map((h) => (
                     <th key={h || "actions"} scope="col" className="px-3 py-3 font-mono text-micro font-normal uppercase text-ink-faint">
                       {h || <span className="sr-only">Actions</span>}
@@ -285,7 +361,16 @@ function Manager() {
                   const p = row.payload;
                   const contact = row.anonymous ? "Anonymous" : str(p.email) || str(p.name) || "—";
                   return (
-                    <tr key={row.id} className="border-b border-line last:border-b-0 hover:bg-surface/60">
+                    <tr key={row.id} className={cn("border-b border-line last:border-b-0 hover:bg-surface/60", selected.has(row.id) && "bg-surface")}>
+                      <td className="px-3 py-3">
+                        <input
+                          type="checkbox"
+                          aria-label={`Select ${submissionTitle(row)}`}
+                          checked={selected.has(row.id)}
+                          onChange={() => toggleRow(row.id)}
+                          className="h-4 w-4 accent-acm"
+                        />
+                      </td>
                       <td className="whitespace-nowrap px-3 py-3 text-xs text-ink-faint">{fmt(row.created_at)}</td>
                       <td className="whitespace-nowrap px-3 py-3 font-mono text-micro uppercase text-ink-muted">{KIND_LABEL[row.kind]}</td>
                       <td className="max-w-[22rem] px-3 py-3">
@@ -338,6 +423,16 @@ function Manager() {
         </nav>
       ) : null}
 
+      <ConfirmDialog
+        open={bulkDelete}
+        title={`Delete ${selected.size} submission${selected.size === 1 ? "" : "s"}?`}
+        busy={bulkBusy}
+        onConfirm={() => runBulk("delete")}
+        onClose={() => setBulkDelete(false)}
+      >
+        They are removed from the database for good. Export them as CSV first if you may need them.
+      </ConfirmDialog>
+
       <Detail
         id={openId}
         onClose={() => setOpenId(null)}
@@ -364,6 +459,8 @@ function Detail({
   onDeleted: () => void;
 }) {
   const toast = useToast();
+  const { email: emailOn } = useCms();
+  const [notify, setNotify] = useState(true);
   const [row, setRow] = useState<StoredSubmission | null>(null);
   const [error, setError] = useState<unknown>(null);
   const [state, setState] = useState<SubmissionState>("new");
@@ -396,19 +493,29 @@ function Detail({
   }, [fetchRow]);
 
   const dirty = row ? state !== row.state || note !== (row.note ?? "") : false;
+  const address = row && !row.anonymous && typeof row.payload.email === "string" ? row.payload.email : "";
+  const canNotify = Boolean(emailOn && row && address && state !== row.state && ["accepted", "declined", "reviewing"].includes(state));
 
   async function save(overwrite = false) {
     if (!row) return;
     setSaving(true);
     try {
-      const { row: saved } = await api<{ row: StoredSubmission }>(`/api/admin/submissions/${row.id}`, {
+      const { row: saved, emailed } = await api<{ row: StoredSubmission; emailed?: boolean }>(`/api/admin/submissions/${row.id}`, {
         method: "PATCH",
-        json: { state, note: note.trim() ? note : null, ...(overwrite ? {} : { expected_updated_at: versionOf(row) }) },
+        json: {
+          state,
+          note: note.trim() ? note : null,
+          notify: canNotify && notify,
+          ...(overwrite ? {} : { expected_updated_at: versionOf(row) }),
+        },
       });
       setRow(saved);
       setStale(null);
       onChanged(saved);
-      toast("ok", "Changes saved.");
+      toast(
+        canNotify && notify && !emailed ? "error" : "ok",
+        canNotify && notify ? (emailed ? "Saved, and the applicant was emailed." : "Saved, but the email could not be sent.") : "Changes saved.",
+      );
     } catch (e) {
       if (e instanceof ApiError && e.code === "stale") setStale(e.extra.current as StoredSubmission);
       toast("error", `Unable to save. ${explain(e)}`);
@@ -531,6 +638,15 @@ function Detail({
                   ) : null}
                 </dl>
               </div>
+              {canNotify ? (
+                <label className="mt-4 flex items-start gap-2 text-sm text-ink">
+                  <input type="checkbox" checked={notify} onChange={(e) => setNotify(e.target.checked)} className="mt-1 accent-[rgb(var(--acm))]" />
+                  <span>
+                    Email the applicant about this ({address})
+                    <span className="block text-xs text-ink-faint">Uses the template under Inbox → Emails.</span>
+                  </span>
+                </label>
+              ) : null}
               <label className="mt-4 block">
                 <span className="block font-mono text-micro uppercase text-ink-faint">Private note</span>
                 <textarea

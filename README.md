@@ -22,7 +22,15 @@ npm run dev        # http://localhost:3000
 npm run build      # production build
 npm start          # serve the production build
 npm run typecheck  # tsc --noEmit
+npm test           # API suite against the production build (run `npm run build` first)
 ```
+
+`npm test` starts the app against an in-memory Supabase stand-in
+(`tests/mock-supabase.mjs`) and runs `tests/api.test.mjs`: admin accounts and
+roles, permissions, history and undo, bulk actions, draft preview, calendar
+exports, backups, cron and cross-site probes. No real service or secret is
+touched. GitHub Actions runs typecheck, build and this suite on every push
+(`.github/workflows/ci.yml`).
 
 Node 20+ is required. The site runs with no configuration at all; see
 **Collecting submissions** below for the one optional variable.
@@ -141,6 +149,70 @@ Each long-form collection switches over on its own: until "Load remaining
 content" has copied it into its table, the site keeps serving the built-in
 copy, so running `admin.sql` never empties a page.
 
+### More admin features (supabase/v3.sql)
+
+Run `supabase/v3.sql` once in the Supabase SQL editor (additive, like the
+others). It switches on:
+
+- **Personal admin accounts with roles** (Admin → Admins). Owner: everything.
+  Editor: all content and settings, submissions, audit log. Events: events,
+  announcements and images only. Reviewer: the submissions queue only. Each
+  person signs in with their email and their own password (scrypt-hashed);
+  deactivating someone or "Sign out everywhere" ends their sessions at once.
+  The shared `ADMIN_PASSWORD` still signs in as owner, so nobody is locked out.
+- **History and undo.** Every save and delete keeps the version before it.
+  Each editor has a History button (restore any earlier version) and each
+  list a "Recently deleted" button (bring an item back with the same id).
+- **Email templates** for accepted / declined / under-review messages
+  (Admin → Emails), sent when an admin ticks "Email the applicant".
+- **Event photo galleries**, and **GitHub commits** in the activity log.
+
+Also without v3.sql: bulk status change and delete in Submissions, draft
+**Preview** (every editor's Preview opens the real page with drafts shown,
+only to a signed-in admin), "Add to calendar" (Google link and `.ics`) on
+upcoming events, Google event listings (schema.org `Event` data on
+`/events`), owner-only backup download (Admin → Backup) and Cloudflare
+Turnstile on every public form.
+
+#### Environment variables
+
+All are optional; each feature stays off until its variables are set. None
+of the secret ones may ever get a `NEXT_PUBLIC_` prefix.
+
+| Variable | Turns on |
+| --- | --- |
+| `NEXT_PUBLIC_SITE_URL` | Your own domain for canonical links, share images, emails (e.g. `https://acm.example.edu`) |
+| `RESEND_API_KEY` | Sending email through [Resend](https://resend.com) |
+| `EMAIL_FROM` | Sender, e.g. `ACM BuildHub <noreply@your-domain>` (a domain verified in Resend) |
+| `ALERT_EMAIL_TO` | Comma-separated admin addresses told about every new submission |
+| `NEXT_PUBLIC_TURNSTILE_SITE_KEY` + `TURNSTILE_SECRET_KEY` | Spam check on forms ([Cloudflare Turnstile](https://dash.cloudflare.com/?to=/:account/turnstile)) |
+| `GITHUB_REPOS` | `owner/repo,owner/repo` — commits imported into the activity log |
+| `GITHUB_TOKEN` | Optional: higher GitHub rate limit, and private repositories |
+| `GITHUB_AUTO_PUBLISH` | `true` to show imported commits at once (default: hidden drafts to review) |
+| `CRON_SECRET` | Lets Vercel Cron run the daily GitHub import (`vercel.json`) |
+
+**Analytics.** Vercel → project → Analytics → Enable. Page views are counted
+without cookies; the admin console and query strings are never sent.
+
+**Backups.** Admin → Backup downloads everything as JSON (owner only). The
+weekly GitHub Action (`.github/workflows/backup.yml`) needs repository
+secrets `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` and `BACKUP_PASSPHRASE`;
+each backup is stored encrypted for 90 days under Actions →
+"Weekly database backup". Decrypt with
+`gpg --decrypt acm-backup.json.gpg > backup.json`.
+
+#### Using your own domain
+
+1. Vercel → project → Settings → Domains → add the domain (e.g.
+   `acm.amity.edu` or `buildhub.acm-amity.in`).
+2. At your DNS provider add the record Vercel shows (a `CNAME` to
+   `cname.vercel-dns.com` for a subdomain, or the `A` record for an apex
+   domain). HTTPS is issued automatically.
+3. Set `NEXT_PUBLIC_SITE_URL` to `https://your-domain` and redeploy, so links,
+   share images, the sitemap and emails use it.
+4. With email on, verify the same domain in Resend and set `EMAIL_FROM` to an
+   address on it.
+
 ### The submissions queue
 
 `/admin/submissions` reads the existing `submissions` table directly —
@@ -161,17 +233,20 @@ site settings, homepage sections and page headers.
 
 ### Admin security
 
-- **Authentication.** One shared password (`ADMIN_PASSWORD`). Sign-in issues
-  an HttpOnly, SameSite=Lax cookie holding `expiry.actor.signature`
-  (HMAC-SHA256, 12 hours). The typed name only labels the audit log. Changing
-  the password signs everyone out.
+- **Authentication.** Personal accounts (email + own password, scrypt-hashed,
+  after v3.sql) or the shared owner password (`ADMIN_PASSWORD`). Sign-in
+  issues an HttpOnly, SameSite=Lax cookie holding
+  `expiry.payload.signature` (HMAC-SHA256, 12 hours) naming the person, role
+  and account version. For personal accounts every request re-checks the
+  account is active and not signed out. Changing `ADMIN_PASSWORD` signs
+  everyone out.
 - **Authorisation on the server, per route.** Middleware guards `/admin`
   pages; every `/api/admin/*` route independently verifies the signed
   session and the permission it needs (`src/lib/admin-guard.ts`,
   `src/lib/admin-permissions.ts`). Nothing sent by the browser — hidden
-  buttons, local storage, URL parameters — is trusted. There is one role
-  today; adding editor-style roles means adding them to the permission map,
-  not changing routes.
+  buttons, local storage, URL parameters — is trusted. Roles (owner, editor,
+  events, reviewer) are a permission map; hiding a menu item is only a
+  convenience.
 - **Cross-site requests.** Writes whose `Origin`/`Sec-Fetch-Site` is another
   site are refused, on top of the SameSite cookie.
 - **Sign-in rate limit.** Eight failed attempts from one address in 15
@@ -189,9 +264,14 @@ site settings, homepage sections and page headers.
   no write policies; uploads and deletes go only through the admin API,
   which checks the file's real type, size and pixel dimensions and names the
   file itself. SVG is not accepted.
-- **Headers.** `X-Frame-Options`, `X-Content-Type-Options`,
-  `Referrer-Policy` and `Permissions-Policy` on every response; admin pages
-  and APIs are `no-store` and `noindex`.
+- **Headers.** A Content-Security-Policy (scripts and frames only from the
+  site and Cloudflare Turnstile, images from the site and Supabase Storage,
+  no plugins, no framing by other sites), plus `X-Frame-Options`,
+  `X-Content-Type-Options`, `Referrer-Policy` and `Permissions-Policy` on
+  every response; admin pages and APIs are `no-store` and `noindex`.
+- **Spam.** With Turnstile keys set, `/api/submit` refuses a form without a
+  valid token (checked server-side; it fails closed if Cloudflare cannot be
+  reached).
 
 **Leaving `FORM_ENDPOINT` unset is a supported state, not a broken one.** The
 forms still validate, animate and confirm, but nothing is transmitted and every
@@ -239,6 +319,13 @@ not merely that it is hidden in the interface.
 | `/api/admin/submissions/*` | Queue search, detail, status/note, delete, CSV export, proposal → draft project |
 | `/api/admin/stats` · `/api/admin/audit` | Dashboard counts and the audit log |
 | `/api/admin/media` | Media library upload, list and delete; cookie-checked |
+| `/api/admin/users` · `/api/admin/account` | Admin accounts (owner) and changing your own password |
+| `/api/admin/cms/versions` | History of an item, recently deleted items, restore |
+| `/api/admin/submissions/bulk` | Bulk status change or delete (up to 100) |
+| `/api/admin/preview` · `/api/preview-exit` | Enter / leave draft preview |
+| `/api/admin/backup` | Full JSON backup (owner) |
+| `/api/admin/github-import` · `/api/cron/github-activity` | GitHub commits → activity log (button, daily cron) |
+| `/api/calendar/[slug]` | An event as an `.ics` file |
 
 ---
 

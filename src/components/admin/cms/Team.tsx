@@ -66,6 +66,7 @@ export function TeamEditor() {
   return (
     <Collection
       resource="team"
+      previewPath={() => "/teams"}
       noun="team member"
       sortable
       label={(r) => s(r.name)}

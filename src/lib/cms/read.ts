@@ -1,5 +1,7 @@
 import { unstable_cache } from "next/cache";
+import { cookies, draftMode } from "next/headers";
 import { cache } from "react";
+import { ADMIN_COOKIE, readSession } from "@/lib/admin-auth";
 import { isStorageConfigured, rest, StorageError } from "@/lib/supabase";
 import * as D from "./defaults";
 import { CONTENT, defaultsOf, type ContentKey, type ContentOf } from "./content";
@@ -72,8 +74,28 @@ async function select<T>(path: string): Promise<T[] | null> {
   }
 }
 
-function cached<T>(key: string, tag: CmsTag, fn: () => Promise<T>) {
-  return unstable_cache(fn, [key], { tags: [tag], revalidate: REVALIDATE });
+/**
+ * Preview: an admin who opened a page through /api/admin/preview sees drafts
+ * (unpublished items) as they would look, read fresh and never cached. Both
+ * Next's draft-mode cookie and a valid admin session are required. Outside a
+ * request (build, static generation) this is simply false.
+ */
+export const isPreview = cache(async (): Promise<boolean> => {
+  try {
+    if (!(await draftMode()).isEnabled) return false;
+    const secret = process.env.ADMIN_PASSWORD;
+    return Boolean(secret && (await readSession(secret, (await cookies()).get(ADMIN_COOKIE)?.value)));
+  } catch {
+    return false;
+  }
+});
+
+/** The published-only filter, dropped in preview. */
+const pub = (preview: boolean) => (preview ? "" : "&published=eq.true");
+
+function cached<T>(key: string, tag: CmsTag, fn: (preview: boolean) => Promise<T>) {
+  const live = unstable_cache(() => fn(false), [key], { tags: [tag], revalidate: REVALIDATE });
+  return async () => ((await isPreview()) ? fn(true) : live());
 }
 
 const SETTINGS_COLUMNS = Object.keys(D.defaultSettings).join(",");
@@ -134,10 +156,10 @@ export const getPage = cache(async (key: PageKey): Promise<Section> => {
   return { ...base, ...(rows.find((r) => r.key === key) ?? {}), enabled: true };
 });
 
-const teamRows = cached("cms-team", CMS_TAGS.team, async () => {
+const teamRows = cached("cms-team", CMS_TAGS.team, async (preview) => {
   const [roles, members] = await Promise.all([
     select<TeamRole>("roles?select=id,name,sort&order=sort.asc"),
-    select<TeamMember>("team_members?select=*&published=eq.true&order=sort.asc"),
+    select<TeamMember>(`team_members?select=*${pub(preview)}&order=sort.asc`),
   ]);
   return { roles: roles ?? [], members: members ?? [] };
 });
@@ -147,11 +169,12 @@ export const getTeam = cache(async (): Promise<PublicMember[]> => {
     ? await teamRows()
     : { roles: D.defaultRoles, members: D.defaultMembers };
   const roleName = new Map(roles.map((r) => [r.id, r.name]));
-  return members.filter((m) => m.published).map((m) => ({ ...m, role: roleName.get(m.role_id) ?? "" }));
+  const preview = await isPreview();
+  return members.filter((m) => preview || m.published).map((m) => ({ ...m, role: roleName.get(m.role_id) ?? "" }));
 });
 
-const eventRows = cached("cms-events", CMS_TAGS.events, () =>
-  select<EventItem>("events?select=*&published=eq.true&order=starts_at.asc,sort.asc&limit=200"),
+const eventRows = cached("cms-events", CMS_TAGS.events, (preview) =>
+  select<EventItem>(`events?select=*${pub(preview)}&order=starts_at.asc,sort.asc&limit=200`),
 );
 
 export const getEvents = cache(async (): Promise<EventItem[]> => {
@@ -168,9 +191,9 @@ export function upcoming(events: EventItem[], now = Date.now()) {
   );
 }
 
-const projectRows = cached("cms-projects", CMS_TAGS.projects, async () => {
+const projectRows = cached("cms-projects", CMS_TAGS.projects, async (preview) => {
   const [rows, members] = await Promise.all([
-    select<ProjectRow>("projects?select=*&published=eq.true&order=sort.asc&limit=200"),
+    select<ProjectRow>(`projects?select=*${pub(preview)}&order=sort.asc&limit=200`),
     select<ProjectMemberRow>("project_members?select=project_id,member_id,name,role,sort&order=sort.asc&limit=2000"),
   ]);
   return { rows: rows ?? [], members: members ?? [] };
@@ -186,8 +209,8 @@ export async function getProject(slug: string): Promise<Project | undefined> {
   return (await getProjects()).find((p) => p.slug === slug);
 }
 
-const announcementRows = cached("cms-announcements", CMS_TAGS.announcements, () =>
-  select<Announcement>("announcements?select=*&published=eq.true&order=sort.asc,date.desc&limit=5"),
+const announcementRows = cached("cms-announcements", CMS_TAGS.announcements, (preview) =>
+  select<Announcement>(`announcements?select=*${pub(preview)}&order=sort.asc,date.desc&limit=5`),
 );
 
 export const getAnnouncements = cache(async (): Promise<Announcement[]> => {
@@ -210,10 +233,10 @@ export async function ogBrand() {
 
 function contentRows(key: ContentKey) {
   const def = CONTENT[key];
-  return cached(`cms-content-${key}`, CMS_TAGS[key], async () => {
+  return cached(`cms-content-${key}`, CMS_TAGS[key], async (preview) => {
     const [seed, rows] = await Promise.all([
       select<{ entity: string }>(`content_seeds?select=entity&entity=eq.${key}`),
-      select<Record<string, unknown>>(`${def.table}?select=*&published=eq.true&order=sort.asc&limit=500`),
+      select<Record<string, unknown>>(`${def.table}?select=*${pub(preview)}&order=sort.asc&limit=500`),
     ]);
     return seed?.length && rows ? rows : null;
   });

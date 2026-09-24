@@ -1,6 +1,7 @@
 "use client";
 
 import { motion, useReducedMotion } from "framer-motion";
+import { CmsImage } from "@/components/ui/CmsImage";
 import Link from "next/link";
 import type { CSSProperties } from "react";
 import { ease } from "@/lib/motion";
@@ -111,13 +112,9 @@ export function Hero({ section }: { section: Section }) {
             transition={{ duration: 0.8, delay: 0.3 }}
           >
             {section.image_url ? (
-              // eslint-disable-next-line @next/next/no-img-element -- CMS image, already size-checked on upload
-              <img
-                src={section.image_url}
-                alt=""
-                className="aspect-[4/3] w-full border border-line object-cover"
-                fetchPriority="high"
-              />
+              <div className="relative aspect-[4/3] w-full overflow-hidden border border-line">
+                <CmsImage src={section.image_url} alt="" sizes="(min-width: 1024px) 40vw, 100vw" priority />
+              </div>
             ) : (
               <PipelineGraph />
             )}

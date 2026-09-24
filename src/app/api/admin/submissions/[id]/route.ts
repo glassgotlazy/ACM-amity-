@@ -4,6 +4,9 @@ import { audit } from "@/lib/audit";
 import { CmsError } from "@/lib/cms/write";
 import { STATE_LABEL, SUBMISSION_STATES, submissionTitle, type SubmissionState } from "@/lib/submission-types";
 import { StaleSubmission, deleteSubmission, getSubmission, updateSubmission } from "@/lib/submissions-store";
+import { emailConfigured, fill, loadTemplates, sendEmail, TEMPLATE_KEYS, type TemplateKey } from "@/lib/email";
+import { getSettings } from "@/lib/cms/read";
+import { KIND_LABEL } from "@/lib/submission-types";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -34,7 +37,7 @@ export async function GET(request: Request, { params }: Params) {
 export async function PATCH(request: Request, { params }: Params) {
   return handle(request, "submissions:write", async (session) => {
     const id = await idOf(params);
-    const body = (await json(request)) as { state?: unknown; note?: unknown; expected_updated_at?: unknown };
+    const body = (await json(request)) as { state?: unknown; note?: unknown; expected_updated_at?: unknown; notify?: unknown };
     if (!body || typeof body !== "object") throw new CmsError(400, "invalid_body");
 
     const patch: { state?: SubmissionState; note?: string | null } = {};
@@ -56,18 +59,29 @@ export async function PATCH(request: Request, { params }: Params) {
       const result = await updateSubmission(id, patch, expected);
       if (!result) throw new CmsError(404, "not_found");
       const { row, before } = result;
+      let emailed = false;
       if (patch.state && patch.state !== before.state) {
+        // Tell the applicant, only when the admin asked to and there is an
+        // address to write to (never for anonymous submissions).
+        const to = typeof row.payload.email === "string" ? row.payload.email : "";
+        if (body.notify === true && emailConfigured() && !row.anonymous && to && (TEMPLATE_KEYS as readonly string[]).includes(patch.state)) {
+          const [templates, settings] = await Promise.all([loadTemplates(), getSettings()]);
+          const t = templates[patch.state as TemplateKey];
+          const person = (typeof row.payload.your_name === "string" && row.payload.your_name) || (typeof row.payload.name === "string" && row.payload.name) || "there";
+          const vars = { name: person, kind: KIND_LABEL[row.kind].toLowerCase(), title: submissionTitle(row).slice(0, 120), site: settings.site_name };
+          emailed = await sendEmail({ to: [to], subject: fill(t.subject, vars), text: fill(t.body, vars), replyTo: settings.contact_email ?? undefined });
+        }
         await audit({
           actor: session.actor,
           action: "status",
           entity: "submission",
           entity_id: id,
-          summary: `“${submissionTitle(row).slice(0, 80)}”: ${STATE_LABEL[before.state]} → ${STATE_LABEL[patch.state]}`,
+          summary: `“${submissionTitle(row).slice(0, 80)}”: ${STATE_LABEL[before.state]} → ${STATE_LABEL[patch.state]}${emailed ? " · applicant emailed" : ""}`,
         });
       } else if (patch.note !== undefined && patch.note !== before.note) {
         await audit({ actor: session.actor, action: "update", entity: "submission", entity_id: id, summary: `Edited the note on “${submissionTitle(row).slice(0, 80)}”` });
       }
-      return { row };
+      return { row, emailed };
     } catch (error) {
       if (error instanceof StaleSubmission) {
         return NextResponse.json({ error: "stale", current: error.current }, { status: 409 });

@@ -27,7 +27,14 @@ type CmsState = {
   content: ContentState | null;
   /** Whether the audit log table exists. */
   audit: boolean;
+  /** Whether supabase/v3.sql has run (accounts, history, email templates). */
+  v3: boolean;
+  /** Whether RESEND_API_KEY is set, so applicant emails can be sent. */
+  email: boolean;
   actor: string;
+  role: string;
+  /** Signed in with a personal account (can change its own password). */
+  account: boolean;
   routes: string[];
   refresh: () => void;
 };
@@ -36,13 +43,17 @@ const CmsContext = createContext<CmsState>({
   status: "loading",
   content: null,
   audit: false,
+  v3: false,
+  email: false,
   actor: "",
+  role: "",
+  account: false,
   routes: [],
   refresh: () => {},
 });
 
 export function CmsProvider({ children }: { children: ReactNode }) {
-  const [state, setState] = useState<Omit<CmsState, "refresh">>({ status: "loading", content: null, audit: false, actor: "", routes: [] });
+  const [state, setState] = useState<Omit<CmsState, "refresh">>({ status: "loading", content: null, audit: false, v3: false, email: false, actor: "", role: "", account: false, routes: [] });
 
   const refresh = useCallback(async () => {
     try {

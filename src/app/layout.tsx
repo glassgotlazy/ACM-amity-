@@ -8,6 +8,8 @@ import { ScrollProgress } from "@/components/site/ScrollProgress";
 import { PageTransition } from "@/components/site/PageTransition";
 import { CommandPalette } from "@/components/site/CommandPalette";
 import { HideOnAdmin } from "@/components/site/HideOnAdmin";
+import { PreviewBanner } from "@/components/site/PreviewBanner";
+import { SiteAnalytics } from "@/components/site/SiteAnalytics";
 import { SITE_URL } from "@/lib/site";
 import {
   getIdeas,
@@ -19,6 +21,7 @@ import {
   getSocial,
   getTeam,
   getWorkingTeams,
+  isPreview,
 } from "@/lib/cms/read";
 import { buildIndex } from "@/lib/search";
 import { brandCaption } from "@/lib/cms/types";
@@ -135,6 +138,9 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <HideOnAdmin>
           <Footer brand={brand} settings={settings} nav={nav} social={social} team={team} />
         </HideOnAdmin>
+        {(await isPreview()) ? <PreviewBanner /> : null}
+        {/* Only on Vercel, where the Analytics tab serves the script. */}
+        {process.env.VERCEL === "1" ? <SiteAnalytics /> : null}
       </body>
     </html>
   );

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { CmsImage } from "@/components/ui/CmsImage";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getProject, getProjects } from "@/lib/cms/read";
@@ -82,13 +83,9 @@ export default async function ProjectPage({ params }: { params: Promise<{ slug: 
 
           {project.image ? (
             <Reveal delay={0.2} className="mt-14">
-              {/* eslint-disable-next-line @next/next/no-img-element -- CMS image, size-checked on upload */}
-              <img
-                src={project.image}
-                alt=""
-                decoding="async"
-                className="aspect-[21/9] w-full border border-line object-cover"
-              />
+              <div className="relative aspect-[21/9] w-full overflow-hidden border border-line">
+                <CmsImage src={project.image} alt="" sizes="(min-width: 1280px) 1200px, 100vw" />
+              </div>
             </Reveal>
           ) : null}
         </div>

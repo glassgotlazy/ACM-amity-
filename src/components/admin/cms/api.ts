@@ -61,6 +61,8 @@ export function explain(error: unknown): string {
       return "Your account is not allowed to do that.";
     case "cross_site_request":
       return "The request was blocked because it did not come from this site. Reload the page.";
+    case "v3_missing":
+      return "Run supabase/v3.sql in Supabase first.";
     case "not_found":
       return "That item no longer exists. It may have been deleted in another tab.";
     default:

@@ -1,5 +1,9 @@
-import { NextResponse } from "next/server";
+import { NextResponse, after } from "next/server";
+import { alertRecipients, sendEmail } from "@/lib/email";
+import { SITE_URL } from "@/lib/site";
+import { submissionTitle } from "@/lib/submission-types";
 import { isStorageConfigured, storeSubmission } from "@/lib/supabase";
+import { verifyTurnstile } from "@/lib/turnstile";
 
 /**
  * The single ingress point for every form on the site.
@@ -42,7 +46,7 @@ function sanitise(payload: Payload) {
 }
 
 export async function POST(request: Request) {
-  let body: { kind?: string; payload?: Payload; trap?: string };
+  let body: { kind?: string; payload?: Payload; trap?: string; turnstile?: string };
 
   try {
     const raw = await request.text();
@@ -66,6 +70,13 @@ export async function POST(request: Request) {
   // a normal-looking success so they do not learn they were filtered.
   if (typeof body.trap === "string" && body.trap.trim() !== "") {
     return NextResponse.json({ delivered: true, mode: "accepted" });
+  }
+
+  // Spam check (only when TURNSTILE_SECRET_KEY is set). Checked after the
+  // honeypot so bots that fill it still get their fake success.
+  const ip = request.headers.get("x-forwarded-for")?.split(",")[0].trim() ?? null;
+  if (!(await verifyTurnstile(body.turnstile, ip))) {
+    return NextResponse.json({ delivered: false, error: "verification_failed" }, { status: 400 });
   }
 
   const clean = sanitise(body.payload);
@@ -110,6 +121,20 @@ export async function POST(request: Request) {
       // Never echo the destination or the error detail back to the browser.
       console.error("[submit] delivery failed:", error);
     }
+  }
+
+  // Tell the core team, after the response has gone out so the student
+  // never waits on it. Only when RESEND_API_KEY and ALERT_EMAIL_TO are set.
+  const to = alertRecipients();
+  if ((stored || forwarded) && to.length) {
+    after(() =>
+      sendEmail({
+        to,
+        subject: `New ${LABEL[kind].toLowerCase()}: ${submissionTitle({ kind, payload: clean, anonymous: clean.anonymous === true }).slice(0, 80)}`,
+        text: `A new ${LABEL[kind].toLowerCase()} arrived on ${SITE_URL}.\n\nOpen the queue: ${SITE_URL}/admin/submissions?kind=${kind}&state=new\n`,
+        replyTo: typeof clean.email === "string" && clean.anonymous !== true ? clean.email : undefined,
+      }).then(() => undefined),
+    );
   }
 
   if (stored || forwarded) {

@@ -7,6 +7,7 @@ import { TextField, TextArea, ChipGroup } from "./Field";
 import { Button } from "@/components/ui/Button";
 import { MaskedHeadline } from "@/components/ui/MaskedHeadline";
 import { submitForm, trapProps, type SubmissionResult } from "@/lib/submissions";
+import { useTurnstile } from "@/components/forms/Turnstile";
 import { DeliveryNotice } from "./DeliveryNotice";
 import { DOMAINS } from "@/data/taxonomy";
 import { ease } from "@/lib/motion";
@@ -14,6 +15,7 @@ import { cn } from "@/lib/utils";
 
 type Values = {
   name: string;
+  email: string;
   course: string;
   year: string;
   interests: string[];
@@ -26,6 +28,7 @@ type Values = {
 
 const EMPTY: Values = {
   name: "",
+  email: "",
   course: "",
   year: "",
   interests: [],
@@ -44,7 +47,7 @@ type StepDef = {
 };
 
 const STEPS: StepDef[] = [
-  { id: "name", label: "Name", title: "What should we call you?", hint: "Start with the easy one." },
+  { id: "name", label: "Name", title: "What should we call you?", hint: "Start with the easy one — and an email so the core team can reply." },
   { id: "course", label: "Course", title: "What are you studying?", hint: "Course and year." },
   {
     id: "interests",
@@ -77,6 +80,7 @@ export function JoinFlow({ registrationUrl }: { registrationUrl: string | null }
   const [sending, setSending] = useState(false);
   const [result, setResult] = useState<SubmissionResult | null>(null);
   const [trap, setTrap] = useState("");
+  const turnstile = useTurnstile();
   const stepRef = useRef<HTMLDivElement>(null);
 
   const current = STEPS[step];
@@ -101,6 +105,7 @@ export function JoinFlow({ registrationUrl }: { registrationUrl: string | null }
     switch (current.id) {
       case "name":
         if (!values.name.trim()) return fail("Your name, please.");
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(values.email.trim())) return fail("An email we can reply to, please.");
         return true;
       case "course":
         if (!values.course.trim()) return fail("Course is required.");
@@ -135,7 +140,8 @@ export function JoinFlow({ registrationUrl }: { registrationUrl: string | null }
     }
 
     setSending(true);
-    const outcome = await submitForm("join", { ...values }, trap);
+    const outcome = await submitForm("join", { ...values }, trap, turnstile.token);
+    if (outcome.status === "failed") turnstile.reset();
     setSending(false);
 
     // A failed send keeps the applicant on the final step with everything
@@ -275,14 +281,27 @@ export function JoinFlow({ registrationUrl }: { registrationUrl: string | null }
 
             <div className="mt-10 max-w-2xl">
               {current.id === "name" ? (
-                <TextField
-                  label="Name"
-                  required
-                  value={values.name}
-                  onChange={(e) => set("name", e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && next()}
-                  placeholder="Your full name"
-                />
+                <div className="grid gap-6 sm:grid-cols-2">
+                  <TextField
+                    label="Name"
+                    required
+                    autoComplete="name"
+                    value={values.name}
+                    onChange={(e) => set("name", e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && next()}
+                    placeholder="Your full name"
+                  />
+                  <TextField
+                    label="Email"
+                    type="email"
+                    required
+                    autoComplete="email"
+                    value={values.email}
+                    onChange={(e) => set("email", e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && next()}
+                    placeholder="you@example.com"
+                  />
+                </div>
               ) : null}
 
               {current.id === "course" ? (
@@ -397,8 +416,10 @@ export function JoinFlow({ registrationUrl }: { registrationUrl: string | null }
         </AnimatePresence>
       </div>
 
+      {step === STEPS.length - 1 && turnstile.element ? <div className="mt-8">{turnstile.element}</div> : null}
+
       <div className="flex flex-wrap items-center gap-5 border-t border-line pt-9">
-        <Button size="lg" onClick={next} arrow disabled={sending}>
+        <Button size="lg" onClick={next} arrow disabled={sending || (step === STEPS.length - 1 && !turnstile.ready)}>
           {sending ? "Sending…" : step === STEPS.length - 1 ? "Finish" : "Continue"}
         </Button>
         <Button variant="ghost" onClick={back} className={cn(step === 0 && "pointer-events-none opacity-0")}>

@@ -18,15 +18,19 @@ export async function submitForm(
   kind: SubmissionKind,
   payload: Record<string, string | string[] | boolean>,
   trap: string,
+  turnstile?: string | null,
 ): Promise<SubmissionResult> {
   try {
     const response = await fetch("/api/submit", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ kind, payload, trap }),
+      body: JSON.stringify({ kind, payload, trap, turnstile: turnstile ?? undefined }),
     });
 
-    const data = (await response.json()) as { delivered?: boolean; mode?: string };
+    const data = (await response.json()) as { delivered?: boolean; mode?: string; error?: string };
+    if (data.error === "verification_failed") {
+      return { status: "failed", message: "The spam check did not pass. Tick the box above the button and try again." };
+    }
 
     if (data.delivered) return { status: "delivered" };
     if (data.mode === "not-configured") return { status: "not-configured" };

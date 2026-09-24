@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { CmsImage } from "@/components/ui/CmsImage";
 import Link from "next/link";
 import { PageHeader } from "@/components/ui/SectionHeading";
 import { CmsTitle } from "@/components/ui/Lines";
@@ -213,16 +214,9 @@ function Officer({ person }: { person: PublicMember }) {
   return (
     <div className="flex gap-5">
       {person.photo_url ? (
-        // eslint-disable-next-line @next/next/no-img-element -- CMS photo, size-checked on upload
-        <img
-          src={person.photo_url}
-          alt=""
-          loading="lazy"
-          decoding="async"
-          width={64}
-          height={64}
-          className="h-16 w-16 shrink-0 border border-line object-cover"
-        />
+        <span className="relative block h-16 w-16 shrink-0 overflow-hidden border border-line">
+          <CmsImage src={person.photo_url} alt="" sizes="64px" />
+        </span>
       ) : null}
       <div className="min-w-0">
         <div className="meta text-acm-bright">{person.role}</div>

@@ -5,6 +5,7 @@ import type { SectionKey } from "@/lib/cms/types";
 import { api, ApiError, explain } from "./api";
 import { Btn, Drawer, ErrorState, LinkInput, ListField, LoadingRows, MoveButtons, Pill, TextArea, TextInput, useCms, useToast } from "./kit";
 import { ImageField } from "./media";
+import { HistoryButton } from "./history";
 import { list, s, type Draft, type Errors } from "./Collection";
 
 type Field = "eyebrow" | "title" | "subtitle" | "body" | "note" | "primary" | "secondary" | "primary_label" | "image" | "hero_extra";
@@ -88,7 +89,7 @@ type Row = Draft & { key: SectionKey; enabled: boolean; sort: number };
 
 export function HomepageEditor() {
   const toast = useToast();
-  const { status } = useCms();
+  const { status, v3 } = useCms();
   const [rows, setRows] = useState<Row[] | null>(null);
   const [loadError, setLoadError] = useState<unknown>(null);
   const [editing, setEditing] = useState<Row | null>(null);
@@ -229,6 +230,16 @@ export function HomepageEditor() {
         onClose={() => setEditing(null)}
         footer={
           <>
+            {editing && v3 ? (
+              <HistoryButton
+                resource="section"
+                id={String(editing.key)}
+                onRestored={() => {
+                  setEditing(null);
+                  load();
+                }}
+              />
+            ) : null}
             <Btn onClick={() => setEditing(null)}>Cancel</Btn>
             <Btn tone="primary" onClick={() => save()} disabled={saving}>
               {saving ? "Saving…" : "Save section"}
@@ -359,7 +370,7 @@ const PAGES: Record<string, { name: string; path: string; note?: string; accent?
 /** The header (eyebrow, headline, lede) of every other public page. */
 export function PagesEditor() {
   const toast = useToast();
-  const { status } = useCms();
+  const { status, v3 } = useCms();
   const [rows, setRows] = useState<Row[] | null>(null);
   const [loadError, setLoadError] = useState<unknown>(null);
   const [editing, setEditing] = useState<Row | null>(null);
@@ -443,6 +454,16 @@ export function PagesEditor() {
         onClose={() => setEditing(null)}
         footer={
           <>
+            {editing && v3 ? (
+              <HistoryButton
+                resource="section"
+                id={String(editing.key)}
+                onRestored={() => {
+                  setEditing(null);
+                  load();
+                }}
+              />
+            ) : null}
             <Btn onClick={() => setEditing(null)}>Cancel</Btn>
             <Btn tone="primary" onClick={() => save()} disabled={saving}>
               {saving ? "Saving…" : "Save header"}

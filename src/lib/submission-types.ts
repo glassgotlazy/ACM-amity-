@@ -53,7 +53,7 @@ export const CATEGORY: Record<SubmissionKind, { field: string; label: string; ar
 };
 
 /** Payload fields the search box looks in. */
-export const SEARCH_FIELDS = ["name", "email", "project", "what", "concept"] as const;
+export const SEARCH_FIELDS = ["name", "email", "project", "what", "concept", "your_name"] as const;
 
 /**
  * How the detail view groups each kind's payload. Any stored field not listed
@@ -61,7 +61,7 @@ export const SEARCH_FIELDS = ["name", "email", "project", "what", "concept"] as 
  */
 export const FIELD_GROUPS: Record<SubmissionKind, { title: string; fields: [string, string][] }[]> = {
   join: [
-    { title: "Applicant", fields: [["name", "Name"], ["course", "Course"], ["year", "Year"]] },
+    { title: "Applicant", fields: [["name", "Name"], ["email", "Email"], ["course", "Course"], ["year", "Year"]] },
     { title: "Interests and skills", fields: [["interests", "Interests"], ["skills", "Skills"], ["build", "Wants to build"]] },
     { title: "Links", fields: [["github", "GitHub"], ["linkedin", "LinkedIn"]] },
     { title: "Motivation", fields: [["why", "Why ACM"]] },
@@ -78,6 +78,7 @@ export const FIELD_GROUPS: Record<SubmissionKind, { title: string; fields: [stri
     { title: "Submitter", fields: [["name", "Name"], ["email", "Email"]] },
   ],
   "project-proposal": [
+    { title: "Proposed by", fields: [["your_name", "Name"], ["email", "Email"]] },
     { title: "Project", fields: [["name", "Project name"], ["problem", "From problem"], ["concept", "Concept"], ["outcome", "Outcome"]] },
     { title: "Team", fields: [["size", "Team size"], ["roles", "Roles needed"], ["technologies", "Technologies"]] },
   ],

@@ -6,6 +6,7 @@ import { TextField, TextArea, SelectField, Checkbox } from "./Field";
 import { Button } from "@/components/ui/Button";
 import { PROBLEM_CATEGORIES } from "@/data/taxonomy";
 import { submitForm, trapProps, type SubmissionResult } from "@/lib/submissions";
+import { useTurnstile } from "@/components/forms/Turnstile";
 import { DeliveryNotice, DeliveryError } from "./DeliveryNotice";
 
 type Values = {
@@ -40,6 +41,7 @@ export function ProblemForm() {
   const [sending, setSending] = useState(false);
   const [result, setResult] = useState<SubmissionResult | null>(null);
   const [trap, setTrap] = useState("");
+  const turnstile = useTurnstile();
 
   function set<K extends keyof Values>(key: K, value: Values[K]) {
     setValues((v) => ({ ...v, [key]: value }));
@@ -65,7 +67,8 @@ export function ProblemForm() {
     const payload = anonymous
       ? { ...values, name: "", email: "", anonymous: true }
       : { ...values, anonymous: false };
-    const outcome = await submitForm("problem-submission", payload, trap);
+    const outcome = await submitForm("problem-submission", payload, trap, turnstile.token);
+    if (outcome.status === "failed") turnstile.reset();
     setSending(false);
     setResult(outcome);
   }
@@ -214,8 +217,10 @@ export function ProblemForm() {
 
       {result?.status === "failed" ? <DeliveryError message={result.message} /> : null}
 
+      {turnstile.element}
+
       <div className="flex flex-wrap items-center gap-6 border-t border-line pt-8">
-        <Button type="submit" size="lg" arrow disabled={sending}>
+        <Button type="submit" size="lg" arrow disabled={sending || !turnstile.ready}>
           {sending ? "Sending…" : "Submit problem"}
         </Button>
         <p className="max-w-sm font-mono text-micro uppercase leading-relaxed text-ink-ghost">

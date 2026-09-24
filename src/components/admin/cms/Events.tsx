@@ -2,9 +2,9 @@
 
 import { EVENT_STATUSES } from "@/lib/cms/types";
 import { eventWhen, noticeDate } from "@/lib/cms/format";
-import { LinkInput, Select, TextArea, TextInput, Toggle } from "./kit";
-import { ImageField } from "./media";
-import { Collection, b, s, type Draft, type FormProps } from "./Collection";
+import { LinkInput, Select, TextArea, TextInput, Toggle, useCms } from "./kit";
+import { GalleryField, ImageField } from "./media";
+import { Collection, b, list, s, type Draft, type FormProps } from "./Collection";
 
 /** ISO timestamp ↔ the browser's datetime-local value, in the editor's own clock. */
 function toLocal(iso: unknown): string {
@@ -30,6 +30,11 @@ const slugify = (text: string) =>
     .slice(0, 80);
 
 function EventForm({ value, set, errors }: FormProps) {
+  return <EventFields value={value} set={set} errors={errors} />;
+}
+
+function EventFields({ value, set, errors }: FormProps) {
+  const { v3 } = useCms();
   return (
     <>
       <TextInput
@@ -64,6 +69,9 @@ function EventForm({ value, set, errors }: FormProps) {
         error={errors.status}
       />
       <ImageField label="Event image" use="cover" value={(value.image_url as string) ?? null} onChange={(v) => set({ image_url: v })} error={errors.image_url} />
+      {v3 ? (
+        <GalleryField label="Photo gallery" value={list(value.gallery)} onChange={(v) => set({ gallery: v })} error={errors.gallery} />
+      ) : null}
       <Toggle label="Published" hint="Drafts stay here and are not shown on the site." checked={b(value.published)} onChange={(v) => set({ published: v })} />
     </>
   );
@@ -73,6 +81,7 @@ export function EventsEditor() {
   return (
     <Collection
       resource="events"
+      previewPath={() => "/events"}
       noun="event"
       sortable
       label={(r) => s(r.title)}
@@ -122,6 +131,7 @@ export function AnnouncementsEditor() {
   return (
     <Collection
       resource="announcements"
+      previewPath={() => "/"}
       noun="announcement"
       sortable
       label={(r) => s(r.title)}

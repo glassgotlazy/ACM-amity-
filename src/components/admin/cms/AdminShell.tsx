@@ -7,41 +7,59 @@ import { cn } from "@/lib/utils";
 import { SignOut } from "../SignOut";
 import { ThemeToggle } from "@/components/site/ThemeToggle";
 import { CmsProvider, ToastProvider, useCms } from "./kit";
+import { can, ROLE_LABEL, type Permission } from "@/lib/admin-permissions";
+import type { AdminRole } from "@/lib/admin-auth";
 
-const NAV: { group: string; items: { href: string; label: string }[] }[] = [
-  { group: "", items: [{ href: "/admin", label: "Dashboard" }] },
-  { group: "Inbox", items: [{ href: "/admin/submissions", label: "Submissions" }] },
+type Item = { href: string; label: string; need: Permission; accountOnly?: boolean };
+
+const NAV: { group: string; items: Item[] }[] = [
+  { group: "", items: [{ href: "/admin", label: "Dashboard", need: "admin:read" }] },
+  {
+    group: "Inbox",
+    items: [
+      { href: "/admin/submissions", label: "Submissions", need: "submissions:read" },
+      { href: "/admin/emails", label: "Emails", need: "settings:write" },
+    ],
+  },
   {
     group: "Website",
     items: [
-      { href: "/admin/settings", label: "Site Settings" },
-      { href: "/admin/navigation", label: "Navigation" },
-      { href: "/admin/homepage", label: "Homepage" },
-      { href: "/admin/pages", label: "Pages" },
-      { href: "/admin/media", label: "Media" },
+      { href: "/admin/settings", label: "Site Settings", need: "settings:write" },
+      { href: "/admin/navigation", label: "Navigation", need: "settings:write" },
+      { href: "/admin/homepage", label: "Homepage", need: "settings:write" },
+      { href: "/admin/pages", label: "Pages", need: "settings:write" },
+      { href: "/admin/media", label: "Media", need: "media:write" },
     ],
   },
   {
     group: "People",
     items: [
-      { href: "/admin/team", label: "Team" },
-      { href: "/admin/roles", label: "Roles" },
-      { href: "/admin/working-teams", label: "Working teams" },
+      { href: "/admin/team", label: "Team", need: "content:write" },
+      { href: "/admin/roles", label: "Roles", need: "content:write" },
+      { href: "/admin/working-teams", label: "Working teams", need: "content:write" },
     ],
   },
   {
     group: "Content",
     items: [
-      { href: "/admin/projects", label: "Projects" },
-      { href: "/admin/problems", label: "Problem statements" },
-      { href: "/admin/ideas", label: "Project ideas" },
-      { href: "/admin/research", label: "Research" },
-      { href: "/admin/events", label: "Events" },
-      { href: "/admin/announcements", label: "Announcements" },
-      { href: "/admin/activity", label: "Activity log" },
+      { href: "/admin/projects", label: "Projects", need: "content:write" },
+      { href: "/admin/problems", label: "Problem statements", need: "content:write" },
+      { href: "/admin/ideas", label: "Project ideas", need: "content:write" },
+      { href: "/admin/research", label: "Research", need: "content:write" },
+      { href: "/admin/events", label: "Events", need: "events:write" },
+      { href: "/admin/announcements", label: "Announcements", need: "events:write" },
+      { href: "/admin/activity", label: "Activity log", need: "content:write" },
     ],
   },
-  { group: "Security", items: [{ href: "/admin/audit", label: "Audit log" }] },
+  {
+    group: "Admin",
+    items: [
+      { href: "/admin/admins", label: "Admins", need: "admins:manage" },
+      { href: "/admin/audit", label: "Audit log", need: "audit:read" },
+      { href: "/admin/backup", label: "Backup", need: "backup:read" },
+      { href: "/admin/account", label: "My account", need: "admin:read", accountOnly: true },
+    ],
+  },
 ];
 
 /** Admin chrome: a fixed sidebar on desktop, a slide-in menu on phones. */
@@ -50,6 +68,40 @@ export function AdminShell({ siteName, children }: { siteName: string; children:
   const [open, setOpen] = useState(false);
   useEffect(() => setOpen(false), [pathname]);
 
+  return (
+    <ToastProvider>
+      <CmsProvider>
+        <Shell siteName={siteName} pathname={pathname} open={open} setOpen={setOpen}>
+          {children}
+        </Shell>
+      </CmsProvider>
+    </ToastProvider>
+  );
+}
+
+/** Only the sections this role may use. The server enforces the same rules. */
+function visibleNav(role: string, account: boolean) {
+  if (!role) return NAV.slice(0, 1);
+  return NAV.map((g) => ({
+    ...g,
+    items: g.items.filter((i) => can(role as AdminRole, i.need) && (!i.accountOnly || account)),
+  })).filter((g) => g.items.length);
+}
+
+function Shell({
+  siteName,
+  pathname,
+  open,
+  setOpen,
+  children,
+}: {
+  siteName: string;
+  pathname: string;
+  open: boolean;
+  setOpen: (v: boolean) => void;
+  children: ReactNode;
+}) {
+  const { role, account } = useCms();
   const isActive = (href: string) => (href === "/admin" ? pathname === "/admin" : pathname.startsWith(href));
 
   const sidebar = (
@@ -59,7 +111,7 @@ export function AdminShell({ siteName, children }: { siteName: string; children:
         <div className="mt-1 font-mono text-micro uppercase text-acm-bright">Admin</div>
       </div>
       <div className="flex-1 overflow-y-auto px-3 py-4">
-        {NAV.map((section) => (
+        {visibleNav(role, account).map((section) => (
           <div key={section.group || "main"} className="mb-5">
             {section.group ? (
               <div className="px-2 pb-2 font-mono text-micro uppercase text-ink-ghost">{section.group}</div>
@@ -100,8 +152,7 @@ export function AdminShell({ siteName, children }: { siteName: string; children:
   );
 
   return (
-    <ToastProvider>
-      <CmsProvider>
+    <>
         <div className="min-h-screen bg-void lg:grid lg:grid-cols-[15rem_1fr]">
           <a
             href="#admin-main"
@@ -148,12 +199,18 @@ export function AdminShell({ siteName, children }: { siteName: string; children:
             {children}
           </div>
         </div>
-      </CmsProvider>
-    </ToastProvider>
+    </>
   );
 }
 
 function SignedInAs() {
-  const { actor } = useCms();
-  return actor ? <span className="truncate px-3 text-xs text-ink-faint">Signed in as {actor}</span> : <span />;
+  const { actor, role } = useCms();
+  return actor ? (
+    <span className="truncate px-3 text-xs text-ink-faint">
+      {actor}
+      {role ? ` · ${ROLE_LABEL[role as AdminRole] ?? role}` : ""}
+    </span>
+  ) : (
+    <span />
+  );
 }

@@ -8,6 +8,7 @@ import { TextField, TextArea, SelectField, ChipGroup } from "@/components/forms/
 import { ROLES } from "@/data/taxonomy";
 import { ease } from "@/lib/motion";
 import { submitForm, trapProps, type SubmissionResult } from "@/lib/submissions";
+import { useTurnstile } from "@/components/forms/Turnstile";
 import { DeliveryNotice, DeliveryError } from "@/components/forms/DeliveryNotice";
 
 const STAGES = ["PROBLEM", "DEFINE", "RESEARCH", "DESIGN", "BUILD", "TEST", "DEPLOY"] as const;
@@ -103,6 +104,8 @@ function Flow({ suggestedName, problemTitle }: { suggestedName: string; problemT
 
 type Values = {
   name: string;
+  your_name: string;
+  email: string;
   concept: string;
   technologies: string;
   outcome: string;
@@ -116,6 +119,8 @@ function ProposalForm({ suggestedName, problemTitle }: { suggestedName: string; 
   const reduce = useReducedMotion();
   const [values, setValues] = useState<Values>({
     name: suggestedName,
+    your_name: "",
+    email: "",
     concept: "",
     technologies: "",
     outcome: "",
@@ -126,6 +131,7 @@ function ProposalForm({ suggestedName, problemTitle }: { suggestedName: string; 
   const [sending, setSending] = useState(false);
   const [result, setResult] = useState<SubmissionResult | null>(null);
   const [trap, setTrap] = useState("");
+  const turnstile = useTurnstile();
 
   async function submit(event: React.FormEvent) {
     event.preventDefault();
@@ -133,11 +139,14 @@ function ProposalForm({ suggestedName, problemTitle }: { suggestedName: string; 
     if (!values.name.trim()) next.name = "Required";
     if (values.concept.trim().length < 20) next.concept = "Describe the approach in a sentence or two";
     if (values.roles.length === 0) next.roles = "Pick at least one role";
+    if (!values.your_name.trim()) next.your_name = "Required";
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(values.email.trim())) next.email = "An email we can reply to";
     setErrors(next);
     if (Object.keys(next).length > 0) return;
 
     setSending(true);
-    const outcome = await submitForm("project-proposal", { ...values, problem: problemTitle }, trap);
+    const outcome = await submitForm("project-proposal", { ...values, problem: problemTitle }, trap, turnstile.token);
+    if (outcome.status === "failed") turnstile.reset();
     setSending(false);
     setResult(outcome);
   }
@@ -165,6 +174,25 @@ function ProposalForm({ suggestedName, problemTitle }: { suggestedName: string; 
 
   return (
     <form onSubmit={submit} noValidate className="space-y-7">
+      <div className="grid gap-6 sm:grid-cols-2">
+        <TextField
+          label="Your name"
+          required
+          autoComplete="name"
+          value={values.your_name}
+          error={errors.your_name}
+          onChange={(e) => setValues((v) => ({ ...v, your_name: e.target.value }))}
+        />
+        <TextField
+          label="Your email"
+          type="email"
+          required
+          autoComplete="email"
+          value={values.email}
+          error={errors.email}
+          onChange={(e) => setValues((v) => ({ ...v, email: e.target.value }))}
+        />
+      </div>
       <TextField
         label="Project name"
         required
@@ -226,8 +254,10 @@ function ProposalForm({ suggestedName, problemTitle }: { suggestedName: string; 
 
       {result?.status === "failed" ? <DeliveryError message={result.message} /> : null}
 
+      {turnstile.element}
+
       <div className="flex flex-wrap items-center gap-5 border-t border-line pt-7">
-        <Button type="submit" size="lg" arrow disabled={sending}>
+        <Button type="submit" size="lg" arrow disabled={sending || !turnstile.ready}>
           {sending ? "Sending…" : "Start a project"}
         </Button>
       </div>

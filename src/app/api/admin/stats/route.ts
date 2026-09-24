@@ -1,4 +1,5 @@
 import { handle } from "../cms/_handle";
+import { can } from "@/lib/admin-permissions";
 import { auditReady, listAudit } from "@/lib/audit";
 import { cmsStatus } from "@/lib/cms/write";
 import { upcoming } from "@/lib/cms/read";
@@ -20,12 +21,12 @@ async function count(table: string, params: Record<string, string> = {}) {
  * the rest still load.
  */
 export async function GET(request: Request) {
-  return handle(request, "submissions:read", async () => {
+  return handle(request, "admin:read", async (session) => {
     const safe = <T,>(p: Promise<T>) => p.catch(() => null);
     const cms = await safe(cmsStatus());
     const ready = cms === "ready";
     const [submissions, projects, drafts, events, team, announcements, recent] = await Promise.all([
-      safe(submissionCounts()),
+      can(session.role, "submissions:read") ? safe(submissionCounts()) : null,
       ready ? safe(count("projects", { published: "eq.true" })) : null,
       ready ? safe(count("projects", { published: "eq.false" })) : null,
       ready
@@ -37,7 +38,7 @@ export async function GET(request: Request) {
         : null,
       ready ? safe(count("team_members", { published: "eq.true" })) : null,
       ready ? safe(count("announcements", { published: "eq.true" })) : null,
-      safe(auditReady().then((ok) => (ok ? listAudit({ page: 1, per: 8 }).then((r) => r.rows) : null))),
+      can(session.role, "audit:read") ? safe(auditReady().then((ok) => (ok ? listAudit({ page: 1, per: 8 }).then((r) => r.rows) : null))) : null,
     ]);
     return { cms, submissions, projects, drafts, events, team, announcements, recent };
   });

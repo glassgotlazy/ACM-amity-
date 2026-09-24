@@ -6,5 +6,5 @@ export const dynamic = "force-dynamic";
 /** Homepage sections; `?pages=1` returns the other pages' headers instead. */
 export async function GET(req: Request) {
   const pages = new URL(req.url).searchParams.get("pages") === "1";
-  return handle(req, "content:write", async () => ({ rows: pages ? await readPages() : await readSections() }));
+  return handle(req, "settings:write", async () => ({ rows: pages ? await readPages() : await readSections() }));
 }
